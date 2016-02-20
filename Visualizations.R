@@ -1,0 +1,437 @@
+###################
+##Figures for Single Nuclei (Biological Variables)
+##Created, Slinker 09/22/2015
+###################
+library(ggplot2)
+library(reshape)
+library(plyr)
+library(pcaMethods)
+library(Rtsne)
+###################
+#EdgeR Results
+load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_resTables/edgeR.res")
+#Other raw data is stored in LoadData_ShortTerm.R
+###############################################
+## FUNCTIONS THAT WILL PLOT FOR YOU
+###############################################
+# PCA 2D ---------------------------------------------------------------------
+PC2D <- function(dat, met, colorby = NULL,shapeby = NULL, gene = NA){
+  p <- pca(t(dat),nPcs=12)
+  Loading <- as.data.frame(p@loadings)
+  Loading <- Loading[order(Loading$PC1),]
+  if (!is.na(gene)){
+    tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2]
+                      )
+    tmp <- cbind(tmp,met)
+    tmp$CellType <- as.character(tmp$CellType)
+    tmp[tmp$CellType == "N", "CellType"] <- "CA1"
+    tmp[tmp$CellType == "P", "CellType"] <- "DGC"
+    
+    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
+    plt <- ggplot(tmp, aes(PC1, PC2,colour = gene,shape = fos))+
+      geom_point(size=5, alpha=0.7)+
+      theme_bw()+
+      scale_colour_gradient(high="red",low="blue")+
+      labs(title="PCA")+
+      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
+      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
+      theme(text=element_text(size=20))+
+      theme(panel.border = element_rect(colour=c("black"),size=2),
+            axis.ticks = element_line(size=1.5))
+  }else if(!is.null(colorby)){
+    tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2],
+                      dusp1 = as.numeric(dat["Dusp1",])
+                      )
+    tmp <- cbind(tmp, met)
+    tmp$colorby <- tmp[,colorby]
+    tmp$shapeby <- tmp[,shapeby]
+
+    
+    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
+    plt <- ggplot(tmp, aes(PC1, PC2,colour = colorby,shape = shapeby))+
+      geom_point(size=5, alpha=0.7)+
+      theme_bw()+
+      #scale_colour_gradient(high="red",low="blue")+
+      labs(title="PCA")+
+      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
+      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
+      theme(text=element_text(size=20))+
+      theme(panel.border = element_rect(colour=c("black"),size=2),
+            axis.ticks = element_line(size=1.5))
+  }else{
+    tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2]
+                      )
+    #tmp$CellType <- as.character(tmp$CellType)
+    #tmp[tmp$CellType == "N", "CellType"] <- "CA1"
+    #tmp[tmp$CellType == "P", "CellType"] <- "DGC"
+    
+    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
+    plt <- ggplot(tmp, aes(PC1, PC2))+
+      geom_point(size=5, alpha=0.7)+
+      geom_point(size=5, shape=1)+
+      theme_bw()+
+      #scale_colour_manual(values = c("black","darkorange2","darkorchid4"))+
+      labs(title="PCA")+
+      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
+      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
+      theme(text=element_text(size=20))+
+      theme(panel.border = element_rect(colour=c("black"),size=2),
+            axis.ticks = element_line(size=1.5))
+  }
+  return(list(plt,Loading,data.frame(p@scores)))
+  #dev.off()
+}
+# SPCA 2D ---------------------------------------------------------------------
+SPC2D <- function(dat, met, gene = NA){
+  require(nsprcomp)
+  p <- nsprcomp(t(dat))
+  Loading <- p$rotation
+  if (!is.na(gene)){
+    tmp <- data.frame(PC1 = p$x[,1], PC2 = p$x[,2],
+                      CellType = met[,"prox"],
+                      fos = met[,"fos"],
+                      gene = as.numeric(dat[gene,]))
+    tmp$CellType <- as.character(tmp$CellType)
+    tmp[tmp$CellType == "N", "CellType"] <- "CA1"
+    tmp[tmp$CellType == "P", "CellType"] <- "DGC"
+    
+    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
+    plt <- ggplot(tmp, aes(PC1, PC2,colour = gene,shape = CellType))+
+      geom_point(size=5, alpha=0.7)+
+      theme_bw()+
+      scale_colour_gradient(high="red",low="blue")+
+      labs(title="PCA")+
+      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
+      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
+      theme(text=element_text(size=20))+
+      theme(panel.border = element_rect(colour=c("black"),size=2),
+            axis.ticks = element_line(size=1.5))
+  }else{
+    tmp <- data.frame(PC1 = p$x[,1], PC2 = p$x[,2],
+                      CellType = met[,"prox"],
+                      fos = met[,"fos"])
+    tmp$CellType <- as.character(tmp$CellType)
+    tmp[tmp$CellType == "N", "CellType"] <- "CA1"
+    tmp[tmp$CellType == "P", "CellType"] <- "DGC"
+    
+    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
+    plt <- ggplot(tmp, aes(PC1, PC2,colour = CellType))+
+      geom_point(size=5, alpha=0.7)+
+      geom_point(size=5, shape=1)+
+      theme_bw()+
+      scale_colour_manual(values = c("darkorange2","darkorchid4"))+
+      labs(title="PCA")+
+      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
+      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
+      theme(text=element_text(size=20))+
+      theme(panel.border = element_rect(colour=c("black"),size=2),
+            axis.ticks = element_line(size=1.5))
+  }
+  return(list(plt,Loading))
+  #dev.off()
+}
+# PCA 1D ---------------------------------------------------------------------
+PC1D <- function(dat, met, component){
+dat <- tpmProx[,metaProx$cond == "HC" & metaProx$date != "150629"]
+dat <- dat
+p <- pca(t(dat))
+tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2],
+                  CellType = metaProx[metaProx$cond == "HC" & metaProx$date != "150629","prox"],
+                  fos = metaProx[metaProx$cond == "HC" & metaProx$date != "150629","fos"])
+tmp$CellType <- as.character(tmp$CellType)
+tmp[tmp$CellType == "N", "CellType"] <- "CA1"
+tmp[tmp$CellType == "P", "CellType"] <- "DGC"
+
+#pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA1_HC_NP.pdf",width=8.5,height=7)
+p <- ggplot(tmp, aes(PC1, fill = fos))+
+  geom_density(alpha=0.7)+
+  theme_bw()+
+  scale_fill_manual(values = c("darkorange2","darkorchid4"))+
+  labs(title="PC1")+
+  xlab("PC1 Score ")+
+  theme(text=element_text(size=20))+
+  theme(panel.border = element_rect(colour=c("black"),size=2),
+        axis.ticks = element_line(size=1.5))
+#dev.off()
+return(p)
+}
+# PC Gene -----------------------------------------------------------------
+PCGene <- function(dat, met,gene, component){
+  p <- pca(t(dat))
+  tmp <- data.frame(PC = p@scores[,component],
+                    CellType = met[,"prox"],
+                    fos = met[,"fos"],
+                    gene = as.numeric(dat[gene,]))
+  tmp$CellType <- as.character(tmp$CellType)
+  tmp[tmp$CellType == "N", "CellType"] <- "CA1"
+  tmp[tmp$CellType == "P", "CellType"] <- "DGC"
+  l <- summary(lm(PC ~ gene, tmp))
+  l <- signif(l$coefficients[2,4],2)
+  #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA1_HC_NP.pdf",width=8.5,height=7)
+  p <- ggplot(tmp, aes(gene,PC, colour = fos))+
+    geom_point(alpha=0.8)+
+    geom_smooth(method="lm",fill = NA)+
+    theme_bw()+
+    labs(title=paste(paste("PC",component," ~ ",gene,sep=""),paste("p<", l,sep=""),collapse='\n'))+
+    xlab("TPM")+
+    ylab("PC Score")+
+    theme(text=element_text(size=20))+
+    theme(panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5))
+  return(p)
+}
+# tsne --------------------------------------------------------------------
+
+
+getErrors <- function(x){
+  return(strsplit(stdout[x]," ")[[1]][5])
+}
+
+
+
+#RES <- vector()
+#stdout <- vector('character')
+#con <- textConnection(object='stdout',open='wr')
+#sink(con)
+#perps <- 12#seq(5,10,1)
+#for (i in perps){
+#  TSNE <- Rtsne(as.matrix(t(dat)),initial_dims=2,perplexity=i,theta=0.1,check_duplicates=FALSE)
+#  res <- as.data.frame(TSNE$Y)
+#  res$group <- i
+#  RES <- rbind(RES,res)
+#}
+#sink()
+#close(con)
+
+Tsne <- function(RES,dat,met,colorby,gene="Prox1"){
+  RES$prox <- met$prox
+  RES$cond <- met$cond
+  RES$fos <- met$fos
+  RES$tmpgroup <- met$tempGroupingProx1HC
+  RES$Col <- RES[,colorby]
+  RES$Gene <- as.numeric(dat[gene,])
+  
+  Errorpos <- seq(from=27,to=length(stdout),by=27) + c(0:(length(perps)-1))
+  error <- data.frame(error = as.numeric(as.character(unlist(lapply(X=Errorpos,FUN=getErrors)))),
+                      perplexity = perps
+  )
+  
+  g <- error[error$error == min(error$error),"perplexity"]
+  
+  p1 <- ggplot(RES[RES$group == g,], aes(V1,V2,colour = Col))+
+    geom_point(size=4,alpha=1 )+
+    theme_bw(base_size = 13)+
+    labs(title= paste("t-SNE","\nperplexity = ",g,sep=""))+
+    #scale_colour_gradient(high="black",low = "red")+
+    theme(panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5))
+  
+  p2 <- ggplot(as.data.frame(error), aes(perplexity,error))+
+          geom_point(size=4,alpha=0.5)
+  
+  return(list(p1,p2))
+}
+# Inidividual Genes (tpm) -------------------------------------------------
+Indiv <- function(gene,dat,met){
+  
+  tmp <- data.frame(exp = as.numeric(dat[gene,]),
+                    Arc = as.numeric(dat["Arc",]))
+  tmp <- cbind(tmp, met)
+  tmp$prox <- as.character(tmp$prox)
+  tmp[tmp$prox == "P","prox"] <- "DGC"
+  tmp[tmp$prox == "N","prox"] <- "CA1"
+  tmp$fos <- as.character(tmp$fos)
+  tmp[tmp$fos == "F","fos"] <- "High"
+  tmp[tmp$fos == "L","fos"] <- "Low"
+  tmp[tmp$fos == "N","fos"] <- "None"
+  #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
+  p <- ggplot(tmp, aes(fos,exp))+
+    geom_violin(outlier.shape=NA)+
+    geom_point(position=position_jitter(width=0.01,height=0))+
+    theme_bw(base_size=20)+
+    ylab("TPM")+
+    #scale_colour_gradient(high="red", low="blue")+
+    ylim(c(0,max(tmp$exp) + 0.2*(max(tmp$exp))))+
+    theme(panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5))+
+    labs(title=paste(gene,"\n"))+
+    facet_grid( cond  ~ prox) 
+return(p)
+}
+IndivProx1Grouped <- function(gene){
+  
+  tmp <- data.frame(exp = as.numeric(dat[gene, met$prox == "P"]),
+                    Arc = as.numeric(dat["Arc", met$prox == "P"]))
+  tmp <- cbind(tmp, met)
+  tmp$prox <- as.character(tmp$prox)
+  tmp[tmp$prox == "P","prox"] <- "DGC"
+  tmp[tmp$prox == "N","prox"] <- "CA1"
+  tmp$fos <- as.character(tmp$fos)
+  tmp[tmp$fos == "F","fos"] <- "High"
+  tmp[tmp$fos == "L","fos"] <- "Low"
+  tmp[tmp$fos == "N","fos"] <- "None"
+  t <- t.test(tmp[tmp$tempGroupingProx1HC == TRUE, "exp"],tmp[tmp$tempGroupingProx1HC == FALSE, "exp"])
+  #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
+  p <- ggplot(tmp, aes(tempGroupingProx1HC,exp))+
+    geom_boxplot(outlier.shape=NA)+
+    geom_point(position=position_jitter(width=0.01,height=0))+
+    theme_bw(base_size=20)+
+    ylab("TPM")+
+    #scale_colour_gradient(high="red", low="blue")+
+    ylim(c(0,max(tmp$exp) + 0.2*(max(tmp$exp))))+
+    theme(panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5))+
+    labs(title=paste(gene,":",round(t$p.value,2),"\n"))+
+    facet_grid( cond  ~ prox) 
+  return(p)
+}
+IndivByDate <- function(gene,dat,met){
+  
+  tmp <- data.frame(exp = as.numeric(dat[gene,]),
+                    Arc = as.numeric(dat["Arc",])
+                    )
+  tmp <- cbind(tmp, met)
+  tmp$prox <- as.character(tmp$prox)
+  tmp[tmp$prox == "P","prox"] <- "DGC"
+  tmp[tmp$prox == "N","prox"] <- "CA1"
+  tmp$fos <- as.character(tmp$fos)
+  tmp[tmp$fos == "F","fos"] <- "High"
+  tmp[tmp$fos == "L","fos"] <- "Low"
+  tmp[tmp$fos == "N","fos"] <- "None"
+  tryCatch(
+    l <- summary(lm(exp ~ date*fos, tmp))
+  )
+  #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
+  p <- ggplot(tmp, aes(date,exp,fill = fos))+
+    geom_boxplot(outlier.shape=NA)+
+    geom_point(position=position_jitter(width=0.01,height=0))+
+    theme_bw(base_size=14)+
+    ylab("TPM")+
+    #scale_colour_gradient(high="red", low="blue")+
+    ylim(c(0,max(tmp$exp) + 0.2*(max(tmp$exp))))+
+    theme(panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5))+
+    labs(title=paste(gene,"\n","p, date < ",signif(l$coefficients[2,4],2),"\n","p, fos < ",signif(l$coefficients[3,4],2),"\n","p, date:fos < ",signif(l$coefficients[4,4],2)))+
+    facet_grid( cond  ~ prox) 
+  return(p)
+}
+
+
+# facet_grid( cond  ~ prox)
+#dev.off()
+# Correlations (2genes) ---------------------------------------------------
+Plot2Genes <- function(a,b,dat,met,group){
+  tmp <- data.frame(A = as.numeric(dat[a,]),
+                    B = as.numeric(dat[b,]),
+                    group = met[,group],
+                    dusp1 = as.numeric(dat["Npas4",])
+                    )
+  
+  #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
+  p <- ggplot(tmp, aes(A,B,colour = group))+
+    geom_point(size=4)+
+    theme_bw(base_size=20)+
+    xlab(a)+
+    ylab(b)+
+    theme(panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5))
+  return(p)
+  #dev.off()
+}
+# heatmap (needs work) ----------------------------------------------------
+scaleMe <- function(x){
+  scale(x)[,1]
+}
+
+heatMe <- function(dat,genes){
+  tmp <- dat[genes,]
+  tmp.1 <- t(apply(X=tmp,MARGIN=1,FUN=scaleMe))
+  tmp2 <- melt(t(tmp.1))
+  
+  p1 <- ggplot(tmp2, aes(X1, X2 , fill = value))+
+    geom_tile()+
+    scale_fill_gradient2(high="red",low="blue",mid="white",midpoint=0)+
+    theme_bw(base_size=22)+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  return(p1)
+}
+# Volcano Plot ------------------------------------------------------------
+
+## Labels genes that are NS, nominal, or adj significant
+Volcano <- function(difexp){
+  direction <- res$f < 0.05
+  direction[direction == FALSE] <- "NS"
+  direction[direction == "NS" & res$PValue < 0.05] <- "p < 0.05"
+  direction[direction == TRUE & res$logFC > 0] <- "CA1 high"
+  direction[direction == TRUE & res$logFC < 0] <- "DGC high"
+  direction <- as.factor(direction)
+  res$direction <- direction
+  
+  levels(res$direction) <- c("NS","p < 0.05","CA1 high","DGC high")
+  
+  
+  #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/difexp_HC_NP.pdf",width=7.5,height=7.5)
+  p <- ggplot(res, aes(logFC, -log(PValue), colour = direction))+
+    geom_point(alpha = 0.2)+
+    geom_point(shape = 1)+
+    geom_hline(aes(yintercept = -log(0.05)), linetype="dashed")+
+    geom_hline(aes(yintercept = -log(res[res$f > 0.05,"PValue"][1])), linetype="dashed")+
+    geom_vline(aes(xintercept = 0), linetype="dashed")+
+    theme_bw()+
+    scale_colour_manual(values = c("darkorchid4","darkorange2","grey","black"))+
+    theme(text = element_text(size=18),panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5),legend.position = "none")+
+    annotate(geom="text",x=c(-5,5),y=75,label=c(paste("n= ",c(sum(direction == "CA1 high"),sum(direction == "DGC high")),sep="")))+
+    labs(title="Differential Expression\nHC CA1 vs. DGC")
+  #dev.off()
+  return(p)
+}
+# Gene set by Go term
+ ## NEED TO MAKE THIS PLOT FOR ELECTRON TRANSPORT CHAIN!
+###############################################
+### PLOT THESE GUYS
+###############################################
+#PCA 2D
+dat <- tpmProxC[,metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II" ]
+met <- metaProxC[metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II"  ,]
+gene <- "Uqcr11"
+pc2 <- PC2D(dat,met,colorby = "PROX1",shapeby = "CTIP2")
+#plot result
+pc2[1]
+#save pca scores
+Scores <- as.matrix(unlist(pc2[3]),ncol = 12)
+#save loading values
+Loadings <- as.data.frame(pc2[2])
+
+#or with out a gene
+PC2D(dat,met)
+#PCA 1D
+component <- 1
+PC1D(dat,met,component)
+#PCA Score by gene
+PCGene(dat,met,"Fos",component)
+#T-SNE
+a <- Tsne(RES,dat,met,colorby="fos",gene="Arc")
+a[1]
+a[2]
+
+# Plot Single Gene --------------------------------------------------------
+dat <- tpmProxC#[,metaProxC$cond == "EE" & metaProxC$fos == "N" ]
+met <- metaProxC#[metaProxC$cond == "EE" & metaProxC$fos == "N" ,]
+Indiv("Fos",dat, met)
+IndivByDate("Uqcr11",dat, met)
+IndivProx1Grouped("Nedd8")
+#plot two genes
+a <- "Brf1"
+b <- "Bcl11b"
+group <- "fos"
+Plot2Genes(a,b, dat,met,group)
+res <- res.HC_N_P_1
+Volcano(res)
+
+
+######
+p <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=propExp)
+m <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=meanNoZero)
+plot(p,m)
+rownames(tpmProx[m > 10 & p < 0.05,])
