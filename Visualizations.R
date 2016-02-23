@@ -9,7 +9,7 @@ library(pcaMethods)
 library(Rtsne)
 ###################
 #EdgeR Results
-load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_resTables/edgeR.res")
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_resTables/edgeR.res")
 #Other raw data is stored in LoadData_ShortTerm.R
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
@@ -237,16 +237,13 @@ Indiv <- function(gene,dat,met){
   tmp <- data.frame(exp = as.numeric(dat[gene,]),
                     Arc = as.numeric(dat["Arc",]))
   tmp <- cbind(tmp, met)
-  tmp$prox <- as.character(tmp$prox)
-  tmp[tmp$prox == "P","prox"] <- "DGC"
-  tmp[tmp$prox == "N","prox"] <- "CA1"
-  tmp$fos <- as.character(tmp$fos)
-  tmp[tmp$fos == "F","fos"] <- "High"
-  tmp[tmp$fos == "L","fos"] <- "Low"
-  tmp[tmp$fos == "N","fos"] <- "None"
+  tmp$FOS <- as.character(tmp$FOS)
+  tmp[tmp$fos == "F","FOS"] <- "High"
+  tmp[tmp$fos == "L","FOS"] <- "Low"
+  tmp[tmp$fos == "N","FOS"] <- "None"
   #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
-  p <- ggplot(tmp, aes(fos,exp))+
-    geom_violin(outlier.shape=NA)+
+  p <- ggplot(tmp, aes(FOS,exp))+
+    geom_violin()+#outlier.shape=NA)+
     geom_point(position=position_jitter(width=0.01,height=0))+
     theme_bw(base_size=20)+
     ylab("TPM")+
@@ -255,7 +252,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( cond  ~ prox) 
+    facet_grid( Mouse_condition  ~ Brain_Region) 
 return(p)
 }
 IndivProx1Grouped <- function(gene){
@@ -416,9 +413,9 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-dat <- tpmProxC#[,metaProxC$cond == "EE" & metaProxC$fos == "N" ]
-met <- metaProxC#[metaProxC$cond == "EE" & metaProxC$fos == "N" ,]
-Indiv("Fos",dat, met)
+dat <- tpmProxC[,metaProxC$Mouse_condition == "HC" & metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II"]
+met <- metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II",]
+Indiv("Vstm2a",dat, met)
 IndivByDate("Uqcr11",dat, met)
 IndivProx1Grouped("Nedd8")
 #plot two genes
