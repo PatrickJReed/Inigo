@@ -340,15 +340,19 @@ scaleMe <- function(x){
   scale(x)[,1]
 }
 
-heatMe <- function(dat,genes){
+heatMe <- function(dat,genes,order){
   tmp <- dat[genes,]
   tmp.1 <- t(apply(X=tmp,MARGIN=1,FUN=scaleMe))
   tmp2 <- melt(t(tmp.1))
-  
-  p1 <- ggplot(tmp2, aes(X1, X2 , fill = value))+
+  tmp2$order <- rep(order, ncol(dat))
+  p1 <- ggplot(tmp2, aes(X1, reorder(X2,order) , fill = value))+
     geom_tile()+
+    theme(axis.title.x=element_blank(),
+          axis.title.y=element_blank()
+    )
     scale_fill_gradient2(high="red",low="blue",mid="white",midpoint=0)+
-    theme_bw(base_size=22)+
+    #scale_fill_gradient(high="red",low="blue")+
+    #theme_bw(base_size=22)+
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   return(p1)
 }
@@ -413,9 +417,9 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-dat <- tpmProxC[,metaProxC$Mouse_condition == "HC" & metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II"]
-met <- metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II",]
-Indiv("Vstm2a",dat, met)
+dat <- tpmProxC[,metaProxC$Mouse_condition == "HC" ]
+met <- metaProxC[metaProxC$Mouse_condition == "HC" ,]
+Indiv("Terf1",dat, met)
 IndivByDate("Uqcr11",dat, met)
 IndivProx1Grouped("Nedd8")
 #plot two genes
@@ -426,7 +430,10 @@ Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
 Volcano(res)
 
-
+######
+genes <-  rownames(CA1[CA1$f < 0.01 & CA1$logFC > 0,])
+order <- CA1[genes, "logFC"]
+heatMe(dat,genes,order)
 ######
 p <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=propExp)
 m <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=meanNoZero)
