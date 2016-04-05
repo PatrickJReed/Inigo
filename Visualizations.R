@@ -396,7 +396,7 @@ Volcano <- function(difexp){
 dat <- tpmProxC[,metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II" ]
 met <- metaProxC[metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II"  ,]
 gene <- "Uqcr11"
-pc2 <- PC2D(dat,met,colorby = "PROX1",shapeby = "CTIP2")
+pc2 <- PC2D(dat,met,colorby = "FOS",shapeby = "CTIP2")
 #plot result
 pc2[1]
 #save pca scores
