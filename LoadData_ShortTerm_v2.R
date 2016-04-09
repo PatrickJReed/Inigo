@@ -1,6 +1,8 @@
 #################
 ## Common libraries and functions
 #################
+#save(list = c("metaProxC", "tpmProxC", "countProxC"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda",compress = TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda")
 
 #names
 Names <- function(x){
@@ -194,12 +196,12 @@ colnames(tpmProx160324) <- colnames(countProx160324)
 ################################
 
 #combine
-runs <- 5
-a <- table(c(rownames(tpmProx),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324)))
-tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),])
+runs <- 6
+a <- table(c(rownames(tpmProx),rownames(tpmQC),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324)))
+tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmQC[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),])
 colnames(tpmProxC) <- make.names(colnames(tpmProxC))
-a <- table(c(rownames(countProx),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324)))
-countProxC <- cbind(countProx[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),])
+a <- table(c(rownames(countProx),rownames(countQC),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324)))
+countProxC <- cbind(countProx[names(a[a==runs]),],countQC[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),])
 colnames(countProxC) <- make.names(colnames(countProxC))
 
 metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile.txt",header=TRUE)

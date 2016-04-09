@@ -14,33 +14,31 @@ library(Rtsne)
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
 ###############################################
+
+
 # PCA 2D ---------------------------------------------------------------------
-PC2D <- function(dat, met, colorby = NULL,shapeby = NULL, gene = NA){
-  p <- pca(t(dat),nPcs=12)
-  Loading <- as.data.frame(p@loadings)
-  Loading <- Loading[order(Loading$PC1),]
+PC2D <- function(scores,Var, dat, met, colorby = NULL,shapeby = NULL, gene = NA){
+
   if (!is.na(gene)){
-    tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2]
-                      )
+    tmp <- data.frame(PC1 = scores[,1], PC2 = scores[,2],
+                      gene = as.numeric(dat[gene,]))
     tmp <- cbind(tmp,met)
-    tmp$CellType <- as.character(tmp$CellType)
-    tmp[tmp$CellType == "N", "CellType"] <- "CA1"
-    tmp[tmp$CellType == "P", "CellType"] <- "DGC"
-    
+    tmp$shapeby <- tmp[,shapeby]
+
     #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
-    plt <- ggplot(tmp, aes(PC1, PC2,colour = gene,shape = fos))+
+    plt <- ggplot(tmp, aes(PC1, PC2,colour = gene,shape = shapeby))+
       geom_point(size=5, alpha=0.7)+
       theme_bw()+
       scale_colour_gradient(high="red",low="blue")+
       labs(title="PCA")+
-      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
-      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
+      xlab(paste("PC1: ", 100 * round(Var[1],2),"%",sep=""))+
+      ylab(paste("PC2: ", 100 * round(Var[2],2),"%",sep=""))+
       theme(text=element_text(size=20))+
       theme(panel.border = element_rect(colour=c("black"),size=2),
             axis.ticks = element_line(size=1.5))
   }else if(!is.null(colorby)){
     tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2],
-                      dusp1 = as.numeric(dat["Dusp1",])
+                      dusp1 = as.numeric(dat["Meg3",])
                       )
     tmp <- cbind(tmp, met)
     tmp$colorby <- tmp[,colorby]
@@ -53,24 +51,19 @@ PC2D <- function(dat, met, colorby = NULL,shapeby = NULL, gene = NA){
       theme_bw()+
       #scale_colour_gradient(high="red",low="blue")+
       labs(title="PCA")+
-      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
-      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
+      xlab(paste("PC1: ", 100 * round(Var[1],2),"%",sep=""))+
+      ylab(paste("PC2: ", 100 * round(Var[2],2),"%",sep=""))+
       theme(text=element_text(size=20))+
       theme(panel.border = element_rect(colour=c("black"),size=2),
             axis.ticks = element_line(size=1.5))
   }else{
-    tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2]
+    tmp <- data.frame(PC1 = scores[,1], PC2 = scores[,2]
                       )
-    #tmp$CellType <- as.character(tmp$CellType)
-    #tmp[tmp$CellType == "N", "CellType"] <- "CA1"
-    #tmp[tmp$CellType == "P", "CellType"] <- "DGC"
     
-    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
     plt <- ggplot(tmp, aes(PC1, PC2))+
       geom_point(size=5, alpha=0.7)+
       geom_point(size=5, shape=1)+
       theme_bw()+
-      #scale_colour_manual(values = c("black","darkorange2","darkorchid4"))+
       labs(title="PCA")+
       xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
       ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
@@ -78,8 +71,7 @@ PC2D <- function(dat, met, colorby = NULL,shapeby = NULL, gene = NA){
       theme(panel.border = element_rect(colour=c("black"),size=2),
             axis.ticks = element_line(size=1.5))
   }
-  return(list(plt,Loading,data.frame(p@scores)))
-  #dev.off()
+  return(plt)
 }
 # SPCA 2D ---------------------------------------------------------------------
 SPC2D <- function(dat, met, gene = NA){
@@ -131,23 +123,16 @@ SPC2D <- function(dat, met, gene = NA){
   #dev.off()
 }
 # PCA 1D ---------------------------------------------------------------------
-PC1D <- function(dat, met, component){
-dat <- tpmProx[,metaProx$cond == "HC" & metaProx$date != "150629"]
-dat <- dat
-p <- pca(t(dat))
-tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2],
-                  CellType = metaProx[metaProx$cond == "HC" & metaProx$date != "150629","prox"],
-                  fos = metaProx[metaProx$cond == "HC" & metaProx$date != "150629","fos"])
-tmp$CellType <- as.character(tmp$CellType)
-tmp[tmp$CellType == "N", "CellType"] <- "CA1"
-tmp[tmp$CellType == "P", "CellType"] <- "DGC"
-
+PC1D <- function(scores,dat, met, group,component){
+tmp <- data.frame(PC1 = scores[,1], PC2 = scores[,2])
+tmp <- cbind(tmp,met)
+tmp$group <- tmp[,group]
+tmp$component <- tmp[,component]
 #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA1_HC_NP.pdf",width=8.5,height=7)
-p <- ggplot(tmp, aes(PC1, fill = fos))+
+p <- ggplot(tmp, aes(component, fill = group))+
   geom_density(alpha=0.7)+
   theme_bw()+
-  scale_fill_manual(values = c("darkorange2","darkorchid4"))+
-  labs(title="PC1")+
+  labs(title=paste("PC",component,sep = ""))+
   xlab("PC1 Score ")+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
@@ -388,29 +373,34 @@ Volcano <- function(difexp){
   return(p)
 }
 # Gene set by Go term
- ## NEED TO MAKE THIS PLOT FOR ELECTRON TRANSPORT CHAIN!
 ###############################################
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-dat <- tpmProxC[,metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II" ]
-met <- metaProxC[metaProxC$Smartseq2_RT_enzyme_used == "Protoscript_II"  ,]
-gene <- "Uqcr11"
-pc2 <- PC2D(dat,met,colorby = "FOS",shapeby = "CTIP2")
+samples <- metaProxC[metaProxC$FOS != "L" & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
+dat <- tpmProxC[, samples]
+met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+#gene <- "Meg3"
+#Calculate the components
+p <- pca(t(dat),nPcs=5)
+scores <- as.data.frame(p@scores)
+loading <- as.data.frame(p@loadings)
+Var <- p@R2
+pc2 <- PC2D(scores,Var,dat,met,colorby = "FOS",shapeby = "CTIP2")
 #plot result
-pc2[1]
-#save pca scores
-Scores <- as.matrix(unlist(pc2[3]),ncol = 12)
-#save loading values
-Loadings <- as.data.frame(pc2[2])
+pc2
+
 
 #or with out a gene
 PC2D(dat,met)
 #PCA 1D
-component <- 1
-PC1D(dat,met,component)
+component <- 2
+group <- "FOS"
+PC1D(scores,dat,met,group,component)
+scores2 <- cbind(scores, met)
+model <- anova(lm(PC2~PROX1*CTIP2,scores2 ))
 #PCA Score by gene
-PCGene(dat,met,"Fos",component)
+PCGene(dat,met,"FOS",component)
 #T-SNE
 a <- Tsne(RES,dat,met,colorby="fos",gene="Arc")
 a[1]
