@@ -334,9 +334,8 @@ heatMe <- function(dat,genes,order){
     geom_tile()+
     theme(axis.title.x=element_blank(),
           axis.title.y=element_blank()
-    )
-    scale_fill_gradient2(high="red",low="blue",mid="white",midpoint=0)+
-    #scale_fill_gradient(high="red",low="blue")+
+    )+
+    scale_fill_gradient(high="red",low="blue")+
     #theme_bw(base_size=22)+
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   return(p1)
@@ -377,7 +376,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$FOS != "L" & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
+samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #gene <- "Meg3"
@@ -386,19 +385,16 @@ p <- pca(t(dat),nPcs=5)
 scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
-pc2 <- PC2D(scores,Var,dat,met,colorby = "FOS",shapeby = "CTIP2")
-#plot result
-pc2
-
+PC2D(scores,Var,dat,met,colorby = "PROX1", shapeby = "CTIP2")
 
 #or with out a gene
 PC2D(dat,met)
 #PCA 1D
 component <- 2
-group <- "FOS"
+group <- "Mouse_condition"
 PC1D(scores,dat,met,group,component)
 scores2 <- cbind(scores, met)
-model <- anova(lm(PC2~PROX1*CTIP2,scores2 ))
+anova(lm(PC2~Mouse_condition,scores2 ))
 #PCA Score by gene
 PCGene(dat,met,"FOS",component)
 #T-SNE
@@ -407,9 +403,12 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-dat <- tpmProxC[,metaProxC$Mouse_condition == "HC" ]
-met <- metaProxC[metaProxC$Mouse_condition == "HC" ,]
-Indiv("Terf1",dat, met)
+samples <- metaProxC[metaProxC$FOS != "L"  & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+#metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
+dat <- tpmProxC[, samples]
+met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+
+Indiv("Crebbp",dat, met)
 IndivByDate("Uqcr11",dat, met)
 IndivProx1Grouped("Nedd8")
 #plot two genes
@@ -421,9 +420,14 @@ res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-genes <-  rownames(CA1[CA1$f < 0.01 & CA1$logFC > 0,])
-order <- CA1[genes, "logFC"]
-heatMe(dat,genes,order)
+genes <-  genes#rownames(res[res$f < 0.05,])
+order <- c(1:length(genes))
+tmp <- dat
+colnames(tmp) <- paste(met$Brain_Region, c(1:ncol(dat)),sep = ".")
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/region_heat.tiff",width = 10,height = 10,units = 'in',res = 300)
+heatmap(as.matrix(tmp[genes,]))
+dev.off()
+#heatMe(dat,genes,order)
 ######
 p <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=propExp)
 m <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=meanNoZero)
