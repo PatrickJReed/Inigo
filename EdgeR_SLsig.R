@@ -7,12 +7,12 @@ library(ggplot2)
 ########################
 ###Load and Format Data
 ########################
-#save(list = c("res.HC_P_NvC_N","res.HC_PvsN_NvsC_N","res.HC_PvsN_N_N","res.HC_PvN_C_N","res.HC_PvsN_CvsN_N","res.HC_N_CvsN_N","res.NE_P_N_FvN","res.NE_P_C_FvN","res.NE_N_C_FvN"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
+#save(list = c("activitygenes","celltypegenes","res.HC_P_NvC_N","res.HC_PvsN_NvsC_N","res.HC_PvsN_N_N","res.HC_PvN_C_N","res.HC_PvsN_CvsN_N","res.HC_N_CvsN_N","res.NE_P_N_FvN","res.NE_P_C_FvN","res.NE_N_C_FvN","res.NE_N_N_FvN"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[metaProxC$FOS != "L" & metaProxC$PROX1 == "N" & metaProxC$CTIP2 == "C" &  metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
-                       #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
-dat <- tpmProxC[, samples]
+samples <- metaProxC[metaProxC$PROX1 == "N" & metaProxC$FOS != "L" & metaProxC$CTIP2 == "N" &  metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
+                       metaProxC$PROX1 == "N" & metaProxC$FOS != "L"  & metaProxC$CTIP2 == "N" & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
+dat <- na.exclude(countProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #Take a quick look through met to make sure everything is kosher
 met 
@@ -42,7 +42,9 @@ res <- as.data.frame(de.cmn$table)
 res <- res[order(res$PValue),]
 f <- fdrtool(x=res$PValue,statistic="pvalue",plot=FALSE)
 res$f <- f$qval
-res.NE_N_C_FvN <- res
+
+
+res.NE_N_N_FvN <- res
 
 ####
 sum(res$f < 0.05)
@@ -50,23 +52,39 @@ sum(res$f < 0.05 & res$logFC > 0)
 sum(res$f < 0.05 & res$logFC < 0)
 ####
 ## Get overlapping genes
-group1 <- res.HC_PvsN_N_N
-group2 <- res.HC_PvsN_CvsN_N
-group3 <- res.HC_N_CvsN_N
 
-group1 <- group1[group1$f < 0.05,]
-group2 <- group2[group2$f < 0.05,]
-group3 <- group3[group3$f < 0.05,]
+group1 <- res.NE_N_N_FvN
+group2 <- res.NE_N_C_FvN
+group3 <- res.NE_P_C_FvN
+group4 <- res.NE_P_N_FvN
 
-tmp <- c(rownames(group1[group1$logFC < 0,]),
-         rownames(group2[group2$logFC < 0,]),
-         rownames(group3[group3$logFC > 0,]))
-tmp2 <- table(tmp)
-sum(tmp2==3)
-sum(tmp2==2)
-sum(tmp2==1)
+nm <- table(c(rownames(group1), rownames(group2),rownames(group3),rownames(group4)))
+nm <- names(nm[nm == 4])
+group1 <- group1[nm,]
+group2 <- group2[nm,]
+group3 <- group3[nm,]
+group4 <- group4[nm,]
 
-genes <- c(genes, names(tmp2[tmp2 == 3]))
+activitygenes <- unique(c(rownames(group1[group1$f < 0.05 & group2$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,]),
+                   rownames(group2[group2$f < 0.05 & group1$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,]),
+                   rownames(group3[group3$f < 0.05 & group1$PValue > 0.05 & group2$PValue > 0.05 & group4$PValue > 0.05,]),
+                   rownames(group4[group4$f < 0.05 & group1$PValue > 0.05 & group2$PValue > 0.05 & group3$PValue > 0.05,])
+                   ))
+
+#group1 <- group1[group1$f < 0.05,]
+#group2 <- group2[group2$f < 0.05,]
+#group3 <- group3[group3$f < 0.05,]
+#group4 <- group4[group4$f < 0.05,]
+
+#tmp <- c(rownames(group1[group1$logFC < 0,] ),
+#         rownames(group2[group2$logFC < 0,]),
+#         rownames(group3[group3$logFC < 0,]),
+#         rep(rownames(group4[group4$logFC < 0,]),4)
+#         )
+#tmp2 <- table(tmp)
+
+#activitygenes <- c(activitygenes, names(tmp2[tmp2 == 4]))
+
 
 
 res.fosN_fosP <- res

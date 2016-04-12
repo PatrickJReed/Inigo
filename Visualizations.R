@@ -403,12 +403,12 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[metaProxC$FOS != "L"  & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$FOS != "L"  & metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-Indiv("Crebbp",dat, met)
+Indiv("Snhg11",dat, met)
 IndivByDate("Uqcr11",dat, met)
 IndivProx1Grouped("Nedd8")
 #plot two genes
@@ -420,12 +420,12 @@ res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-genes <-  genes#rownames(res[res$f < 0.05,])
-order <- c(1:length(genes))
-tmp <- dat
-colnames(tmp) <- paste(met$Brain_Region, c(1:ncol(dat)),sep = ".")
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/region_heat.tiff",width = 10,height = 10,units = 'in',res = 300)
-heatmap(as.matrix(tmp[genes,]))
+samples <- metaProxC[metaProxC$FOS != "L"  & metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+#metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
+tmp <- dat <- tpmProxC[, samples]
+colnames(tmp) <- paste(met$Brain_Region, met$FOS,c(1:ncol(dat)),sep = ".")
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/activity_heat.tiff",width = 60,height = 60,units = 'in',res = 300)
+heatmap(as.matrix(na.exclude(tmp[activitygenes,])))
 dev.off()
 #heatMe(dat,genes,order)
 ######
