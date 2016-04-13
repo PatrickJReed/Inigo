@@ -7,7 +7,7 @@ library(ggplot2)
 ########################
 ###Load and Format Data
 ########################
-#save(list = c("activitygenes","celltypegenes","res.HC_P_NvC_N","res.HC_PvsN_NvsC_N","res.HC_PvsN_N_N","res.HC_PvN_C_N","res.HC_PvsN_CvsN_N","res.HC_N_CvsN_N","res.NE_P_N_FvN","res.NE_P_C_FvN","res.NE_N_C_FvN","res.NE_N_N_FvN"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
+#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","RES"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
 samples <- metaProxC[metaProxC$PROX1 == "N" & metaProxC$FOS != "L" & metaProxC$CTIP2 == "N" &  metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
@@ -40,51 +40,65 @@ de.cmn <- exactTest( cds , pair = Pair)
 ########################
 res <- as.data.frame(de.cmn$table)
 res <- res[order(res$PValue),]
-f <- fdrtool(x=res$PValue,statistic="pvalue",plot=FALSE)
-res$f <- f$qval
-
-
+#f <- fdrtool(x=res$PValue,statistic="pvalue",plot=FALSE)
+res$f <- p.adjust(res$PValue, method = "fdr")
 res.NE_N_N_FvN <- res
 
-####
-sum(res$f < 0.05)
-sum(res$f < 0.05 & res$logFC > 0)
-sum(res$f < 0.05 & res$logFC < 0)
-####
-## Get overlapping genes
+#Combine all results into a single list
+RES <- list(res.HC_P_NvC_N,res.HC_PvsN_NvsC_N ,res.HC_PvsN_N_N ,res.HC_PvN_C_N ,res.HC_PvsN_CvsN_N ,res.HC_N_CvsN_N ,res.NE_N_N_FvN, res.NE_N_C_FvN, res.NE_P_C_FvN, res.NE_P_N_FvN)
+names(RES) <- c("res.HC_P_NvC_N","res.HC_PvsN_NvsC_N" ,"res.HC_PvsN_N_N" ,"res.HC_PvN_C_N" ,"res.HC_PvsN_CvsN_N" ,"res.HC_N_CvsN_N" ,"res.NE_N_N_FvN", "res.NE_N_C_FvN", "res.NE_P_C_FvN", "res.NE_P_N_FvN")
 
-group1 <- res.NE_N_N_FvN
-group2 <- res.NE_N_C_FvN
-group3 <- res.NE_P_C_FvN
-group4 <- res.NE_P_N_FvN
 
-nm <- table(c(rownames(group1), rownames(group2),rownames(group3),rownames(group4)))
-nm <- names(nm[nm == 4])
+#### Find significant genes in each group
+i <- 6
+sum(RES[[i]]$f < 0.05)
+sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC > 0)
+sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
+
+#################
+## Get celltype-specific overlapping genes
+#################
+#pick groups with the pertinent comparisons
+group1 <- RES[[3]] 
+group2 <- RES[[5]]
+group3 <- RES[[6]]
+
+nm <- table(c(rownames(group1),
+              rownames(group2),rownames(group3)))
+nm <- names(nm[nm == 3])
 group1 <- group1[nm,]
 group2 <- group2[nm,]
 group3 <- group3[nm,]
-group4 <- group4[nm,]
 
-activitygenes <- unique(c(rownames(group1[group1$f < 0.05 & group2$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,]),
-                   rownames(group2[group2$f < 0.05 & group1$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,]),
-                   rownames(group3[group3$f < 0.05 & group1$PValue > 0.05 & group2$PValue > 0.05 & group4$PValue > 0.05,]),
-                   rownames(group4[group4$f < 0.05 & group1$PValue > 0.05 & group2$PValue > 0.05 & group3$PValue > 0.05,])
-                   ))
 
-#group1 <- group1[group1$f < 0.05,]
-#group2 <- group2[group2$f < 0.05,]
-#group3 <- group3[group3$f < 0.05,]
-#group4 <- group4[group4$f < 0.05,]
+a <-rownames(group2[ group1$logFC > 0 & group1$f < 0.05 &
+                                     group2$logFC > 0 & group2$f < 0.05 &
+                                     group3$logFC < 0 & group3$f < 0.05  
+                                    ,])
 
-#tmp <- c(rownames(group1[group1$logFC < 0,] ),
-#         rownames(group2[group2$logFC < 0,]),
-#         rownames(group3[group3$logFC < 0,]),
-#         rep(rownames(group4[group4$logFC < 0,]),4)
-#         )
-#tmp2 <- table(tmp)
+#celltypegenes.neg <- a
+#celltypegenes.neg <- c(a,celltypegenes.neg)
 
-#activitygenes <- c(activitygenes, names(tmp2[tmp2 == 4]))
+celltypegenes <- c(celltypegenes.hdg, celltypegenes.dg, celltypegenes.ca1, celltypegenes.neg)
 
+
+
+
+#### For activity genes
+#celltypegenes.dg <-rownames(group3[group3$PValue < 0.05/nrow(group3) & group1$PValue > 0.05 & group2$PValue > 0.05 & group4$PValue > 0.05,])
+#celltypegenes.hdg <- rownames(group4[group4$PValue < 0.05/nrow(group4) & group1$PValue > 0.05 & group2$PValue > 0.05 & group3$PValue > 0.05,])
+#celltypegenes.ca1 <- rownames(group2[group2$PValue < 0.05/nrow(group2) & group1$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,])
+#celltypegenes.neg <- rownames(group1[group1$PValue < 0.05/nrow(group1) & group2$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,])
+
+activitygenes <- na.exclude(unique(c(activitygenes.dg,activitygenes.hdg,activitygenes.ca1,activitygenes.neg)))
+####NEg genes
+samples <- metaProxC[metaProxC$PROX1 == "N"  & metaProxC$CTIP2 == "N" &  metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+p.neg <- apply(X = dat[,samples],MARGIN = 1, FUN = propExp)
+cvar <- apply(X = dat[,samples],MARGIN = 1, FUN = cvarNoZero)
+m.neg <- apply(X = dat[,samples],MARGIN = 1, FUN = meanNoZero)
+genes <- names(p.neg[cvar > 0.5 & cvar < 0.6 & m.neg > 2])
+
+plot(apply(X = dat[,samples],MARGIN = 1, FUN = cvarNoZero),p.neg)
 
 
 res.fosN_fosP <- res
