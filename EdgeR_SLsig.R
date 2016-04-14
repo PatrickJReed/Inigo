@@ -7,17 +7,20 @@ library(ggplot2)
 ########################
 ###Load and Format Data
 ########################
-#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","RES"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
+#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","RES"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[metaProxC$PROX1 == "N" & metaProxC$FOS != "L" & metaProxC$CTIP2 == "N" &  metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
-                       metaProxC$PROX1 == "N" & metaProxC$FOS != "L"  & metaProxC$CTIP2 == "N" & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
+samples <- metaProxC[metaProxC$subgroup == "CA2" & metaProxC$FOS != "L" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
+                       metaProxC$subgroup == "CA2_3" & metaProxC$FOS != "L"  & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(countProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #Take a quick look through met to make sure everything is kosher
 met 
 #Assign groups
-group <- met$FOS
+#outliers <- c("X151221_14" ,"X151221_15" ,"X151221_12", "X151221_10")
+#group <- rep(TRUE,length(samples))
+#group[match(outliers,samples)] <- FALSE
+group <- met$subgroup
 Pair <- levels(as.factor(as.character(group)))
 
 ########################
@@ -42,15 +45,18 @@ res <- as.data.frame(de.cmn$table)
 res <- res[order(res$PValue),]
 #f <- fdrtool(x=res$PValue,statistic="pvalue",plot=FALSE)
 res$f <- p.adjust(res$PValue, method = "fdr")
-res.NE_N_N_FvN <- res
+#res.HC_NvNIN_CvN_N <- res
+
 
 #Combine all results into a single list
-RES <- list(res.HC_P_NvC_N,res.HC_PvsN_NvsC_N ,res.HC_PvsN_N_N ,res.HC_PvN_C_N ,res.HC_PvsN_CvsN_N ,res.HC_N_CvsN_N ,res.NE_N_N_FvN, res.NE_N_C_FvN, res.NE_P_C_FvN, res.NE_P_N_FvN)
-names(RES) <- c("res.HC_P_NvC_N","res.HC_PvsN_NvsC_N" ,"res.HC_PvsN_N_N" ,"res.HC_PvN_C_N" ,"res.HC_PvsN_CvsN_N" ,"res.HC_N_CvsN_N" ,"res.NE_N_N_FvN", "res.NE_N_C_FvN", "res.NE_P_C_FvN", "res.NE_P_N_FvN")
+#RES <- list(res.HC_P_NvC_N,res.HC_PvsN_NvsC_N ,res.HC_PvsN_N_N ,res.HC_PvN_C_N ,res.HC_PvsN_CvsN_N ,res.HC_N_CvsN_N ,res.NE_N_N_FvN, res.NE_N_C_FvN, res.NE_P_C_FvN, res.NE_P_N_FvN)
+#names(RES) <- c("res.HC_P_NvC_N","res.HC_PvsN_NvsC_N" ,"res.HC_PvsN_N_N" ,"res.HC_PvN_C_N" ,"res.HC_PvsN_CvsN_N" ,"res.HC_N_CvsN_N" ,"res.NE_N_N_FvN", "res.NE_N_C_FvN", "res.NE_P_C_FvN", "res.NE_P_N_FvN")
+RES[[17]] <- res.HC_NvNIN_CvN_N
+names(RES)[[17]] <- "res.HC_NvNIN_CvN_N"
 
 
 #### Find significant genes in each group
-i <- 6
+i <- 11
 sum(RES[[i]]$f < 0.05)
 sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC > 0)
 sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
@@ -59,25 +65,25 @@ sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
 ## Get celltype-specific overlapping genes
 #################
 #pick groups with the pertinent comparisons
-group1 <- RES[[3]] 
-group2 <- RES[[5]]
-group3 <- RES[[6]]
+#group1 <- RES[[15]] 
+group2 <- RES[[16]]
+group3 <- RES[[17]]
 
-nm <- table(c(rownames(group1),
+nm <- table(c(#rownames(group1),
               rownames(group2),rownames(group3)))
-nm <- names(nm[nm == 3])
+nm <- names(nm[nm == 2])
 group1 <- group1[nm,]
 group2 <- group2[nm,]
 group3 <- group3[nm,]
 
 
-a <-rownames(group2[ group1$logFC > 0 & group1$f < 0.05 &
+a <-rownames(group2[ #group1$logFC > 0 & group1$f < 0.05 &
                                      group2$logFC > 0 & group2$f < 0.05 &
                                      group3$logFC < 0 & group3$f < 0.05  
                                     ,])
 
-#celltypegenes.neg <- a
-#celltypegenes.neg <- c(a,celltypegenes.neg)
+celltypegenes.in <- a 
+celltypegenes.in <- c(a,celltypegenes.in)
 
 celltypegenes <- c(celltypegenes.hdg, celltypegenes.dg, celltypegenes.ca1, celltypegenes.neg)
 

@@ -73,63 +73,6 @@ PC2D <- function(scores,Var, dat, met, colorby = NULL,shapeby = NULL, gene = NA)
   }
   return(plt)
 }
-# PCA 3D ---------------------------------------------------------------------
-PC2D <- function(scores,Var, dat, met, colorby = NULL,shapeby = NULL, gene = NA){
-  
-  if (!is.na(gene)){
-    tmp <- data.frame(PC1 = scores[,1], PC2 = scores[,2],
-                      gene = as.numeric(dat[gene,]))
-    tmp <- cbind(tmp,met)
-    tmp$shapeby <- tmp[,shapeby]
-    
-    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
-    plt <- ggplot(tmp, aes(PC1, PC2,colour = gene,shape = shapeby))+
-      geom_point(size=5, alpha=0.7)+
-      theme_bw()+
-      scale_colour_gradient(high="red",low="blue")+
-      labs(title="PCA")+
-      xlab(paste("PC1: ", 100 * round(Var[1],2),"%",sep=""))+
-      ylab(paste("PC2: ", 100 * round(Var[2],2),"%",sep=""))+
-      theme(text=element_text(size=20))+
-      theme(panel.border = element_rect(colour=c("black"),size=2),
-            axis.ticks = element_line(size=1.5))
-  }else if(!is.null(colorby)){
-    tmp <- data.frame(PC1 = p@scores[,1], PC2 = p@scores[,2],
-                      dusp1 = as.numeric(dat["Meg3",])
-    )
-    tmp <- cbind(tmp, met)
-    tmp$colorby <- tmp[,colorby]
-    tmp$shapeby <- tmp[,shapeby]
-    
-    
-    #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
-    plt <- ggplot(tmp, aes(PC1, PC2,colour = colorby,shape = shapeby))+
-      geom_point(size=5, alpha=0.7)+
-      theme_bw()+
-      #scale_colour_gradient(high="red",low="blue")+
-      labs(title="PCA")+
-      xlab(paste("PC1: ", 100 * round(Var[1],2),"%",sep=""))+
-      ylab(paste("PC2: ", 100 * round(Var[2],2),"%",sep=""))+
-      theme(text=element_text(size=20))+
-      theme(panel.border = element_rect(colour=c("black"),size=2),
-            axis.ticks = element_line(size=1.5))
-  }else{
-    tmp <- data.frame(PC1 = scores[,1], PC2 = scores[,2]
-    )
-    
-    plt <- ggplot(tmp, aes(PC1, PC2))+
-      geom_point(size=5, alpha=0.7)+
-      geom_point(size=5, shape=1)+
-      theme_bw()+
-      labs(title="PCA")+
-      xlab(paste("PC1: ", 100 * round(p@R2[1],2),"%",sep=""))+
-      ylab(paste("PC2: ", 100 * round(p@R2[2],2),"%",sep=""))+
-      theme(text=element_text(size=20))+
-      theme(panel.border = element_rect(colour=c("black"),size=2),
-            axis.ticks = element_line(size=1.5))
-  }
-  return(plt)
-}
 
 # SPCA 2D ---------------------------------------------------------------------
 SPC2D <- function(dat, met, gene = NA){
@@ -298,6 +241,30 @@ Indiv <- function(gene,dat,met){
     facet_grid( Mouse_condition  ~ Brain_Region) 
 return(p)
 }
+IndivSubgroup <- function(gene,dat,met){
+  
+  tmp <- data.frame(exp = as.numeric(dat[gene,]),
+                    Arc = as.numeric(dat["Arc",]))
+  tmp <- cbind(tmp, met)
+  tmp$FOS <- as.character(tmp$FOS)
+  tmp[tmp$fos == "F","FOS"] <- "High"
+  tmp[tmp$fos == "L","FOS"] <- "Low"
+  tmp[tmp$fos == "N","FOS"] <- "None"
+  #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
+  p <- ggplot(tmp, aes(subgroup,exp, colour = FOS))+
+    geom_violin()+#outlier.shape=NA)+
+    geom_point(position=position_jitter(width=0.01,height=0))+
+    theme_bw(base_size=20)+
+    ylab("TPM")+
+    #scale_colour_gradient(high="red", low="blue")+
+    ylim(c(0,max(tmp$exp) + 0.2*(max(tmp$exp))))+
+    theme(panel.border = element_rect(colour=c("black"),size=2),
+          axis.ticks = element_line(size=1.5))+
+    labs(title=paste(gene,"\n"))+
+    facet_grid( Mouse_condition  ~ Brain_Region) 
+  return(p)
+}
+
 IndivProx1Grouped <- function(gene){
   
   tmp <- data.frame(exp = as.numeric(dat[gene, met$prox == "P"]),
@@ -360,7 +327,7 @@ IndivByDate <- function(gene,dat,met){
 # facet_grid( cond  ~ prox)
 #dev.off()
 # Correlations (2genes) ---------------------------------------------------
-Plot2Genes <- function(a,b,dat,met,group){
+Plot2Genes <- function(a,b,dat,met,group="FOS"){
   tmp <- data.frame(A = as.numeric(dat[a,]),
                     B = as.numeric(dat[b,]),
                     group = met[,group],
@@ -461,30 +428,32 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[metaProxC$FOS != "L"  & metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-Indiv("Syt4",dat, met)
+Indiv("Sst",dat, met)
+IndivSubgroup("Slc6a1",dat, met)
+
 IndivByDate("Uqcr11",dat, met)
 IndivProx1Grouped("Nedd8")
 #plot two genes
-a <- "Brf1"
-b <- "Bcl11b"
+a <- "Reln"
+b <- "Gad1"
 group <- "fos"
-Plot2Genes(a,b, dat,met,group)
+Plot2Genes(a,b, dat,met)
 res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-samples <- metaProxC[metaProxC$Brain_Region != "DG" & metaProxC$FOS != "L"  & metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$FOS == "N" &  metaProxC$Mouse_condition == "HC" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 tmp <- dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
 colnames(tmp) <- paste(met$Brain_Region, met$FOS,c(1:ncol(dat)),sep = ".")
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/activity_heat.tiff",width = 20,height = 20,units = 'in',res = 300)
-heatmap(as.matrix(na.exclude(tmp[activitygenes,])),scale = "col")
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/CA3Neg_heat.tiff",width = 8,height = 8,units = 'in',res = 300)
+heatmap(as.matrix(na.exclude(tmp[genes,])),scale = "col")
 dev.off()
 #heatMe(dat,activitygenes,c(1:length(activitygenes)))
 ######
