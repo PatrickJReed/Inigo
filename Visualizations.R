@@ -401,7 +401,8 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Brain_Region == "CA1" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
+                       metaProxC$subgroup == "CA3" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #gene <- "Meg3"
@@ -410,7 +411,7 @@ p <- pca(t(dat[activitygenes,]),nPcs=5)
 scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
-PC2D(scores,Var,dat,met,colorby = "PROX1", shapeby = "CTIP2")
+PC2D(scores,Var,dat,met,colorby = "CTIP2", shapeby = "CTIP2")
 
 #or with out a gene
 PC2D(dat,met)
@@ -428,13 +429,13 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[  metaProxC$PROX1 == "P" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-Indiv("Sst",dat, met)
-IndivSubgroup("Slc6a1",dat, met)
+Indiv("Erbb4",dat, met)
+IndivSubgroup("Fos",dat, met)
 
 IndivByDate("Uqcr11",dat, met)
 IndivProx1Grouped("Nedd8")
@@ -447,13 +448,13 @@ res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-samples <- metaProxC[metaProxC$FOS == "N" &  metaProxC$Mouse_condition == "HC" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 tmp <- dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
 colnames(tmp) <- paste(met$Brain_Region, met$FOS,c(1:ncol(dat)),sep = ".")
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/CA3Neg_heat.tiff",width = 8,height = 8,units = 'in',res = 300)
-heatmap(as.matrix(na.exclude(tmp[genes,])),scale = "col")
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/ca23all_heat.tiff",width = 30,height = 30,units = 'in',res = 300)
+heatmap(as.matrix(na.exclude(tmp[c(celltypegenes.in,celltypegenes.ca23,celltypegenes.neg),])),scale = "col")
 dev.off()
 #heatMe(dat,activitygenes,c(1:length(activitygenes)))
 ######

@@ -7,10 +7,10 @@ library(ggplot2)
 ########################
 ###Load and Format Data
 ########################
-#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","RES"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
+#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[metaProxC$subgroup == "CA2" & metaProxC$FOS != "L" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
+samples <- metaProxC[metaProxC$subgroup == "CA2_3" & metaProxC$FOS != "L" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
                        metaProxC$subgroup == "CA2_3" & metaProxC$FOS != "L"  & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(countProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -18,9 +18,14 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met 
 #Assign groups
 #outliers <- c("X151221_14" ,"X151221_15" ,"X151221_12", "X151221_10")
-#group <- rep(TRUE,length(samples))
-#group[match(outliers,samples)] <- FALSE
-group <- met$subgroup
+group <- rep(TRUE,length(samples))
+group[match(outliers,samples)] <- FALSE
+#group[match(outliers,samples)] <- "a"
+#group[match(outliers2,samples)] <- "b"
+#remove <- which(group == "TRUE")
+#dat<- dat[,-c(remove)]
+#group <- as.factor(group[group != "TRUE"])
+#group <- met$FOS
 Pair <- levels(as.factor(as.character(group)))
 
 ########################
@@ -45,18 +50,20 @@ res <- as.data.frame(de.cmn$table)
 res <- res[order(res$PValue),]
 #f <- fdrtool(x=res$PValue,statistic="pvalue",plot=FALSE)
 res$f <- p.adjust(res$PValue, method = "fdr")
-#res.HC_NvNIN_CvN_N <- res
+#res.NE_NCA23_NNFvN <- res
 
+
+#edgenes <- c("Man1a","Bok","Pcp4","Bcl11b","Fgf2","Ntf3","Igfbp4","Trek2","Prox1","Egfr","Rbfox3")
 
 #Combine all results into a single list
 #RES <- list(res.HC_P_NvC_N,res.HC_PvsN_NvsC_N ,res.HC_PvsN_N_N ,res.HC_PvN_C_N ,res.HC_PvsN_CvsN_N ,res.HC_N_CvsN_N ,res.NE_N_N_FvN, res.NE_N_C_FvN, res.NE_P_C_FvN, res.NE_P_N_FvN)
 #names(RES) <- c("res.HC_P_NvC_N","res.HC_PvsN_NvsC_N" ,"res.HC_PvsN_N_N" ,"res.HC_PvN_C_N" ,"res.HC_PvsN_CvsN_N" ,"res.HC_N_CvsN_N" ,"res.NE_N_N_FvN", "res.NE_N_C_FvN", "res.NE_P_C_FvN", "res.NE_P_N_FvN")
-RES[[17]] <- res.HC_NvNIN_CvN_N
-names(RES)[[17]] <- "res.HC_NvNIN_CvN_N"
+RES[[18]] <- res.NE_NCA23_NNFvN
+names(RES)[[18]] <- "res.NE_NCA23_NNFvN"
 
 
 #### Find significant genes in each group
-i <- 11
+i <- 1
 sum(RES[[i]]$f < 0.05)
 sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC > 0)
 sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
@@ -65,7 +72,7 @@ sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
 ## Get celltype-specific overlapping genes
 #################
 #pick groups with the pertinent comparisons
-#group1 <- RES[[15]] 
+group1 <- RES[[15]] 
 group2 <- RES[[16]]
 group3 <- RES[[17]]
 
@@ -91,12 +98,27 @@ celltypegenes <- c(celltypegenes.hdg, celltypegenes.dg, celltypegenes.ca1, cellt
 
 
 #### For activity genes
-#celltypegenes.dg <-rownames(group3[group3$PValue < 0.05/nrow(group3) & group1$PValue > 0.05 & group2$PValue > 0.05 & group4$PValue > 0.05,])
-#celltypegenes.hdg <- rownames(group4[group4$PValue < 0.05/nrow(group4) & group1$PValue > 0.05 & group2$PValue > 0.05 & group3$PValue > 0.05,])
-#celltypegenes.ca1 <- rownames(group2[group2$PValue < 0.05/nrow(group2) & group1$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,])
-#celltypegenes.neg <- rownames(group1[group1$PValue < 0.05/nrow(group1) & group2$PValue > 0.05 & group3$PValue > 0.05 & group4$PValue > 0.05,])
+hdg <- RES[[10]] 
+dg <- RES[[9]]
+ca1 <- RES[[8]]
+neg <- RES[[7]]
 
-activitygenes <- na.exclude(unique(c(activitygenes.dg,activitygenes.hdg,activitygenes.ca1,activitygenes.neg)))
+nm <- table(c(rownames(hdg),
+  rownames(dg),rownames(ca1),rownames(neg)))
+nm <- names(nm[nm == 4])
+hdg <- hdg[nm,]
+dg <- dg[nm,]
+ca1 <- ca1[nm,]
+neg <- neg[nm,]
+
+
+foshigenes.hdg <-rownames(hdg[hdg$logFC < 0 & hdg$f < 0.05 & dg$PValue > 0.05 & ca1$PValue > 0.05 & neg$PValue > 0.05,])
+foshigenes.dg <- rownames(dg[dg$logFC < 0 & dg$f < 0.05 & hdg$PValue > 0.05 & ca1$PValue > 0.05 & neg$PValue > 0.05,])
+foshigenes.ca1 <- rownames(ca1[ca1$logFC < 0 & ca1$f < 0.05 & hdg$PValue > 0.05 & dg$PValue > 0.05 & neg$PValue > 0.05,])
+foshigenes.neg <- rownames(neg[neg$logFC < 0 & neg$f < 0.05 & hdg$PValue > 0.05 & ca1$PValue > 0.05 & dg$PValue > 0.05,])
+
+
+foshigenes <- na.exclude(unique(c(foshigenes.dg,foshigenes.hdg,foshigenes.ca1,foshigenes.neg)))
 ####NEg genes
 samples <- metaProxC[metaProxC$PROX1 == "N"  & metaProxC$CTIP2 == "N" &  metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 p.neg <- apply(X = dat[,samples],MARGIN = 1, FUN = propExp)
