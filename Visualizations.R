@@ -23,7 +23,10 @@ PC2D <- function(scores,Var, dat, met, colorby = NULL,shapeby = NULL, gene = NA)
     tmp <- data.frame(PC1 = scores[,1], PC2 = scores[,2],
                       gene = as.numeric(dat[gene,]))
     tmp <- cbind(tmp,met)
-    tmp$shapeby <- tmp[,shapeby]
+    if(is.null(shapeby)){
+        tmp$shapeby <- 1
+      }else{tmp$shapeby <- tmp[,shapeby]
+    }
 
     #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
     plt <- ggplot(tmp, aes(PC1, PC2,colour = gene,shape = shapeby))+
@@ -42,12 +45,19 @@ PC2D <- function(scores,Var, dat, met, colorby = NULL,shapeby = NULL, gene = NA)
                       )
     tmp <- cbind(tmp, met)
     tmp$colorby <- tmp[,colorby]
-    tmp$shapeby <- tmp[,shapeby]
+    if(is.null(shapeby)){
+      plt <- ggplot(tmp, aes(PC1, PC2,colour = colorby))+
+        geom_point(size=5, alpha=0.7)
+    }else{
+      tmp$shapeby <- tmp[,shapeby]
+      plt <- ggplot(tmp, aes(PC1, PC2,colour = colorby,shape = shapeby))+
+      geom_point(size=5, alpha=0.7)
+    }
+    
 
     
     #pdf("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_NP.pdf",width=8.5,height=7)
-    plt <- ggplot(tmp, aes(PC1, PC2,colour = colorby,shape = shapeby))+
-      geom_point(size=5, alpha=0.7)+
+    plt <- plt+
       theme_bw()+
       #scale_colour_gradient(high="red",low="blue")+
       labs(title="PCA")+
@@ -264,7 +274,6 @@ IndivSubgroup <- function(gene,dat,met){
     facet_grid( Mouse_condition  ~ Brain_Region) 
   return(p)
 }
-
 IndivProx1Grouped <- function(gene){
   
   tmp <- data.frame(exp = as.numeric(dat[gene, met$prox == "P"]),
@@ -322,8 +331,6 @@ IndivByDate <- function(gene,dat,met){
     facet_grid( cond  ~ prox) 
   return(p)
 }
-
-
 # facet_grid( cond  ~ prox)
 #dev.off()
 # Correlations (2genes) ---------------------------------------------------
@@ -401,26 +408,26 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$Brain_Region == "CA1" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" |
-                       metaProxC$subgroup == "CA3" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
+samples <- metaProxC[metaProxC$FOS == "N" &  metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
+                      # metaProxC$subgroup == "CA3" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #gene <- "Meg3"
 #Calculate the components
-p <- pca(t(dat[activitygenes,]),nPcs=5)
+p <- pca(t(dat),nPcs=5)
 scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
-PC2D(scores,Var,dat,met,colorby = "CTIP2", shapeby = "CTIP2")
+PC2D(scores,Var,dat,met,colorby = "PROX1", shapeby = "CTIP2")
 
 #or with out a gene
 PC2D(dat,met)
 #PCA 1D
 component <- 2
-group <- "Mouse_condition"
+group <- "CTIP2"
 PC1D(scores,dat,met,group,component)
 scores2 <- cbind(scores, met)
-anova(lm(PC2~Mouse_condition,scores2 ))
+anova(lm(PC1~PROX1,scores2 ))
 #PCA Score by gene
 PCGene(dat,met,"FOS",component)
 #T-SNE
