@@ -1,30 +1,35 @@
 #################
 ## Common libraries and functions
 #################
-#save(list = c("metaProxC", "tpmProxC", "countProxC"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda",compress = TRUE)
+#save(list = c("sine_tpm","sine_count","sine_row_meta","sine_col_meta","metaProxC", "tpmProxC", "countProxC"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda")
 
 #names
 Names <- function(x){
-  if(length(grep(".",colnames(x)[1])) > 0){
+  if (!is.vector(x)){
+    x <- colnames(x)
+  }else{
+    x <- as.character(x)
+  }
+  if(length(grep(".",x[1])) > 0){
     #colnames(x) <- as.vector(do.call("rbind",strsplit(colnames(x),fixed=TRUE,split="."))[,1])
-    dotsplit <- strsplit(colnames(x),fixed=TRUE,split=".")
+    dotsplit <- strsplit(x,fixed=TRUE,split=".")
     #colnames(x) <- rbind.fill(lapply(x,function(y){as.data.frame(t(dotsplit),stringsAsFactors=FALSE)}))
     tmp <- vector()
     for (i in 1:length(dotsplit)){
       tmp <- c(tmp, dotsplit[[i]][1])
     }
-    colnames(x) <- tmp
+    x <- tmp
   }else{
-    scoresplit <- strsplit(colnames(x),fixed=TRUE,split="_")
+    scoresplit <- strsplit(x,fixed=TRUE,split="_")
     tmp <- vector()
     for (i in 1:length(scoresplit)){
       tmp <- c(tmp, scoresplit[[i]][1])
     }
   }
-    colnames(x) <- gsub(pattern="X",replacement="Sample_",x=colnames(x))
-    a <- do.call("rbind",strsplit(colnames(x),split="Sample_"))[,2]
-    l <- nchar(colnames(x)) - nchar(gsub(pattern="_",replacement="",x=colnames(x)))
+    x <- gsub(pattern="X",replacement="Sample_",x=x)
+    a <- do.call("rbind",strsplit(x,split="Sample_"))[,2]
+    l <- nchar(x) - nchar(gsub(pattern="_",replacement="",x=x))
     nam <- vector()
     for (i in 1:length(a)){
       if (l[i] == 7){
@@ -136,7 +141,7 @@ countProx <- countProx[,-c(which(colnames(countProx) == excludes))]
 
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_genenametpm.txt"),header=TRUE,row.names=1)
-tpmProx <- log(tpm.1[rowSums(tpm.1) > 0,]+1,2)
+tpmProx <- log(tpm.1+1,2)
 add1 <- FALSE
 colnames(tpmProx) <- Names(tpmProx)
 tpmProx <- tpmProx[,-c(which(colnames(tpmProx) == excludes))]
@@ -151,7 +156,7 @@ colnames(countProx1512) <- make.names(Names(countProx1512))
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_151207_gene_tpm_genename.txt"),header=TRUE,row.names=1)
 colnames(tpm.1)[which(colnames(tpm.1) == "X151207_A8_N_C_N_EE_2.708.6.CAGAGAG.AGAGTAG_CAGAGAG.AGAGTAG_L006_R1_001_se")] <- "X151207_D8_N_C_N_EE_2.708.6.CAGAGAG.AGAGTAG_CAGAGAG.AGAGTAG_L006_R1_001_se"
-tpmProx1512 <- log(tpm.1[rowSums(tpm.1) > 0,]+1,2)
+tpmProx1512 <- log(tpm.1+1,2)
 add1 <- TRUE
 colnames(tpmProx1512) <- Names(tpmProx1512)
 
@@ -166,7 +171,7 @@ colnames(countProx151214)[1:86] <-paste(a[,1],a[,2],a[,3],a[,4],a[,5],a[,6],a[,7
 
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_151214_gene_tpm_genename.txt"),header=TRUE,row.names=1)
-tpmProx151214 <- log(tpm.1[rowSums(tpm.1) > 0,]+1,2)
+tpmProx151214 <- log(tpm.1+1,2)
 colnames(tpmProx151214) <- colnames(countProx151214)#make.names(Names(tpmProx151214))
 
 
@@ -179,7 +184,7 @@ countProx160107 <- round(count.1)
 
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_160107_gene_tpm.txt"),header=TRUE,row.names=1)
-tpmProx160107 <- log(tpm.1[rowSums(tpm.1) > 0,]+1,2)
+tpmProx160107 <- log(tpm.1+1,2)
 colnames(tpmProx160107) <- colnames(countProx160107)
 
 #160324 
@@ -191,7 +196,7 @@ countProx160324 <- round(count.1)
 
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_160324_gene_tpm.txt"),header=TRUE,row.names=1)
-tpmProx160324 <- log(tpm.1[rowSums(tpm.1) > 0,]+1,2)
+tpmProx160324 <- log(tpm.1+1,2)
 colnames(tpmProx160324) <- colnames(countProx160324)
 ################################
 
@@ -207,3 +212,37 @@ colnames(countProxC) <- make.names(colnames(countProxC))
 metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile.txt",header=TRUE)
 metaProxC$Sample_ID <- make.names(metaProxC$Sample_ID)
 rownames(metaProxC) <- metaProxC$Sample_ID
+
+#########
+# Load SINE data
+#########
+sine_count <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_rodrep_count.txt"))
+sine_col_meta <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_meta.txt"))
+sine_col_meta <- data.frame(sample = rep(as.character(sine_col_meta[,1]),each=3), value = c("all_elements","avg_start_pos","tso_elements"))
+sine_row_meta <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_rowmeta.txt"))
+
+a <- make.names(do.call("rbind",strsplit(as.character(sine_col_meta$sample),"-"))[,1])
+b <- match(a, rownames(metaProxC))
+a2 <- a[is.na(b)]
+x150629 <- do.call("rbind",strsplit(a2[grep("150629",a2)],"_1"))[,1]
+a2[grep("150629",a2)] <- x150629
+x151214 <- do.call("rbind",strsplit(a2[grep("151214",a2)],"_3_"))[,1]
+a2[grep("151214",a2)] <- x151214
+x160107 <- do.call("rbind",strsplit(a2[grep("160107",a2)],"_S"))[,1]
+a2[grep("160107",a2)] <- x160107
+x160118 <- do.call("rbind",strsplit(a2[grep("160118",a2)],"_S"))[,1]
+a2[grep("160118",a2)] <- x160118
+x160324 <- do.call("rbind",strsplit(a2[grep("160324",a2)],"_S"))[,1]
+a2[grep("160324",a2)] <- x160324
+a[is.na(b)] <- a2
+
+sine_col_meta <- cbind(sine_col_meta,metaProxC[a,])
+
+sine_tpm <- matrix(0,nrow = nrow(sine_count),ncol = ncol(sine_count))
+for(i in 1:ncol(sine_count)){
+  num <- sine_count[,i] / sine_row_meta$V2
+  den <- sum(sine_count[,i] / sine_row_meta$V2)
+  sine_tpm[,i] <- 1e06 * num / den
+}
+
+sine_tpm <- log(sine_tpm+1,2)

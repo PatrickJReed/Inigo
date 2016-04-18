@@ -72,20 +72,20 @@ sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
 ## Get celltype-specific overlapping genes
 #################
 #pick groups with the pertinent comparisons
-group1 <- RES[[15]] 
-group2 <- RES[[16]]
-group3 <- RES[[17]]
+group1 <- RES[[1]] 
+group2 <- RES[[2]]
+group3 <- RES[[3]]
 
-nm <- table(c(#rownames(group1),
+nm <- table(c(rownames(group1),
               rownames(group2),rownames(group3)))
-nm <- names(nm[nm == 2])
+nm <- names(nm[nm == 3])
 group1 <- group1[nm,]
 group2 <- group2[nm,]
 group3 <- group3[nm,]
 
 
-a <-rownames(group2[ #group1$logFC > 0 & group1$f < 0.05 &
-                                     group2$logFC > 0 & group2$f < 0.05 &
+a <-rownames(group2[ group1$logFC < 0 & group1$f < 0.05 &
+                                     group2$logFC < 0 & group2$f < 0.05 &
                                      group3$logFC < 0 & group3$f < 0.05  
                                     ,])
 

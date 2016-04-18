@@ -408,7 +408,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$FOS == "N" &  metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
+samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
                       # metaProxC$subgroup == "CA3" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -424,7 +424,7 @@ PC2D(scores,Var,dat,met,colorby = "PROX1", shapeby = "CTIP2")
 PC2D(dat,met)
 #PCA 1D
 component <- 2
-group <- "CTIP2"
+group <- "GFAP"
 PC1D(scores,dat,met,group,component)
 scores2 <- cbind(scores, met)
 anova(lm(PC1~PROX1,scores2 ))
@@ -436,12 +436,12 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[  metaProxC$PROX1 == "P" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-Indiv("Erbb4",dat, met)
+Indiv("Rela",dat, met)
 IndivSubgroup("Fos",dat, met)
 
 IndivByDate("Uqcr11",dat, met)
@@ -469,3 +469,21 @@ p <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=propExp)
 m <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=meanNoZero)
 plot(p,m)
 rownames(tpmProx[m > 10 & p < 0.05,])
+
+##########
+## Plot SINEs
+##########
+dat2 <- sine_tpm[,sine_col_meta$value == "all_elements"] 
+met2 <- sine_col_meta[sine_col_meta$value == "all_elements",]
+tmp <- melt(t(dat2))
+tmp$Mouse_condition <- met2$Mouse_condition
+tmp$Brain_region <- met2$Brain_Region
+tmp$FOS <- met2$FOS
+tmp$PROX1 <- met2$PROX1
+tmp$CTIP2 <- met2$CTIP2
+tmp$element <- as.character(rep(sine_row_meta$V1,each = ncol(dat2)))
+
+TE <- "B2_Mm1a"
+ggplot(na.exclude(tmp[tmp$element == TE & tmp$value !=0, ]), aes(FOS,value))+
+  geom_violin()+
+  facet_grid(Mouse_condition ~ Brain_region)
