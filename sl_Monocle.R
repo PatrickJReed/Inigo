@@ -13,7 +13,7 @@ pseudoPlot <- function(gene){
   tmp <- pheno
   tmp[,"TPM"] <- as.numeric(dat[gene,])
   
-  plt <- ggplot(tmp, aes(Pseudotime, TPM,colour = brain_regions))+
+  plt <- ggplot(tmp, aes(Pseudotime, TPM,colour = FOS))+
     geom_point()+
     labs(title = gene)+
     geom_smooth(size = 1, colour = "black",group = "1")+
@@ -28,11 +28,11 @@ pseudoPlot <- function(gene){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$FOS == "N" &  metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
-exprs <- tpmProxC[, samples]
+samples <- metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+exprs <- dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-lab <- as.character(met$Brain_Region)
+lab <- as.character(met$FOS)
 
 
 tmp <- as.numeric(scale(colSums(exprs))[,1])
@@ -56,7 +56,8 @@ my.data <- newCellDataSet(exprs,
 my.data2 <- detectGenes(my.data,min_expr=1)
 expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=10))
 ##
-genes <- celltypegenes
+a <- RES[[9]]
+genes <- c(rownames(a[a$f < 0.05,]),celltypegenes.dg)
 
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
@@ -68,7 +69,7 @@ my.data3 <- setOrderingFilter(my.data2, marker_genes)
 my.data4 <- reduceDimension(my.data3, use_irlba=FALSE)
 my.data5 <- orderCells(my.data4,num_paths=4)
 pheno <- pData(my.data5)
-pheno$brain_region <- met$Brain_Region
+pheno$FOS <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
 
 ###########################
 ## Step4) Gene models
@@ -82,10 +83,14 @@ pheno$brain_region <- met$Brain_Region
 ###########################
 ## Step5) Plot results
 ###########################
-pData(my.data5)$brain_regions  <- as.character(met$Brain_Region)
-pData(my.data5)$brain_regions[met$subgroup == "IN"] <- "IN"
-plot_spanning_tree(my.data5,color_by="brain_regions")
+pData(my.data5)$FOS  <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
+plot_spanning_tree(my.data5,color_by="State")
 #pData(my.data5)$Gabra1  <- as.numeric(tpmQC["Atm",colnames(my.data5)])
 #plot_spanning_tree2(my.data5,color_by="Gabra1", cellsize=3,tit="EE DGC Nuclei")
 ###
-pseudoPlot("Synpr")
+pseudoPlot("Meg3")
+
+###########################
+## Extract samples of interest
+###########################
+
