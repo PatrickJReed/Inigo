@@ -59,8 +59,7 @@ exact <- function(dat, variable, Pair){
 #save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[metaProxC$Brain_Region == "CA1"  &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
-                       #metaProxC$subgroup == "CA2_3" & metaProxC$FOS != "L"  & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 dat <- na.exclude(countProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 table(data.frame(met$FOS, met$Mouse_condition))
@@ -68,27 +67,32 @@ table(data.frame(met$FOS, met$Mouse_condition))
 #Assign groups
 ###################
 ##### By exclusion 
-#outliers <- c("X151221_14" ,"X151221_15" ,"X151221_12", "X151221_10")
-#group <- rep(TRUE,length(samples))
+outliers <- met[c(1,7,6,14),"Sample_ID"]
+outliers2 <- met[c(4,11,3,2,5,9),"Sample_ID"]
+group <- rep(TRUE,length(samples))
 #group[match(outliers,samples)] <- FALSE
-#group[match(outliers,samples)] <- "a"
-#group[match(outliers2,samples)] <- "b"
-#remove <- which(group == "TRUE")
-#dat<- dat[,-c(remove)]
-#group <- as.factor(group[group != "TRUE"])
+group[match(outliers,samples)] <- "a"
+group[match(outliers2,samples)] <- "b"
+remove <- which(group == "TRUE")
+dat<- dat[,-c(remove)]
+group <- as.factor(group[group != "TRUE"])
 ##### Or by meta 
-group <- as.factor(paste(met$FOS,met$Mouse_condition,sep = "."))
+group <- (paste(met$FOS,met$Mouse_condition,sep = "."))
+group[group != "N.EE"] <- FALSE
+group <- as.factor(group)
 Pair <- levels(as.factor(as.character(group)))
 
 ###################
 # Test genes
 ###################
 #!!!Run exact test
-#res <- exact(dat, group, Pair)
+res <- exact(dat, group, Pair)
 #!!!or glm
-res <- GLM(dat, group)
+#res <- GLM(dat, group)
+res.n.ee.left_vs_hc_N <- res.n.ee.right_vs_hc_N <- res
 
-res.HCNE_N_C_FN <- res
+
+res.n.ee.right_vs_hc_N <- res
 
 ############################
 ### Keep track of gene lists 
@@ -125,11 +129,12 @@ group2 <- group2[nm,]
 group3 <- group3[nm,]
 
 
-a <-rownames(group2[group1$logFC > 0 & group1$f < 0.05 &
-                                     group2$logFC > 0 & group2$f < 0.05 &
-                                     group3$logFC > 0 & group3$f < 0.05  
+a <-rownames(group2[group1$logFC < 0 & group1$f < 0.05 &
+                                     group2$logFC < 1 & group2$f < 0.05 &
+                                     group3$logFC < 1 & group3$f < 0.05  
                                     ,])
 
+write.table(x = a, file = "~/Documents/test.txt",quote = FALSE,row.names = FALSE,col.names = FALSE)
 tmp <- group1[a,]
 tmp <- tmp[order(tmp$PValue),]
 

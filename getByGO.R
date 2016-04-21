@@ -13,7 +13,8 @@ resT <- table(res$name_1006)
 resT <- resT[order(resT,decreasing = TRUE)]
 
 tail(head(resT,n=20),n=20)
-goterm <- "positive regulation of transcription from RNA polymerase II promoter"
+goterm <- "cell adhesion"
+
 unique(res[grep(goterm,res$name_1006,ignore.case =TRUE),"external_gene_name"])
 
 

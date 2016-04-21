@@ -338,11 +338,12 @@ Plot2Genes <- function(a,b,dat,met,group="FOS"){
   tmp <- data.frame(A = as.numeric(dat[a,]),
                     B = as.numeric(dat[b,]),
                     group = met[,group],
+                    condition = met$Mouse_condition,
                     dusp1 = as.numeric(dat["Npas4",])
                     )
   
   #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
-  p <- ggplot(tmp, aes(A,B,colour = group))+
+  p <- ggplot(tmp, aes(A,B,shape = condition,colour = group))+
     geom_point(size=4)+
     theme_bw(base_size=20)+
     xlab(a)+
@@ -408,7 +409,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
+samples <- metaProxC[metaProxC$Brain_Region == 'DG' &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
                       # metaProxC$subgroup == "CA3" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -418,7 +419,7 @@ p <- pca(t(dat),nPcs=5)
 scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
-PC2D(scores,Var,dat,met,colorby = "PROX1", shapeby = "CTIP2")
+PC2D(scores,Var,dat,met,gene = "Inhba", colorby = "PROX1", shapeby = "FOS")
 
 #or with out a gene
 PC2D(dat,met)
@@ -427,7 +428,7 @@ component <- 2
 group <- "GFAP"
 PC1D(scores,dat,met,group,component)
 scores2 <- cbind(scores, met)
-anova(lm(PC1~PROX1,scores2 ))
+anova(lm(PC1~alignable,scores2 ))
 #PCA Score by gene
 PCGene(dat,met,"FOS",component)
 #T-SNE
@@ -440,29 +441,35 @@ samples <- metaProxC[  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_en
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+met$Mouse_condition <- as.character(met$Mouse_condition)
+met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 
-Indiv("Rela",dat, met)
-IndivSubgroup("Fos",dat, met)
+Indiv("Tet3",dat, met)
+IndivSubgroup("Arc",dat, met)
 
 IndivByDate("Uqcr11",dat, met)
 IndivProx1Grouped("Nedd8")
 #plot two genes
 a <- "Reln"
-b <- "Gad1"
+b <- "Tacr3"
 group <- "fos"
 Plot2Genes(a,b, dat,met)
 res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-samples <- metaProxC[metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$Mouse_condition == "EE" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$FOS == "F" & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 tmp <- dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
 colnames(tmp) <- paste(met$Brain_Region, met$FOS,c(1:ncol(dat)),sep = ".")
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/ca23all_heat.tiff",width = 30,height = 30,units = 'in',res = 300)
-heatmap(as.matrix(na.exclude(tmp[c(celltypegenes.in,celltypegenes.ca23,celltypegenes.neg),])),scale = "col")
-dev.off()
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/candidateactivity_heat.tiff",width = 12,height = 12,units = 'in',res = 300)
+genes <- c("Camk2a","Gdpd1","Creg1","Htr3a","Fos","Tac2","Celf2","Dlx1","Gad1","Vip","Calb1","Adra1b","Gfap","Wnt5a","Dcx","Sox2")
+genes <- c("Foxg1","Wnt5a","Dcx","Prox1","Rbfox3","Camk2a","Creb1","Neurod1","Sox11")
+upstream <- c("Creb1","Crebbp","Grin1","Grin2a","Grin2b","Gria1","Gria2","Gria3","Gria4","Gabra1","Gabra2","Gabrb","Cacna1a","Cacna1b","Cacna1c","Cacnai","Mapk3","Mapk1","Elk1","Srf","Rps6ka3")
+neg <- c("Sostdc1","Ttr","Wfs1","Pantr1","C1ql2","Pvalb","Reln","Map3k15","Sst","Gad1","Cdh24","Mpped1")
+heatmap(as.matrix(na.exclude(tmp[fos,])),scale = "col")
+#dev.off()
 #heatMe(dat,activitygenes,c(1:length(activitygenes)))
 ######
 p <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=propExp)
@@ -473,8 +480,8 @@ rownames(tpmProx[m > 10 & p < 0.05,])
 ##########
 ## Plot SINEs
 ##########
-dat2 <- sine_tpm[,sine_col_meta$value == "all_elements"] 
-met2 <- sine_col_meta[sine_col_meta$value == "all_elements",]
+dat2 <- sine_tpm[,sine_col_meta$value == "tso_elements"] 
+met2 <- sine_col_meta[sine_col_meta$value == "tso_elements",]
 tmp <- melt(t(dat2))
 tmp$Mouse_condition <- met2$Mouse_condition
 tmp$Brain_region <- met2$Brain_Region
@@ -483,7 +490,14 @@ tmp$PROX1 <- met2$PROX1
 tmp$CTIP2 <- met2$CTIP2
 tmp$element <- as.character(rep(sine_row_meta$V1,each = ncol(dat2)))
 
-TE <- "B2_Mm1a"
+TE <- "B2L_S"
 ggplot(na.exclude(tmp[tmp$element == TE & tmp$value !=0, ]), aes(FOS,value))+
   geom_violin()+
   facet_grid(Mouse_condition ~ Brain_region)
+
+#####
+condition <- which(sine_col_meta$value == "tso_elements" & sine_col_meta$Mouse_condition == "EE" & sine_col_meta$FOS != "L" & sine_col_meta$Brain_Region == "DG")
+dat <- sine_count[,condition] 
+met1 <- sine_col_meta[condition,]
+rownames(dat) <- as.character(sine_row_meta$V1)
+dat <- dat[rowSums((dat)) > 0,]
