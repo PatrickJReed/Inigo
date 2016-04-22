@@ -216,8 +216,8 @@ rownames(metaProxC) <- metaProxC$Sample_ID
 #########
 # Load SINE data
 #########
-sine_count <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_rodrep_count.txt"))
-sine_col_meta <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_meta.txt"))
+sine_count <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_rodrep_count2.txt"))
+sine_col_meta <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_meta2.txt"))
 sine_col_meta <- data.frame(sample = rep(as.character(sine_col_meta[,1]),each=3), value = c("all_elements","avg_start_pos","tso_elements"))
 sine_row_meta <- read.table(as.matrix("~/Documents/SalkProjects/ME/SINE/sine_raw/Prox1_rowmeta.txt"))
 
@@ -234,6 +234,9 @@ x160118 <- do.call("rbind",strsplit(a2[grep("160118",a2)],"_S"))[,1]
 a2[grep("160118",a2)] <- x160118
 x160324 <- do.call("rbind",strsplit(a2[grep("160324",a2)],"_S"))[,1]
 a2[grep("160324",a2)] <- x160324
+x151221 <- do.call("rbind",strsplit(a2[grep("151221",a2)],"_S"))[,1]
+a2[grep("151221",a2)] <- x151221
+
 a[is.na(b)] <- a2
 
 sine_col_meta <- cbind(sine_col_meta,metaProxC[a,])

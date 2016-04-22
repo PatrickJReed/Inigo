@@ -1,7 +1,8 @@
 #######
 # Retrotransposons in hippocampus
 #######
-# load data from the normal load data for short term r script
+# load raw data from the normal load data for short term r script
+#save(list = c("sine.cor.est"),file = "~/Documents/SalkProjects/ME/SINE/SINER/proxC_sine_cors.rda",compress = TRUE)
 ######
 library(ggplot2)
 library(reshape)
@@ -65,7 +66,7 @@ ggplot(res, aes(-logFC, -log(PValue), colour = Class))+
   labs(title = "NE Negs\nRepeat Expression")
 
 ##########
-## Plot SINEs
+## Plot SINEs one at a time
 ##########
 dat2 <- sine_tpm[,sine_col_meta$value == "tso_elements"] 
 met2 <- sine_col_meta[sine_col_meta$value == "tso_elements",]
@@ -84,4 +85,42 @@ ggplot(na.exclude(tmp[tmp$element == TE & tmp$value !=0 & tmp$value < 1000, ]), 
   geom_point()+
   facet_grid(Mouse_condition ~ Brain_region)+
   labs(title = TE)
+
+
+##########
+## Correlations with SINEs
+##########
+
+samples <- unique(sine_col_meta[sine_col_meta$value == "tso_elements","Sample_ID"] )
+a <- table(c(colnames(tpmProxC), samples,samples))
+samples <- names(a[a==3])
+dat.sine <- sine_tpm[,match(samples, sine_col_meta$Sample_ID)] 
+dat.gene <- na.exclude(tpmProxC[,samples])
+
+sine.cor.est <- vector()
+nm <- rownames(res)
+for(i in nm){
+  sine <- as.numeric(dat.sine[i,])
+  tmp.cor <- 
+  sine.cor.est <- cbind(sine.cor.est, tmp.cor[,1])
+}
+
+colnames(sine.cor.est) <- nm[1:ncol(sine.cor.est)]
+#colnames(sine.cor.p) <- nm[1:ncol(sine.cor.p)]
+rownames(sine.cor.est) <- rownames(dat.gene)
+#rownames(sine.cor.p) <- rownames(dat.gene)
+
+####### Plot some of the results
+a <- rownames(na.exclude(sine.cor.est[abs(sine.cor.est$B2_Mm1a) > 0.3,]))
+
+gene <- "Snf8"
+te <- "B2_Mm1t"
+tmp <- data.frame(gene = as.numeric(dat.gene[gene,]),
+                  te = as.numeric(dat.sine[te,]),
+                  sine_col_meta[samples,])
+ggplot(tmp[tmp$te != 0,], aes(gene, te, colour = Brain_Region))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  xlab(gene)+
+  ylab(te)
 
