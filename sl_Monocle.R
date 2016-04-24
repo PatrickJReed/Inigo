@@ -35,7 +35,7 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[ metaProxC$FOS == "N"  & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 exprs <- dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
@@ -93,13 +93,13 @@ rownames(pheno) <- samples
 ## Step5) Plot results
 ###########################
 pData(my.data5)$FOS  <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
-g <- "Myef2"
+g <- "Vgf"
 pData(my.data5)$gene  <-as.numeric(dat[g,])
 plot_spanning_tree2(my.data5,color_by="gene",tit =g )
 #plot_spanning_tree(my.data5,color_by = "State" )
 
 ###
-pseudoPlot("Lingo3")
+pseudoPlot("Vgf")
 
 ###########################
 ## Extract samples of interest
