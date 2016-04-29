@@ -5,7 +5,7 @@
 library(monocle)
 library(ggplot2)
 library(parallel)
-#save(list=c("linear_monocle","res.n.ee.left_v_right","res.n.ee.right","res.n.ee.left","my.data5","pheno"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda",compress=TRUE)
+#save(list=c("linear_monocle.dg","linear_monocle.ca1","res.n.ee.left_v_right","res.n.ee.right","res.n.ee.left","my.data5.dg","my.data5.ca1","pheno.dg","pheno.ca1"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda",compress=TRUE)
 load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda")
 ###########################
 ## Functions
@@ -35,8 +35,10 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[ metaProxC$FOS == "N"  & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
-exprs <- dat <- tpmProxC[, samples]
+samples <- metaProxC[ metaProxC$Brain_Region == "DG" &  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+outlier <- rownames(pheno[which(pheno$Pseudotime > 12 & pheno$FOS == "F.EE"),])
+#samples <- samples[-c(match(outlier, samples))]
+exprs <- dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
 lab <- as.character(met$FOS)
@@ -63,8 +65,8 @@ my.data <- newCellDataSet(exprs,
 my.data2 <- detectGenes(my.data,min_expr=1)
 expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=10))
 ##
-a <- RES[[9]]
-genes <- c(rownames(a[a$f < 0.05,]),celltypegenes.dg)
+#a <- RES[[8]]
+genes <- c(activitygenes)
 
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
@@ -93,13 +95,14 @@ rownames(pheno) <- samples
 ## Step5) Plot results
 ###########################
 pData(my.data5)$FOS  <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
-g <- "Vgf"
+g <- "Map3k3"
 pData(my.data5)$gene  <-as.numeric(dat[g,])
 plot_spanning_tree2(my.data5,color_by="gene",tit =g )
-#plot_spanning_tree(my.data5,color_by = "State" )
+
+plot_spanning_tree(my.data5,color_by = "FOS" )
 
 ###
-pseudoPlot("Vgf")
+pseudoPlot("Ctbp2")
 
 ###########################
 ## Extract samples of interest
@@ -113,12 +116,12 @@ group <- pheno[match(samples.1,pheno$cells),"State"]
 group <- as.factor(group == 4)
 Pair <- levels(as.factor(group))
 
+##
 tmp <- dat[,samples]
 tmp <- melt(t(tmp[rowSums(tmp) > 0, ]))
-tmp$State <- pheno[match(samples.1,pheno$cells),"State"]
-tmp$Mouse_condition <- pheno[match(samples.1,pheno$cells),"FOS"]
-tmp$ps <- pheno[match(samples.1,pheno$cells),"Pseudotime"]
-tmp$FOS <- met[samples,"FOS"]
+tmp$ps <- pheno[samples,"Pseudotime"]
+
+####
 tmp$group <- ifelse(group == TRUE, "left","right")
 gene <- "Bdnf"
 ggplot(tmp[tmp$X2 == gene,], aes(group, value))+
@@ -141,9 +144,9 @@ colnames(tmp3) <- as.vector(t(outer(c("int","ps"),c("est","err","t","p"),paste,s
 tmp3$f <- p.adjust(tmp3$ps.p)
 rownames(tmp3) <- genes
 tmp3 <- tmp3[order(tmp3$ps.p), ]
-tmp3$originalFC <- RES[[9]][rownames(tmp3),"logFC"]
-tmp3$originalF<- RES[[9]][rownames(tmp3),"f"]
-
+tmp3$originalFC <- RES[[8]][rownames(tmp3),"logFC"]
+tmp3$originalF<- RES[[8]][rownames(tmp3),"f"]
+linear_monocle.ca1_allAct <- tmp3
 #save results on main page
 
 #######################

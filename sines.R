@@ -113,14 +113,19 @@ rownames(sine.cor.est) <- rownames(dat.gene)
 ####### Plot some of the results
 a <- rownames(na.exclude(sine.cor.est[abs(sine.cor.est$B2_Mm1a) > 0.3,]))
 
-gene <- "Snf8"
-te <- "B2_Mm1t"
+gene <- "Prox1"
+te <- "B2_Mm1a"
 tmp <- data.frame(gene = as.numeric(dat.gene[gene,]),
                   te = as.numeric(dat.sine[te,]),
                   sine_col_meta[samples,])
-ggplot(tmp[tmp$te != 0,], aes(gene, te, colour = Brain_Region))+
+ggplot(tmp[tmp$te != 0,], aes(gene, te))+
   geom_point()+
   geom_smooth(method = "lm")+
   xlab(gene)+
-  ylab(te)
+  ylab(te)+
+  labs(title = gene)+
+  theme_bw(base_size = 12)+
+  theme(text=element_text(size=20))+
+  theme(panel.border = element_rect(colour=c("black"),size=2),
+        axis.ticks = element_line(size=1.5))
 

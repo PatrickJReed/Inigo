@@ -409,17 +409,18 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[ metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
+samples <- metaProxC[  metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#|
                       # metaProxC$subgroup == "CA3" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
 dat <- tpmProxC[, samples]
+rownames(dat) <- toupper(rownames(dat))
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #gene <- "Meg3"
 #Calculate the components
-p <- pca(t(dat),nPcs=5)
+p <- pca(t(dat[genes,]),nPcs=5)
 scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
-PC2D(scores,Var,dat,met, colorby = "PROX1", shapeby = "FOS")
+PC2D(scores,Var,dat,met, colorby = "Sample_ID", shapeby = "FOS")
 
 #or with out a gene
 PC2D(dat,met)
@@ -437,38 +438,43 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$alignable >  500000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$Brain_Region == "HDG" & metaProxC$alignable >  500000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 
-Indiv("Snhg11",dat, met)
-IndivSubgroup("Arc",dat, met)
+Indiv("MycN",dat, met)
+IndivSubgroup("Grin3a",dat, met)
 
-IndivByDate("Uqcr11",dat, met)
-IndivProx1Grouped("Nedd8")
+IndivByDate("Camk2a",dat, met)
+IndivProx1Grouped("Wnt5a")
 #plot two genes
-a <- "Fos"
-b <- "Nup153"
+a <- "Vip"
+b <- "Tac2"
 group <- "fos"
 Plot2Genes(a,b, dat,met)
 res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-samples <- metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$Brain_Region == "HDG" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$Brain_Region != "CA3_other_negs" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 tmp <- dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
 colnames(tmp) <- paste( met$Brain_Region, met$FOS,c(1:ncol(dat)),sep = ".")
-#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/candidateactivity_heat.tiff",width = 12,height = 12,units = 'in',res = 300)
-genes <- c("Camk2a","Gdpd1","Creg1","Htr3a","Fos","Tac2","Celf2","Dlx1","Gad1","Vip","Calb1","Adra1b","Gfap","Wnt5a","Dcx","Sox2")
-genes <- c("Foxg1","Wnt5a","Dcx","Prox1","Rbfox3","Camk2a","Creb1","Neurod1","Sox11")
-upstream <- c("Creb1","Crebbp","Grin1","Grin2a","Grin2b","Gria1","Gria2","Gria3","Gria4","Gabra1","Gabra2","Gabrb","Cacna1a","Cacna1b","Cacna1c","Cacnai","Mapk3","Mapk1","Elk1","Srf","Rps6ka3")
-neg <- c("Sostdc1","Ttr","Wfs1","Pantr1","C1ql2","Pvalb","Reln","Map3k15","Sst","Gad1","Cdh24","Mpped1")
-heatmap(as.matrix(na.exclude(tmp[genes,])),scale = "col")
+#rownames(tmp) <- toupper((rownames(tmp)))
+#genes <- c("Camk2a","Gdpd1","Creg1","Htr3a","Fos","Tac2","Celf2","Dlx1","Gad1","Vip","Calb1","Adra1b","Gfap","Wnt5a","Dcx","Sox2")
+#genes <- c("Foxg1","Wnt5a","Dcx","Prox1","Rbfox3","Camk2a","Creb1","Neurod1","Sox11")
+#upstream <- c("Creb1","Crebbp","Grin1","Grin2a","Grin2b","Gria1","Gria2","Gria3","Gria4","Gabra1","Gabra2","Gabrb","Cacna1a","Cacna1b","Cacna1c","Cacnai","Mapk3","Mapk1","Elk1","Srf","Rps6ka3")
+#neg <- c("Sostdc1","Ttr","Wfs1","Pantr1","C1ql2","Pvalb","Reln","Map3k15","Sst","Gad1","Cdh24","Mpped1")
+#genes <- c("Ppp1cc","Ppp1cb","Ppp1ca","Per1","Fos","Bdnf","Atf1","Creb1","Crebbp","Kcnip3","Carf")
+tmp2 <- tmp[genes,]
+p <- apply(X = tmp2, MARGIN = 1, FUN = rawExp)
+tmp2 <- tmp2
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
+heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 #dev.off()
 #heatMe(dat,activitygenes,c(1:length(activitygenes)))
 ######

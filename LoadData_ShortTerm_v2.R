@@ -53,7 +53,7 @@ Meta <- function(x){
 
 ### Add QC to Meta (need to fix the code here)
 
-propExp <- function(x,i=0){
+propExp <- function(x,i=1){
   if(sum(is.na(x)) > i){
     sum(!is.na(x))/length(x)
   }else{
@@ -61,11 +61,11 @@ propExp <- function(x,i=0){
   }
 }
 rawExp <- function(x,i=2){
-  if(sum(is.na(x)) > i){
-    sum(!is.na(x))
-  }else{
-    sum(x > i)
-  }
+  #if(sum(is.na(x)) > i){
+  #  sum(!is.na(x))
+  #}else{
+    sum(na.exclude(x) > i)
+  #}
 }
 meanNoZero <- function(x,i=0){
   a <- mean(x[x>i])
