@@ -438,14 +438,14 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[metaProxC$Brain_Region == "HDG" & metaProxC$alignable >  500000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[ metaProxC$alignable >  500000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 
-Indiv("MycN",dat, met)
+Indiv("Hjurp",dat, met)
 IndivSubgroup("Grin3a",dat, met)
 
 IndivByDate("Camk2a",dat, met)
