@@ -3,16 +3,22 @@ library(ggplot2)
 library(biomaRt)
 library(GO.db)
 
-genes <- a
-ensembl <- useMart(host="www.ensembl.org","ENSEMBL_MART_ENSEMBL",dataset="mmusculus_gene_ensembl")
-filter <- c("external_gene_name") #TRY: listFilters(ensembl)
-attrib <- c("external_gene_name","name_1006","go_id","namespace_1003")
+genes <- read.table(as.matrix("~/Documents/libraries/HOXgenes_panther_human.txt"))
+genes <- as.character(genes$V1)
+
+genes <- c(rownames(head(load,n=2)),rownames(tail(load,n=2)))
+#ensembl <- useMart(host="www.ensembl.org","ENSEMBL_MART_ENSEMBL",dataset="mmusculus_gene_ensembl")
+ensembl <- useMart(host="www.ensembl.org","ENSEMBL_MART_ENSEMBL",dataset="hsapiens_gene_ensembl")
+#filter <- c("external_gene_name") #TRY: listFilters(ensembl)
+#attrib <- c("external_gene_name","name_1006","go_id","namespace_1003")
+filter = "hgnc_symbol"
+attrib = c("hgnc_symbol","name_1006","go_id","namespace_1003")
 res = getBM(attributes=attrib,filters=filter,values=genes,mart=ensembl)
 
 resT <- table(res$name_1006)
 resT <- resT[order(resT,decreasing = TRUE)]
 
-resT[grep("growth",names(resT))]
+resT[grep("homeobox",names(resT))]
 
 tail(head(resT,n=80),n=20)
 goterm <- "receptor binding"
