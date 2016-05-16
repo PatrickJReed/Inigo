@@ -91,18 +91,20 @@ rownames(pheno) <- samples
 #clusters <- clusterGenes(expression_curve_matrix, k = 5)
 #plot_clusters(my.data5,clusters)
 
+metaProxC[colnames(dat),"State_DG"] <- pData(my.data5)$State
+
 ###########################
 ## Step5) Plot results
 ###########################
 pData(my.data5)$FOS  <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
-g <- "Map3k3"
+g <- "Pcdha5"
 pData(my.data5)$gene  <-as.numeric(dat[g,])
 plot_spanning_tree2(my.data5,color_by="gene",tit =g )
 
-plot_spanning_tree(my.data5,color_by = "FOS" )
+plot_spanning_tree(my.data5,color_by = "State" )
 
 ###
-pseudoPlot("Ctbp2")
+pseudoPlot("Acvr1c")
 
 ###########################
 ## Extract samples of interest

@@ -57,10 +57,12 @@ exact <- function(dat, variable, Pair){
 ########################
 ###Load and Format Data
 ########################
-#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
+#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[metaProxC$Brain_Region == "HDG" &  metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P" & metaProxC$CTIP2 == "N"  & metaProxC$FOS == "F" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"|
+                       metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P"  & metaProxC$CTIP2 == "N" & metaProxC$FOS == "N" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",
+                       "Sample_ID"]
 dat <- na.exclude(countProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 table(data.frame(met$FOS, met$Mouse_condition))
@@ -86,7 +88,9 @@ group[group != "N.EE"] <- FALSE
 group <- log(vip) < 6
 group <- as.factor(group)
 Pair <- levels(as.factor(as.character(group)))
-
+#### Or 
+group <- met$FOS
+Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
 ###################
@@ -97,10 +101,8 @@ res <- exact(dat, group, Pair)
 #!!!or glm
 
 #res <- GLM(dat, group)
-res.n.ee.left_vs_hc_N <- res.n.ee.right_vs_hc_N <- res
+res.NE_P_N_FvN <-  res
 
-
-res.n.ee.right_vs_hc_N <- res
 
 ############################
 ### Keep track of gene lists 
@@ -108,13 +110,17 @@ res.n.ee.right_vs_hc_N <- res
 
 #edgenes <- c("Man1a","Bok","Pcp4","Bcl11b","Fgf2","Ntf3","Igfbp4","Trek2","Prox1","Egfr","Rbfox3")
 
+##RES = using the 500000 aligned reads cutoff
 #Combine all results into a single list
 #RES <- list(res.HC_P_NvC_N,res.HC_PvsN_NvsC_N ,res.HC_PvsN_N_N ,res.HC_PvN_C_N ,res.HC_PvsN_CvsN_N ,res.HC_N_CvsN_N ,res.NE_N_N_FvN, res.NE_N_C_FvN, res.NE_P_C_FvN, res.NE_P_N_FvN)
 #names(RES) <- c("res.HC_P_NvC_N","res.HC_PvsN_NvsC_N" ,"res.HC_PvsN_N_N" ,"res.HC_PvN_C_N" ,"res.HC_PvsN_CvsN_N" ,"res.HC_N_CvsN_N" ,"res.NE_N_N_FvN", "res.NE_N_C_FvN", "res.NE_P_C_FvN", "res.NE_P_N_FvN")
-RES[[(length(RES) + 1)]] <- res.HCNE_P_N_FN
-names(RES)[[(length(RES))]] <- "res.HCNE_P_N_FN"
+#RES[[(length(RES) + 1)]] <- res.HCNE_P_N_FN
+#names(RES)[[(length(RES))]] <- "res.HCNE_P_N_FN"
 
-
+##RES2 = using the 100000 aligned reads cutoff
+i <- 10
+RES2[[i]] <- res.NE_P_N_FvN
+names(RES2)[i] <- "res.NE_P_N_FvN"
 #### Find significant genes in each group
 i <- 1
 sum(RES[[i]]$f < 0.05)
@@ -125,9 +131,13 @@ sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
 ## Get celltype-specific overlapping genes
 #################
 #pick groups with the pertinent comparisons
-group1 <- RES[[2]] 
-group2 <- RES[[4]]
-group3 <- RES[[6]]
+# DG = 1(<0),4(>0),5(>0)
+# pIN =  1 (>0), 2 (>0), 3 (>0)
+# CA1 = 2 (<0), 4 (<0), 6 (<0)
+# IN = 3 (<0), 5 (<0), 6 (>0) 
+group1 <- RES2[[1]] 
+group2 <- RES2[[4]]
+group3 <- RES2[[5]]
 
 nm <- table(c(rownames(group1),
               rownames(group2),rownames(group3)))
@@ -136,22 +146,16 @@ group1 <- group1[nm,]
 group2 <- group2[nm,]
 group3 <- group3[nm,]
 
-
+#Gene names
 a <-rownames(group2[group1$logFC < 0 & group1$f < 0.05 &
-                                     group2$logFC < 1 & group2$f < 0.05 &
-                                     group3$logFC < 1 & group3$f < 0.05  
+                                     group2$logFC > 0 & group2$f < 0.05 &
+                                     group3$logFC > 0 & group3$f < 0.05  
                                     ,])
 
-write.table(x = a, file = "~/Documents/test.txt",quote = FALSE,row.names = FALSE,col.names = FALSE)
-tmp <- group1[a,]
-tmp <- tmp[order(tmp$PValue),]
-
-
-celltypegenes.in <- a 
-celltypegenes.in <- c(a,celltypegenes.in)
-
-celltypegenes <- c(celltypegenes.hdg, celltypegenes.dg, celltypegenes.ca1, celltypegenes.neg)
-
+celltypegenes.neg  <- a 
+celltypegenes <- c(celltypegenes.pin, celltypegenes.dg, celltypegenes.ca1, celltypegenes.neg)
+#Gen Order
+celltypegenes.order <- c()
 
 
 

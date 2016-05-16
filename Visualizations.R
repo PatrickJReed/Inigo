@@ -438,21 +438,21 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$alignable >  500000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$FOS != "N" & metaProxC$Brain_Region == "DG" & metaProxC$alignable >  500000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 
-Indiv("Hjurp",dat, met)
+Indiv("Prox1",dat, met)
 IndivSubgroup("Grin3a",dat, met)
 
-IndivByDate("Camk2a",dat, met)
-IndivProx1Grouped("Wnt5a")
+IndivByDate("Prox1",dat, met)
+IndivProx1Grouped("Fos")
 #plot two genes
-a <- "Vip"
-b <- "Tac2"
+a <- "Slc1a3"
+b <- "Slc9a6"
 group <- "fos"
 Plot2Genes(a,b, dat,met)
 res <- res.HC_N_P_1
@@ -470,11 +470,12 @@ colnames(tmp) <- paste( met$Brain_Region, met$FOS,c(1:ncol(dat)),sep = ".")
 #upstream <- c("Creb1","Crebbp","Grin1","Grin2a","Grin2b","Gria1","Gria2","Gria3","Gria4","Gabra1","Gabra2","Gabrb","Cacna1a","Cacna1b","Cacna1c","Cacnai","Mapk3","Mapk1","Elk1","Srf","Rps6ka3")
 #neg <- c("Sostdc1","Ttr","Wfs1","Pantr1","C1ql2","Pvalb","Reln","Map3k15","Sst","Gad1","Cdh24","Mpped1")
 #genes <- c("Ppp1cc","Ppp1cb","Ppp1ca","Per1","Fos","Bdnf","Atf1","Creb1","Crebbp","Kcnip3","Carf")
+genes <- c("Slc1a3","Slc9a6","Arc","Prox1","Meg3")
 tmp2 <- tmp[genes,]
 p <- apply(X = tmp2, MARGIN = 1, FUN = rawExp)
 tmp2 <- tmp2
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
-heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
+heatmap(as.matrix(na.exclude(tmp2)),scale = "row")
 #dev.off()
 #heatMe(dat,activitygenes,c(1:length(activitygenes)))
 ######
