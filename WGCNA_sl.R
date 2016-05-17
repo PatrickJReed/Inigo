@@ -1,0 +1,117 @@
+#WGCNA
+#Note: WGCNA is not the right tool for 
+#      analyzing gene networks OVER TIME
+library("WGCNA")
+library("DESeq2")
+library("Rsamtools")
+
+dat <- tpm4uk#[c(PgOg[!is.na(PgOg)]),]
+#dat <- na.exclude(dat[as.character(orth$GeneSymbol),])
+meta <- deets4
+dat <- dat[,  meta$origin == "ips" & meta$indiv != "1029" & meta$week !=0]
+human <- dat
+m <- apply(X = human,1,mean)
+#Filter out low variance genes because they will add noise
+vst.var <- unlist(apply(human,1,var))
+vst.q <- quantile((vst.var))
+#!!!!!! OPTIMIZE THIS !!!!!!!!!#
+#vstMat2 <- human[(vst.var) > vst.q[2],]
+vstMat2 <- human[m > 2,]
+#vstMat2 <- qrlog[,c(1:12)]
+##################################
+#### Setup the WGCNA-Style Objects
+##################################
+#Define data set dimensions
+datExpr <- as.data.frame(t(vstMat2))
+
+##################################
+#### Run WGCNA
+##################################
+
+options(stringsAsFactors = FALSE);
+disableWGCNAThreads()
+# Choose a set of soft-thresholding powers
+powers = c(c(1:10), seq(from = 12, to=20, by=2))
+# Call the network topology analysis function
+sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)
+#plot the different power levels
+plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
+     xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",
+     main = paste("Scale independence"));
+#choose the power for the experiment
+POWER = 10
+#Calculate the network
+net = blockwiseModules(datExpr,maxBlockSize=1500, power = POWER,
+                       TOMType = "unsigned", minModuleSize = 20,
+                       reassignThreshold = 0, mergeCutHeight = 0.2,
+                       numericLabels = TRUE, pamRespectsDendro = FALSE,
+                       TOMDenom="min",
+                       #saveTOMs = TRUE,
+                       #saveTOMFileBase = "hnp",
+                       verbose = 3)
+
+#plot the network
+sizeGrWindow(12, 9)
+# Convert labels to colors for plotting
+mergedColors = labels2colors(net$colors)
+# Plot the dendrogram and the module colors underneath
+plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
+                    "Module colors",
+                    dendroLabels = FALSE, hang = 0.03,
+                    addGuide = TRUE, guideHang = 0.05)
+
+#identify labels/colors
+moduleLabels = net$colors
+table(moduleLabels)
+moduleColors = labels2colors(net$colors)
+MEs = net$MEs;
+geneTree = net$dendrograms[[1]];
+modE <- moduleEigengenes(t(vstMat2),moduleColors)
+
+# ##########################################
+# Plot eigengenes
+modE2 <- melt(t(modE[[1]]))
+sample <- 1
+
+ggplot(modE2, aes(X1, value,colour = X2))+
+  geom_point()
+# ##########################################
+
+# Recalculate topological overlap if needed
+TOM = TOMsimilarityFromExpr(datExpr, power = POWER);
+# Read in the annotation file
+#annot = read.csv(file = "GeneAnnotation.csv");
+# Select modules
+head(moduleLabels[which(moduleColors == "midnightblue")])
+modules = c(36)#, "red");
+# Select module probes
+probes = rownames(vstMat2)
+inModule = is.finite(match(moduleLabels, modules));
+modProbes = probes[inModule];
+modGenes <- modProbes
+write.table(x=modGenes, file="~/Documents/test.txt",quote=FALSE,row.names=FALSE,col.names=FALSE)
+#modGenes = annot$gene_symbol[match(modProbes, annot$substanceBXH)];
+# Select the corresponding Topological Overlap
+modTOM = TOM[inModule, inModule];
+dimnames(modTOM) <- list(modProbes)
+colnames(TOM) <- (probes)
+rownames(TOM) <- (probes)
+dimnames(TOM) <- list(probes)
+
+# Export the network into edge and node list files Cytoscape can read
+cyt = exportNetworkToCytoscape(TOM,#modTOM,
+                               weighted = TRUE,
+                               threshold = 0.15,
+                               nodeNames = modProbes,
+                               nodeAttr = moduleColors[inModule]);
+#write.table(na.exclude(cyt$edgeData),"~/Documents/test.txt",quote=FALSE,row.names=FALSE)
+
+##########
+tmp <- as.data.frame(cyt$edgeData)
+ggplot(tmp , aes(reorder(fromNode,weight), reorder(toNode,weight),fill=weight))+
+  geom_tile()+
+  scale_fill_continuous(high="red",low="blue")+
+  theme(axis.text.x=element_text(angle=50,hjust=1,size=3),
+        axis.text.y=element_text(angle=50,hjust=1,size=3))
+
+###################################
