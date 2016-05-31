@@ -5,19 +5,13 @@ library("WGCNA")
 library("DESeq2")
 library("Rsamtools")
 
-dat <- tpm4uk#[c(PgOg[!is.na(PgOg)]),]
-#dat <- na.exclude(dat[as.character(orth$GeneSymbol),])
-meta <- deets4
-dat <- dat[,  meta$origin == "ips" & meta$indiv != "1029" & meta$week !=0]
-human <- dat
-m <- apply(X = human,1,mean)
-#Filter out low variance genes because they will add noise
-vst.var <- unlist(apply(human,1,var))
-vst.q <- quantile((vst.var))
-#!!!!!! OPTIMIZE THIS !!!!!!!!!#
-#vstMat2 <- human[(vst.var) > vst.q[2],]
-vstMat2 <- human[m > 2,]
-#vstMat2 <- qrlog[,c(1:12)]
+samples <- metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+dat <- tpmProxC[, samples]
+rownames(dat) <- toupper(rownames(dat))
+met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+
+m <- apply(X = dat,1,rawExp, i  = 2)
+vstMat2 <- dat[m > (0.10 * (ncol(dat))),]
 ##################################
 #### Setup the WGCNA-Style Objects
 ##################################
@@ -39,11 +33,11 @@ plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
      xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",
      main = paste("Scale independence"));
 #choose the power for the experiment
-POWER = 10
+POWER = 5
 #Calculate the network
-net = blockwiseModules(datExpr,maxBlockSize=1500, power = POWER,
-                       TOMType = "unsigned", minModuleSize = 20,
-                       reassignThreshold = 0, mergeCutHeight = 0.2,
+net = blockwiseModules(datExpr,maxBlockSize=1000, power = POWER,
+                       TOMType = "unsigned", minModuleSize = 100,
+                       reassignThreshold = 0, #mergeCutHeight = 0.99,
                        numericLabels = TRUE, pamRespectsDendro = FALSE,
                        TOMDenom="min",
                        #saveTOMs = TRUE,

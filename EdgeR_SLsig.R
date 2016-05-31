@@ -57,15 +57,18 @@ exact <- function(dat, variable, Pair){
 ########################
 ###Load and Format Data
 ########################
-#save(list = c("activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
+#save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P" & metaProxC$CTIP2 == "N"  & metaProxC$FOS == "F" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"|
-                       metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P"  & metaProxC$CTIP2 == "N" & metaProxC$FOS == "N" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",
-                       "Sample_ID"]
+samples <- metaProxC[ metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$IN == 0  & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,#| 
+                      # metaProxC$FOS == "N" & metaProxC$Brain_Region == "CA1" &  metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,
+                     "Sample_ID"]#|
+            #           metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P"  & metaProxC$CTIP2 == "N" & metaProxC$FOS == "N" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",
+             #          "Sample_ID"]
 dat <- na.exclude(countProxC[, samples])
+dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-table(data.frame(met$FOS, met$Mouse_condition))
+table(data.frame(met$FOS, met$IN))
 ###################
 #Assign groups
 ###################
@@ -89,7 +92,7 @@ group <- log(vip) < 6
 group <- as.factor(group)
 Pair <- levels(as.factor(as.character(group)))
 #### Or 
-group <- met$FOS
+group <-met$FOS == "F"# & as.numeric(log(dat["Gad2",])) > 4
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
@@ -134,10 +137,10 @@ sum(RES[[i]]$f < 0.05 & RES[[i]]$logFC < 0)
 # DG = 1(<0),4(>0),5(>0)
 # pIN =  1 (>0), 2 (>0), 3 (>0)
 # CA1 = 2 (<0), 4 (<0), 6 (<0)
-# IN = 3 (<0), 5 (<0), 6 (>0) 
-group1 <- RES2[[1]] 
-group2 <- RES2[[4]]
-group3 <- RES2[[5]]
+# NEG = 3 (<0), 5 (<0), 6 (>0) 
+group1 <- RES2[[3]] 
+group2 <- RES2[[5]]
+group3 <- RES2[[6]]
 
 nm <- table(c(rownames(group1),
               rownames(group2),rownames(group3)))
@@ -146,17 +149,24 @@ group1 <- group1[nm,]
 group2 <- group2[nm,]
 group3 <- group3[nm,]
 
-#Gene names
+###Gene names
 a <-rownames(group2[group1$logFC < 0 & group1$f < 0.05 &
-                                     group2$logFC > 0 & group2$f < 0.05 &
+                                     group2$logFC < 0 & group2$f < 0.05 &
                                      group3$logFC > 0 & group3$f < 0.05  
                                     ,])
 
-celltypegenes.neg  <- a 
-celltypegenes <- c(celltypegenes.pin, celltypegenes.dg, celltypegenes.ca1, celltypegenes.neg)
-#Gen Order
-celltypegenes.order <- c()
+#celltypegenes.neg  <- a 
+#celltypegenes <- c(celltypegenes.pin, celltypegenes.dg, celltypegenes.ca1, celltypegenes.neg)
+###Gen Order
+all <- rbind(group1[a,], group2[a,], group3[a,])
+all$gene <- a
+all <- all[order(abs(all$logFC), decreasing=TRUE),]
+all$dup <- duplicated(all$gene)
+celltypeorder.neg <- abs(all[all$dup == FALSE,"logFC"])
 
+
+celltypeorder <- c(celltypeorder.pin, celltypeorder.dg, celltypeorder.ca1,celltypeorder.neg)
+celltypeorder2 <- c(20 * celltypeorder.pin, celltypeorder.dg, 1000*celltypeorder.ca1,80*celltypeorder.neg)
 
 
 #### For activity genes
