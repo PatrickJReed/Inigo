@@ -498,7 +498,7 @@ met[met$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "Neg"
 #met[as.numeric(dat["Gad2",]) > 1 & met$Brain_Region == "Neg","Brain_Region"] <- "IN"
 met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","pIN","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Kcnq4",dat, met)
+Indiv("Tet1",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 

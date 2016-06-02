@@ -88,11 +88,11 @@ group <- as.factor(group[group != "TRUE"])
 ##### Or by meta 
 group <- (paste(met$FOS,met$Mouse_condition,sep = "."))
 group[group != "N.EE"] <- FALSE
-group <- log(vip) < 6
+group <- k$cluster == 1
 group <- as.factor(group)
 Pair <- levels(as.factor(as.character(group)))
 #### Or 
-group <-met$FOS == "F"# & as.numeric(log(dat["Gad2",])) > 4
+group <- met$FOS == "F"# & as.numeric(log(dat["Gad2",])) > 4
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
