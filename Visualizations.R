@@ -243,7 +243,7 @@ t$Brain_Region <- as.character(t$Brain_Region)
 t[t$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
 t[t$Brain_Region == "P+Neg","Brain_Region"] <- "pIN (P+C-)"
 t$gene <- as.numeric(tpmProxC["Rbms3",samples])
-ggplot(t, aes(X,Y, colour = Brain_Region, shape = FOS))+
+ggplot(t, aes(X,Y, colour = FOS, shape = Mouse_condition))+
   geom_point(size = 3)+
   theme_bw()+
   #scale_colour_gradient(high="red",low="blue")+
@@ -253,7 +253,8 @@ ggplot(t, aes(X,Y, colour = Brain_Region, shape = FOS))+
       axis.ticks = element_line(size=1.5))+
   #scale_colour_manual(values= c("#6ca425"))
   #scale_colour_manual(values = c("black","#00c7e4","#a800b3","#6ca425","#e19041"))
-  scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
+  #scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
+  scale_colour_manual(values = c("red","orange","blue"))
 
 t[t$X < 0 & t$Y < -5, "group"] <- "IN"
 t[is.na(t$group),"group"] <- "EX"
@@ -463,12 +464,12 @@ dat <- na.exclude(dat[-c(match(celltypegenes,rownames(dat))),])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #gene <- "Meg3"
 #Calculate the components
-p <- pca(t(dat[,samples]),nPcs = 26)
+p <- pca(t(dat[,samples]),nPcs = 10)
 scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met, colorby = "Brain_Region", shapeby = "FOS", Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met, colorby = "FOS", shapeby = "FOS", Colors = c("red","orange","blue"))#Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -498,7 +499,7 @@ met[met$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "Neg"
 #met[as.numeric(dat["Gad2",]) > 1 & met$Brain_Region == "Neg","Brain_Region"] <- "IN"
 met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","pIN","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Tet1",dat, met)
+Indiv("Arc",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
