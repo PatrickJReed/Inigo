@@ -195,22 +195,20 @@ R <- vector()
 stdout <- vector('character')
 con <- textConnection(object='stdout',open='wr')
 sink(con)
-perps <- seq(5,10,1)
+r <- vector()
+perps <- seq(2,30,1)
 for (i in perps){
-  TSNE <- Rtsne(as.matrix(t(dat)),initial_dims=2,perplexity=i,theta=0.1,check_duplicates=FALSE)
-  res <- as.data.frame(TSNE$Y)
-  res$group <- i
-  R <- rbind(R,res)
+  TSNE <- Rtsne(as.matrix(t(dat)),initial_dims=20,perplexity=i,theta=0.1,check_duplicates=FALSE)
+  #res <- as.data.frame(TSNE$Y)
+  #res$group <- i
+  #R <- rbind(R,res)
+  r <- c(r, mean(TSNE$costs))
 }
 sink()
 close(con)
 
 Tsne <- function(R,dat,met,colorby,gene="Prox1"){
   R <- cbind(R,met)
-  #RES$prox <- met$prox
-  #RES$cond <- met$cond
-  #RES$fos <- met$fos
-  #RES$tmpgroup <- met$tempGroupingProx1HC
   R$Col <- R[,colorby]
   R$Gene <- as.numeric(dat[gene,])
   
@@ -234,27 +232,36 @@ Tsne <- function(R,dat,met,colorby,gene="Prox1"){
   
   return(list(p1,p2))
 }
+a <- Tsne(R,dat,met,colorby = "FOS")
 
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=2,perplexity=i,theta=0.1,check_duplicates=FALSE)
+i <- 10
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=20,perplexity=i,theta=0,check_duplicates=FALSE)
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("X","Y")
 t <- cbind(t,met)
 t$Brain_Region <- as.character(t$Brain_Region)
 t[t$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
 t[t$Brain_Region == "P+Neg","Brain_Region"] <- "pIN (P+C-)"
-t$gene <- as.numeric(tpmProxC["Rbms3",samples])
-ggplot(t, aes(X,Y, colour = FOS, shape = Mouse_condition))+
-  geom_point(size = 3)+
+t$gene <- as.numeric(tpmProxC["Gad1",samples])
+ggplot(t, aes(X,Y, colour = Brain_Region))+
+  geom_point(size = 5)+
   theme_bw()+
-  #scale_colour_gradient(high="red",low="blue")+
-  labs(title="tSNE")+
+  xlab("Axis 1")+
+  ylab("Axis 2")+
+  labs(title="Homecage FOS- Neurons\nt-SNE")+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
-      axis.ticks = element_line(size=1.5))+
+      axis.ticks = element_line(size=1.5),
+      panel.grid.major = element_line(size = 1))+
   #scale_colour_manual(values= c("#6ca425"))
   #scale_colour_manual(values = c("black","#00c7e4","#a800b3","#6ca425","#e19041"))
-  #scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
-  scale_colour_manual(values = c("red","orange","blue"))
+  scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
+
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc_fosN.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
+#p
+#dev.off()
+
+
 
 t[t$X < 0 & t$Y < -5, "group"] <- "IN"
 t[is.na(t$group),"group"] <- "EX"
@@ -453,6 +460,8 @@ Volcano <- function(difexp){
   return(p)
 }
 # Gene set by Go term
+
+
 ###############################################
 ### PLOT THESE GUYS
 ###############################################
