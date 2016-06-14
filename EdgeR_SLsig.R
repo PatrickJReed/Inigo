@@ -60,8 +60,8 @@ exact <- function(dat, variable, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[ metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$IN == 0  & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,#| 
-                      # metaProxC$FOS == "N" & metaProxC$Brain_Region == "CA1" &  metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,
+samples <- metaProxC[ metaProxC$Context == "A"  & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" | 
+                       metaProxC$Context != "A" & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,
                      "Sample_ID"]#|
             #           metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P"  & metaProxC$CTIP2 == "N" & metaProxC$FOS == "N" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",
              #          "Sample_ID"]
@@ -92,7 +92,7 @@ group <- k$cluster == 1
 group <- as.factor(group)
 Pair <- levels(as.factor(as.character(group)))
 #### Or 
-group <- met$FOS == "F"# & as.numeric(log(dat["Gad2",])) > 4
+group <- met$Context == "A"# & as.numeric(log(dat["Gad2",])) > 4
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes

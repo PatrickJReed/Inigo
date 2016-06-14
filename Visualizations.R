@@ -11,6 +11,9 @@ library(Rtsne)
 #EdgeR Results
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_resTables/edgeR.res")
 #Other raw data is stored in LoadData_ShortTerm.R
+#T-SNE results
+#save(list = c("t.all","t.hc"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne.rda",compress = TRUE)
+#load(c("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne.rda"))
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
 ###############################################
@@ -191,63 +194,29 @@ getErrors <- function(x){
 
 
 
-R <- vector()
-stdout <- vector('character')
-con <- textConnection(object='stdout',open='wr')
-sink(con)
-r <- vector()
-perps <- seq(2,30,1)
-for (i in perps){
-  TSNE <- Rtsne(as.matrix(t(dat)),initial_dims=20,perplexity=i,theta=0.1,check_duplicates=FALSE)
-  #res <- as.data.frame(TSNE$Y)
-  #res$group <- i
-  #R <- rbind(R,res)
-  r <- c(r, mean(TSNE$costs))
-}
-sink()
-close(con)
 
-Tsne <- function(R,dat,met,colorby,gene="Prox1"){
-  R <- cbind(R,met)
-  R$Col <- R[,colorby]
-  R$Gene <- as.numeric(dat[gene,])
-  
-  Errorpos <- seq(from=5,to=length(stdout),by=1) + c(0:(length(perps)-1))
-  error <- data.frame(error = as.numeric(as.character(unlist(lapply(X=Errorpos,FUN=getErrors)))),
-                      perplexity = perps
-  )
-  
-  g <- error[error$error == min(error$error),"perplexity"]
-  
-  p1 <- ggplot(R[R$group == g,], aes(V1,V2,colour = Col))+
-    geom_point(size=4,alpha=1 )+
-    theme_bw(base_size = 13)+
-    labs(title= paste("t-SNE","\nperplexity = ",g,sep=""))+
-    #scale_colour_gradient(high="black",low = "red")+
-    theme(panel.border = element_rect(colour=c("black"),size=2),
-          axis.ticks = element_line(size=1.5))
-  
-  p2 <- ggplot(as.data.frame(error), aes(perplexity,error))+
-          geom_point(size=4,alpha=0.5)
-  
-  return(list(p1,p2))
-}
-a <- Tsne(R,dat,met,colorby = "FOS")
 
-i <- 10
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=20,perplexity=i,theta=0,check_duplicates=FALSE)
+i <- 17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=5,perplexity=i,theta=0,check_duplicates=FALSE,dims = 3)
 t <- as.data.frame(TSNE$Y)
-colnames(t) <- c("X","Y")
+colnames(t) <- c("T1","T2","T3")
 t <- cbind(t,met)
 t$Brain_Region <- as.character(t$Brain_Region)
 t[t$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
 t[t$Brain_Region == "P+Neg","Brain_Region"] <- "pIN (P+C-)"
 t$gene <- as.numeric(tpmProxC["Gad1",samples])
-ggplot(t, aes(X,Y, colour = Brain_Region))+
-  geom_point(size = 5)+
+
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc.tiff",width = 4,height = 4,units = 'in',res = 300,compression = 'lzw')
+Plot3D.TSNE(t)
+#dev.off()
+
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
+ggplot(t, aes(T1,T2, colour = Brain_Region))+
+  geom_point(alpha = 0.7, size = 3)+
+  geom_point(shape = 1, size = 3)+
   theme_bw()+
-  xlab("Axis 1")+
-  ylab("Axis 2")+
+  xlab("TSNE1")+
+  ylab("TSNE2")+
   labs(title="Homecage FOS- Neurons\nt-SNE")+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
@@ -256,9 +225,6 @@ ggplot(t, aes(X,Y, colour = Brain_Region))+
   #scale_colour_manual(values= c("#6ca425"))
   #scale_colour_manual(values = c("black","#00c7e4","#a800b3","#6ca425","#e19041"))
   scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
-
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc_fosN.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
-#p
 #dev.off()
 
 
@@ -370,6 +336,22 @@ IndivByDate <- function(gene,dat,met){
     facet_grid( cond  ~ prox) 
   return(p)
 }
+Plot3D.TSNE <- function(t,group = "Brain_Region",COLORS = c("#00c7e4","#a800b3","#e19041","#6ca425")){
+  require(scatterplot3d)
+  #source('http://www.sthda.com/sthda/RDoc/functions/addgrids3d.r')
+  t$COL <- t[,group]
+  j <- 0
+  for (i in levels(as.factor(t[,group]))){
+    j <- j + 1
+    t[t$COL == i, "COL"] <- COLORS[j]
+  }
+  t2 <- t[t$Brain_Region == "HDG",]
+  scatterplot3d(x = t$T1, y = t$T2,z =  t$T3, pch = 16, 
+            color = t$COL, angle = 35,#box= FALSE,
+            xlab = "TSNE1",
+            ylab = "TSNE2", 
+            zlab = "TSNE3")
+}
 # facet_grid( cond  ~ prox)
 #dev.off()
 # Correlations (2genes) ---------------------------------------------------
@@ -466,10 +448,9 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$FOS == "F" &  metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
                                              #metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
-dat <- na.exclude(dat[-c(match(celltypegenes,rownames(dat))),])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 #gene <- "Meg3"
 #Calculate the components
@@ -478,7 +459,7 @@ scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met, colorby = "FOS", shapeby = "FOS", Colors = c("red","orange","blue"))#Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met, colorby = "alignable", shapeby = "AMP_Date")#, Colors = c("red","orange","blue"))#Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -508,7 +489,7 @@ met[met$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "Neg"
 #met[as.numeric(dat["Gad2",]) > 1 & met$Brain_Region == "Neg","Brain_Region"] <- "IN"
 met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","pIN","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Arc",dat, met)
+Indiv("Tnik",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 

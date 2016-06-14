@@ -5,18 +5,18 @@ library("WGCNA")
 library("DESeq2")
 library("Rsamtools")
 
-samples <- metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 rownames(dat) <- toupper(rownames(dat))
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
 m <- apply(X = dat,1,rawExp, i  = 2)
-vstMat2 <- dat[m > (0.10 * (ncol(dat))),]
+vstMat2 <- dat[m > (0.20 * (ncol(dat))) & m < (0.9* (ncol(dat))),]
 ##################################
 #### Setup the WGCNA-Style Objects
 ##################################
 #Define data set dimensions
-datExpr <- as.data.frame(t(vstMat2))
+datExpr <- as.data.frame((vstMat2))
 
 ##################################
 #### Run WGCNA
@@ -35,8 +35,8 @@ plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
 #choose the power for the experiment
 POWER = 5
 #Calculate the network
-net = blockwiseModules(datExpr,maxBlockSize=1000, power = POWER,
-                       TOMType = "unsigned", minModuleSize = 100,
+net = blockwiseModules(datExpr,maxBlockSize=50, power = POWER,
+                       TOMType = "unsigned", minModuleSize = 10,
                        reassignThreshold = 0, #mergeCutHeight = 0.99,
                        numericLabels = TRUE, pamRespectsDendro = FALSE,
                        TOMDenom="min",
@@ -51,9 +51,17 @@ mergedColors = labels2colors(net$colors)
 # Plot the dendrogram and the module colors underneath
 plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
                     "Module colors",
-                    dendroLabels = FALSE, hang = 0.03,
+                    dendroLabels = 0.9, hang = 0.03,
                     addGuide = TRUE, guideHang = 0.05)
 
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/HCorder2.tiff",width = 18,height = 10,units = "in",res = 300)
+plotClusterTreeSamples(
+  t(datExpr),
+  #y = met$Brain_Region, 
+  yLabels = NULL,
+  main = "Sample dendrogram and trait indicator", 
+  )
+dev.off()
 #identify labels/colors
 moduleLabels = net$colors
 table(moduleLabels)
