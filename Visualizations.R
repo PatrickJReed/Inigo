@@ -197,7 +197,7 @@ getErrors <- function(x){
 
 
 i <- 17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=5,perplexity=i,theta=0,check_duplicates=FALSE,dims = 3)
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=7,perplexity=i,theta=0,check_duplicates=FALSE,dims = 3)
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2","T3")
 t <- cbind(t,met)
@@ -207,7 +207,7 @@ t[t$Brain_Region == "P+Neg","Brain_Region"] <- "pIN (P+C-)"
 t$gene <- as.numeric(tpmProxC["Gad1",samples])
 
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc.tiff",width = 4,height = 4,units = 'in',res = 300,compression = 'lzw')
-Plot3D.TSNE(t)
+Plot3D.TSNE(t)#,group = "pickMe",COLORS = c("black","red"))
 #dev.off()
 
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
@@ -477,7 +477,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[  metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" & metaProxC$outliers == FALSE,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -489,7 +489,7 @@ met[met$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "Neg"
 #met[as.numeric(dat["Gad2",]) > 1 & met$Brain_Region == "Neg","Brain_Region"] <- "IN"
 met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","pIN","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Tnik",dat, met)
+Indiv("Meg3",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
