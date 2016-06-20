@@ -477,19 +477,19 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[  metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" & metaProxC$outliers == FALSE,"Sample_ID"]#
+samples <- metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" & metaProxC$outliers == FALSE,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 met$Brain_Region <- as.character(met$Brain_Region)
-met[met$Brain_Region == "HDG", "Brain_Region"] <- "pIN"
+met[met$Brain_Region == "HDG", "Brain_Region"] <- "VIP"
 met[met$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "Neg"
 #met[as.numeric(dat["Gad2",]) > 1 & met$Brain_Region == "Neg","Brain_Region"] <- "IN"
 met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","pIN","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Meg3",dat, met)
+Indiv("Bdnf",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
