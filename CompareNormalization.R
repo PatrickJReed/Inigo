@@ -11,21 +11,21 @@
 # 4. TPM (RSEM)
 # 5. ERCC (Ding et al)
 ##################
-prodNoZero <- function(x){
+sumNoZero <- function(x){
   x <- x[!is.na(x)]
-  return(prod(x[x>0]))
+  return(sum(x[x>0]) / length(x))
 }
 MedianScale <- function(i){
   genes <- which(tpm[,i] > 0)
-  medianScale <- median(tpm[genes,i] / as.numeric(geoMeanNoZero)[genes])
+  medianScale <- median(tpm[genes,i] - as.numeric(geoMeanNoZero)[i])
   return(medianScale)
 }
 median.scale <- function(tpm){
-  geoMeanNoZero <- apply(tpm, 1, prodNoZero) ^ (1/ncol(tpm))
+  geoMeanNoZero <- apply(tpm, 2, sumNoZero) 
   scaleFactor <- unlist(lapply(1:ncol(tpm), MedianScale))
   tpm2 <- matrix(0,nrow(tpm),ncol(tpm))
   for(i in 1:ncol(tpm)){
-    tpm2[,i] <- tpm[,i] / scaleFactor[i]
+    tpm2[,i] <- tpm[,i] - scaleFactor[i]
   }
   rownames(tpm2) <- rownames(tpm)
   colnames(tpm2) <- colnames(tpm)
@@ -84,7 +84,7 @@ c <- log(count+1,2)
 # Step 3. Test
 ##################
 
-genes <- c("Prox1","Meg3","Snhg3","Rfx3")
+genes <- c("Gm12648","Iqch","Pou3f1","Dkk3","Prox1","Meg3","Snhg3","Rfx3")
 aic <- list(0,0,0,0,0)
 names(aic) <- c("d","e","t","m","c")
 for (gene in genes){

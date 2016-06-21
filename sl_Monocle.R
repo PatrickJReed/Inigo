@@ -66,7 +66,7 @@ my.data2 <- detectGenes(my.data,min_expr=1)
 expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=10))
 ##
 #a <- RES[[8]]
-genes <- c(celltypegenes)
+genes <- unique(c(activitygenes,rownames(res[res$f < 0.01,])))#c(celltypegenes)
 
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
@@ -99,7 +99,8 @@ metaProxC[colnames(dat),"State_DG"] <- pData(my.data5)$State
 pData(my.data5)$group  <- paste(as.character(met$PROX1), as.character(met$CTIP2),sep = ".")
 g <- "Grin2b"
 pData(my.data5)$gene  <-as.numeric(dat[g,])
-#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/DG_monocle.tiff",width = 9.5,height = 6,units = 'in',res = 300)
+pData(my.data5)$FOS <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 9.5,height = 6,units = 'in',res = 300)
 plot_spanning_tree2(my.data5,color_by="gene",tit ="Dentate Gyrus ICA" )
 #dev.off()
 plot_spanning_tree(my.data5,color_by = "FOS" )

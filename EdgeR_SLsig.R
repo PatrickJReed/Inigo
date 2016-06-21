@@ -61,7 +61,7 @@ exact <- function(dat, variable, Pair){
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
 samples <- metaProxC[ metaProxC$Context == "A"  & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" | 
-                       metaProxC$Context != "A" & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,
+                      metaProxC$Brain_Region == "DG" &  metaProxC$Context != "A" & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,
                      "Sample_ID"]#|
             #           metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P"  & metaProxC$CTIP2 == "N" & metaProxC$FOS == "N" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",
              #          "Sample_ID"]
