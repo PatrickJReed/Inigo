@@ -138,7 +138,6 @@ add1 <- FALSE
 colnames(countProx) <- Names(countProx)
 countProx <- countProx[,-c(which(colnames(countProx) == excludes))]
 
-
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_genenametpm.txt"),header=TRUE,row.names=1)
 tpmProx <- log(tpm.1+1,2)
