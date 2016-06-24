@@ -12,7 +12,7 @@ library(Rtsne)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_resTables/edgeR.res")
 #Other raw data is stored in LoadData_ShortTerm.R
 #T-SNE results
-#save(list = c("t.all","t.hc"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne.rda",compress = TRUE)
+#save(list = c("t.all","t.hc","t.hc.n","t.hc.neg"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne.rda",compress = TRUE)
 #load(c("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne.rda"))
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
@@ -196,22 +196,22 @@ getErrors <- function(x){
 
 
 
-i <- 17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=7,perplexity=i,theta=0,check_duplicates=FALSE,dims = 3)
+i <- 2#17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=5,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 t <- as.data.frame(TSNE$Y)
-colnames(t) <- c("T1","T2","T3")
+colnames(t) <- c("T1","T2")#,"T3")
 t <- cbind(t,met)
 t$Brain_Region <- as.character(t$Brain_Region)
 t[t$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
 t[t$Brain_Region == "P+Neg","Brain_Region"] <- "pIN (P+C-)"
-t$gene <- as.numeric(tpmProxC["Gad1",samples])
+t$gene <- as.numeric(tpmProxC["Rcn1",samples])
 
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc.tiff",width = 4,height = 4,units = 'in',res = 300,compression = 'lzw')
-Plot3D.TSNE(t)#,group = "pickMe",COLORS = c("black","red"))
+#Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
 #dev.off()
 
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
-ggplot(t, aes(T1,T2, colour = Brain_Region))+
+ggplot(t, aes(T1,T2, colour = gene))+
   geom_point(alpha = 0.7, size = 3)+
   geom_point(shape = 1, size = 3)+
   theme_bw()+
@@ -221,10 +221,10 @@ ggplot(t, aes(T1,T2, colour = Brain_Region))+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
       axis.ticks = element_line(size=1.5),
-      panel.grid.major = element_line(size = 1))+
+      panel.grid.major = element_line(size = 1))#+
   #scale_colour_manual(values= c("#6ca425"))
   #scale_colour_manual(values = c("black","#00c7e4","#a800b3","#6ca425","#e19041"))
-  scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
+  #scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
 #dev.off()
 
 
@@ -253,7 +253,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( Mouse_condition  ~ Brain_Region) 
+    facet_grid( Mouse_condition  ~ Subgroup) 
 return(p)
 }
 IndivSubgroup <- function(gene,dat,met){
@@ -448,7 +448,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" &metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
                                              #metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -459,7 +459,7 @@ scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met, colorby = "alignable", shapeby = "AMP_Date")#, Colors = c("red","orange","blue"))#Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met, colorby = "Brain_Region", Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"),shapeby = "Mouse")
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -477,29 +477,26 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$FOS == F & metaProxC$Brain_Region != "CA3_other_negs" & metaProxC$Context != "A" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
+samples <- metaProxC[   metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
-dat <- tpmProxC[, samples]
+dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
-met$Brain_Region <- as.character(met$Brain_Region)
-met[met$Brain_Region == "HDG", "Brain_Region"] <- "VIP"
-met[met$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "Neg"
 #met[as.numeric(dat["Gad2",]) > 1 & met$Brain_Region == "Neg","Brain_Region"] <- "IN"
-met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","pIN","DG"))
+#met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","VIP","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Capn2",dat, met)
+Indiv("Gria4",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
 IndivByDate("Prox1",dat, met)
 IndivProx1Grouped("Fos")
 #plot two genes
-a <- "Grin3a"
-b <- "Fos"
-group <- "fos"
-Plot2Genes(a,b, dat,met)
+a <- "Wfs1"
+b <- "Pcp4"
+group <- "Subgroup"
+Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
 Volcano(res)
 
@@ -545,9 +542,9 @@ rownames(tpmProx[m > 10 & p < 0.05,])
 
 
 #####
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[ metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 #metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
-dat.1 <- na.exclude(countProxC[, samples])
+#dat.1 <- na.exclude(countProxC[, samples])
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 

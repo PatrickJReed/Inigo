@@ -130,20 +130,45 @@ scaleME <- function(x){
 ####### 07/2015 Homecage Prox1+ Fos Low/Neg, sorted by Baptiste and Jerika, processed by Jerika
 #counts
 excludes <- c("150629_H4_P_C_N_HC_1") # 150629_H4_P_C_N_HC_1 has almost no genes expressed
-#count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_48nuc_0715_geneSymb_count.txt"),header=TRUE,row.names=1)
-count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_genenamecount.txt"),header=TRUE,row.names=1)
-#countProx <- log(count.1[rowSums(count.1) > 0,]+1,2)
+count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150629_gene_count.txt"),header=TRUE,row.names=1)
 countProx <- round(count.1)
 add1 <- FALSE
 colnames(countProx) <- Names(countProx)
 countProx <- countProx[,-c(which(colnames(countProx) == excludes))]
 
 #tpm
-tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_genenametpm.txt"),header=TRUE,row.names=1)
+tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150629_gene_tpm.txt"),header=TRUE,row.names=1)
 tpmProx <- log(tpm.1+1,2)
 add1 <- FALSE
 colnames(tpmProx) <- Names(tpmProx)
 tpmProx <- tpmProx[,-c(which(colnames(tpmProx) == excludes))]
+
+####### 08/03/2015 Homecage Prox1+ Fos Low/Neg, sorted by Baptiste and Jerika, processed by Jerika
+#counts
+count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150803_gene_count.txt"),header=TRUE,row.names=1)
+countProx150803 <- round(count.1)
+add1 <- FALSE
+colnames(countProx150803) <- Names(countProx150803)
+
+#tpm
+tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150803_gene_tpm.txt"),header=TRUE,row.names=1)
+tpmProx150803 <- log(tpm.1+1,2)
+add1 <- FALSE
+colnames(tpmProx150803) <- Names(tpmProx150803)
+
+####### 08/10/2015 Homecage Prox1+ Fos Low/Neg, sorted by Baptiste and Jerika, processed by Jerika
+#counts
+count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150810_gene_count.txt"),header=TRUE,row.names=1)
+countProx150810 <- round(count.1)
+add1 <- FALSE
+colnames(countProx150810) <- Names(countProx150810)
+
+#tpm
+tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150810_gene_tpm.txt"),header=TRUE,row.names=1)
+tpmProx150810 <- log(tpm.1+1,2)
+add1 <- FALSE
+colnames(tpmProx150810) <- Names(tpmProx150810)
+
 
 #151207 CA1 Samples
 #counts
@@ -197,15 +222,42 @@ countProx160324 <- round(count.1)
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_160324_gene_tpm.txt"),header=TRUE,row.names=1)
 tpmProx160324 <- log(tpm.1+1,2)
 colnames(tpmProx160324) <- colnames(countProx160324)
+#######
+#160523 
+#counts
+count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_160523_gene_count.txt"),header=TRUE,row.names=1)
+b <- do.call("rbind",strsplit(colnames(count.1),"_",fixed=TRUE))
+colnames(count.1) <- paste(b[,1],b[,2],sep="_")
+countProx160523 <- round(count.1)
+
+#tpm
+tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_160523_gene_tpm.txt"),header=TRUE,row.names=1)
+tpmProx160523 <- log(tpm.1+1,2)
+colnames(tpmProx160523) <- colnames(countProx160523)
+
+
+##########
+#160617
+#counts
+count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_160617_gene_count.txt"),header=TRUE,row.names=1)
+b <- do.call("rbind",strsplit(colnames(count.1),"_",fixed=TRUE))
+colnames(count.1) <- paste(b[,1],b[,2],sep="_")
+countProx160617 <- round(count.1)
+
+#tpm
+tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_160617_gene_tpm.txt"),header=TRUE,row.names=1)
+tpmProx160617 <- log(tpm.1+1,2)
+colnames(tpmProx160617) <- colnames(countProx160617)
+
 ################################
 
 #combine
-runs <- 6
-a <- table(c(rownames(tpmProx),rownames(tpmQC),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324)))
-tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmQC[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),])
+runs <- 10
+a <- table(c(rownames(tpmProx),rownames(tpmQC),rownames(tpmProx150803),rownames(tpmProx150810),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324),rownames(tpmProx160523),rownames(tpmProx160617)))
+tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmQC[names(a[a==runs]),],tpmProx150803[names(a[a==runs]),],tpmProx150810[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160523[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),],tpmProx160617[names(a[a==runs]),])
 colnames(tpmProxC) <- make.names(colnames(tpmProxC))
-a <- table(c(rownames(countProx),rownames(countQC),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324)))
-countProxC <- cbind(countProx[names(a[a==runs]),],countQC[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),])
+a <- table(c(rownames(countProx),rownames(countQC),rownames(countProx150803),rownames(countProx150810),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324),rownames(countProx160523),rownames(countProx160617)))
+countProxC <- cbind(countProx[names(a[a==runs]),],countQC[names(a[a==runs]),],countProx150803[names(a[a==runs]),],countProx150810[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),], countProx160523[names(a[a==runs]),], countProx160617[names(a[a==runs]),])
 colnames(countProxC) <- make.names(colnames(countProxC))
 
 metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile.txt",header=TRUE)
