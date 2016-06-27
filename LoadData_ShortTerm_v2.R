@@ -263,6 +263,16 @@ colnames(countProxC) <- make.names(colnames(countProxC))
 metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile.txt",header=TRUE)
 metaProxC$Sample_ID <- make.names(metaProxC$Sample_ID)
 rownames(metaProxC) <- metaProxC$Sample_ID
+#########
+# outliers
+samples <- metaProxC[ metaProxC$alignable <  100000 ,"Sample_ID"]#
+g <- apply(tpmProxC,2,rawExp,1)
+samples <- unique(c(samples,names(g[g < 4000])))
+samples <- unique(c(samples,metaProxC[ metaProxC$Smartseq2_RT_enzyme_used != "ProtoscriptII" ,"Sample_ID"]))#
+samples <- samples[!is.na(samples)]
+metaProxC$outliers <- "in"
+metaProxC[samples,"outliers"] <- "out"
+
 
 #########
 # Load SINE data

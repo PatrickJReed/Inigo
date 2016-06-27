@@ -60,37 +60,15 @@ exact <- function(dat, variable, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" &metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" , "Sample_ID"]#|
-            #           metaProxC$Mouse_condition == "EE" & metaProxC$PROX1 == "P"  & metaProxC$CTIP2 == "N" & metaProxC$FOS == "N" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",
-             #          "Sample_ID"]
+samples <- rownames(metaProxC[ metaProxC$Subgroup == "Negs.2"& metaProxC$outlier == "in" & metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" &metaProxC$Context1 == "none" |
+                                 metaProxC$Subgroup == "CA1"& metaProxC$outlier == "in" & metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" &metaProxC$Context1 == "none" ,])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-table(data.frame(met$FOS, met$IN))
 ###################
 #Assign groups
 ###################
-##### By exclusion 
-outliers <- c("X151221_03", "X151221_06","X151221_09","X151221_13",
-              "X151221_08","X151221_11")
-
-#outliers <- met[c(1,7,6,14),"Sample_ID"]
-#outliers2 <- met[c(4,11,3,2,5,9),"Sample_ID"]
-group <- rep(TRUE,length(samples))
-#group[match(outliers,samples)] <- FALSE
-group[match(outliers,samples)] <- "a"
-group[match(outliers2,samples)] <- "b"
-remove <- which(group == "TRUE")
-dat<- dat[,-c(remove)]
-group <- as.factor(group[group != "TRUE"])
-##### Or by meta 
-group <- (paste(met$FOS,met$Mouse_condition,sep = "."))
-group[group != "N.EE"] <- FALSE
-group <- k$cluster == 1
-group <- as.factor(group)
-Pair <- levels(as.factor(as.character(group)))
-#### Or 
-group <- met$Brain_Region == "DG"# & as.numeric(log(dat["Gad2",])) > 4
+group <- met$Subgroup == "Negs.2"
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes

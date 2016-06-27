@@ -195,36 +195,37 @@ getErrors <- function(x){
 
 
 
+samples <- metaProxC[  metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,"Sample_ID"]#
+dat <- na.exclude(tpmProxC[, samples])
+met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-i <- 2#17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=5,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
+i <- 17#17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=3,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")#,"T3")
 t <- cbind(t,met)
-t$Brain_Region <- as.character(t$Brain_Region)
-t[t$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
-t[t$Brain_Region == "P+Neg","Brain_Region"] <- "pIN (P+C-)"
-t$gene <- as.numeric(tpmProxC["Rcn1",samples])
+t$gene <- as.numeric(tpmProxC["Cacng5",samples])
 
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc.tiff",width = 4,height = 4,units = 'in',res = 300,compression = 'lzw')
 #Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
 #dev.off()
-
+#k <- kmeans(t[,c(1:3)],centers = 7,nstart = 100)
+#k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
 ggplot(t, aes(T1,T2, colour = gene))+
-  geom_point(alpha = 0.7, size = 3)+
-  geom_point(shape = 1, size = 3)+
+  geom_point(alpha = 0.7, size = 5)+
+  #geom_point(shape = 1, size = 5)+
   theme_bw()+
   xlab("TSNE1")+
   ylab("TSNE2")+
-  labs(title="Homecage FOS- Neurons\nt-SNE")+
+  #labs(title="Homecage FOS- Neurons\nt-SNE")+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
       axis.ticks = element_line(size=1.5),
       panel.grid.major = element_line(size = 1))#+
-  #scale_colour_manual(values= c("#6ca425"))
-  #scale_colour_manual(values = c("black","#00c7e4","#a800b3","#6ca425","#e19041"))
-  #scale_colour_manual(values = c("#00c7e4","#a800b3","#6ca425","#e19041"))
+  #scale_colour_gradient(high = "red",low = "grey")#+
+  #scale_shape_manual(values = c(1:7))+
+  #scale_colour_manual(values = c("#00c7e4","blue","#6ca425","#a800b3","darkgreen","#e19041"))
 #dev.off()
 
 
@@ -336,10 +337,10 @@ IndivByDate <- function(gene,dat,met){
     facet_grid( cond  ~ prox) 
   return(p)
 }
-Plot3D.TSNE <- function(t,group = "Brain_Region",COLORS = c("#00c7e4","#a800b3","#e19041","#6ca425")){
+Plot3D.TSNE <- function(t,group = "Brain_Region",COLORS = c("#00c7e4","#6ca425","#a800b3","#e19041")){
   require(scatterplot3d)
   #source('http://www.sthda.com/sthda/RDoc/functions/addgrids3d.r')
-  t$COL <- t[,group]
+  t$COL <- as.character(t[,group])
   j <- 0
   for (i in levels(as.factor(t[,group]))){
     j <- j + 1
@@ -459,7 +460,7 @@ scores <- as.data.frame(p@scores)
 loading <- as.data.frame(p@loadings)
 Var <- p@R2
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met, colorby = "Brain_Region", Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"),shapeby = "Mouse")
+PC2D(scores,Var,dat,met, colorby = "Subgroup", Colors = c("#00c7e4","#6ca425","#a800b3","#e19041"),shapeby = "Mouse")
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -477,47 +478,45 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[   metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
+samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$FOS != "L" & metaProxC$Subgroup != "Unk" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" & metaProxC$Context1 == "none","Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
-#met[as.numeric(dat["Gad2",]) > 1 & met$Brain_Region == "Neg","Brain_Region"] <- "IN"
-#met$Brain_Region <- factor(met$Brain_Region, levels = c("CA1","Neg","VIP","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Gria4",dat, met)
+Indiv("Ntng1",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
 IndivByDate("Prox1",dat, met)
 IndivProx1Grouped("Fos")
 #plot two genes
-a <- "Wfs1"
-b <- "Pcp4"
+a <- "Iyd"
+b <- "Coch"
 group <- "Subgroup"
 Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-samples <- metaProxC[ metaProxC$Brain_Region == "DG" & metaProxC$Mouse_condition == "EE" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]#
+samples <- metaProxC[metaProxC$Context1 == "none" & metaProxC$outlier == "in" & metaProxC$FOS == "N" & metaProxC$Subgroup == "vCA1" & metaProxC$Mouse_condition == "HC" & metaProxC$outliers == "in" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 tmp <- dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
-colnames(tmp) <- paste( met$Brain_Region,met$FOS, round(as.numeric(dat["Grin2a",])))#, met$FOS,c(1:ncol(dat)),sep = ".")
+colnames(tmp) <- paste( met$Subgroup2)
 #rownames(tmp) <- toupper((rownames(tmp)))
 #genes <- c("Man1a","Bcl11b","Slc6a1","Arpp21","Col15a1","Bok","Sst","Camk2a","Gad1","Gad2","Pvalb")
 #genes <- c("Foxg1","Wnt5a","Dcx","Prox1","Rbfox3","Camk2a","Creb1","Neurod1","Sox11")
 #upstream <- c("Creb1","Crebbp","Grin1","Grin2a","Grin2b","Gria1","Gria2","Gria3","Gria4","Gabra1","Gabra2","Gabrb","Cacna1a","Cacna1b","Cacna1c","Cacnai","Mapk3","Mapk1","Elk1","Srf","Rps6ka3")
 #neg <- c("Sostdc1","Ttr","Wfs1","Pantr1","C1ql2","Pvalb","Reln","Map3k15","Sst","Gad1","Cdh24","Mpped1")
 #genes <- c("Ppp1cc","Ppp1cb","Ppp1ca","Per1","Fos","Bdnf","Atf1","Creb1","Crebbp","Kcnip3","Carf")
-genes <- c("Crebbp","Htr1b","Fos","Arc")
+#genes <- c("Crebbp","Htr1b","Fos","Arc")
 tmp2 <- tmp[genes,]
 #p <- apply(X = tmp2, MARGIN = 1, FUN = rawExp)
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
-h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "row")
-dev.off()
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
+h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
+#dev.off()
 #genes <- celltypegenes
 #a <- apply(X = dat[genes,], MARGIN = 1,FUN = rawExp, i = 4)
 #genes <- table(c(genes, names(a[a>4])))
