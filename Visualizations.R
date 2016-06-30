@@ -204,7 +204,7 @@ TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=3,perplexity=i,theta=0,
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")#,"T3")
 t <- cbind(t,met)
-t$gene <- as.numeric(tpmProxC["Cacng5",samples])
+t$gene <- as.numeric(tpmProxC["Dcn",samples])
 
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc.tiff",width = 4,height = 4,units = 'in',res = 300,compression = 'lzw')
 #Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
@@ -212,7 +212,7 @@ t$gene <- as.numeric(tpmProxC["Cacng5",samples])
 #k <- kmeans(t[,c(1:3)],centers = 7,nstart = 100)
 #k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
-ggplot(t, aes(T1,T2, colour = Subgroup2))+
+ggplot(t, aes(T1,T2, colour = gene))+
   geom_point(alpha = 0.7, size = 5)+
   #geom_point(shape = 1, size = 5)+
   theme_bw()+
@@ -222,8 +222,8 @@ ggplot(t, aes(T1,T2, colour = Subgroup2))+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
       axis.ticks = element_line(size=1.5),
-      panel.grid.major = element_line(size = 1))#+
-  #scale_colour_gradient(high = "red",low = "grey")#+
+      panel.grid.major = element_line(size = 1))+
+  scale_colour_gradient(high = "red",low = "grey")#+
   #scale_shape_manual(values = c(1:7))+
   #scale_colour_manual(values = c("#00c7e4","#6ca425","#a800b3","darkgreen","#e19041"))
 #dev.off()
@@ -254,7 +254,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( Mouse_condition  ~ Subgroup) 
+    facet_grid( Mouse_condition  ~ Subgroup2) 
 return(p)
 }
 IndivSubgroup <- function(gene,dat,met){
@@ -485,7 +485,7 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Arc",dat, met)
+Indiv("Ptger1",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
