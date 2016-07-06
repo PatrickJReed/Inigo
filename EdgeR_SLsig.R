@@ -60,21 +60,29 @@ exact <- function(dat, variable, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- rownames(metaProxC[ metaProxC$Subgroup == "CA1" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" ,])
+samples <- rownames(metaProxC[metaProxC$FOS != "L" & metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$outliers == "in"  ,])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$Subgroup2 == "CA3" | met$Subgroup2 == ""
+group <- met$FOS == "F" & met$Brain_Region == "CA1"
+s <- which(group == FALSE)
+s2 <- sample(s, sum(group))
+samples <- samples[c(s2, which(group == TRUE))]
+dat <- na.exclude(countProxC[, samples])
+dat <- dat[rowSums(dat) > 0,]
+met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+group <- met$FOS == "F" & met$Brain_Region == "CA1"
+
+
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
 ###################
 #!!!Run exact test
 res <- exact(dat, group, Pair)
-
 
 #!!!or glm
 

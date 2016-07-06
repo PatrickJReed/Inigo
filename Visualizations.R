@@ -194,11 +194,11 @@ getErrors <- function(x){
 
 
 
-samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$Subgroup != "Unk" & metaProxC$FOS == "N" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,"Sample_ID"]#
+samples <- metaProxC[ metaProxC$FOS != "L" & metaProxC$Mouse_condition == "EE" &  metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,"Sample_ID"]#
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-i <- 10#17
+i <- 27#17
 TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=6,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")#,"T3")
@@ -211,7 +211,7 @@ t$gene <- as.numeric(tpmProxC["Dcn",samples])
 #k <- kmeans(t[,c(1:3)],centers = 7,nstart = 100)
 #k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
-ggplot(t, aes(T1,T2, colour = Brain_Region))+
+ggplot(t, aes(T1,T2, shape = FOS, colour = Brain_Region))+
   geom_point(alpha = 0.7, size = 5)+
   #geom_point(shape = 1, size = 5)+
   theme_bw()+
@@ -254,7 +254,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( Mouse_condition  ~ Subgroup) 
+    facet_grid( Mouse_condition  ~ Brain_Region) 
 return(p)
 }
 IndivSubgroup <- function(gene,dat,met){
@@ -478,22 +478,26 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N"  & metaProxC$Subgroup != "Unk" & metaProxC$Context1 == "none" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
+samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L"  & metaProxC$Subgroup != "Unk" & metaProxC$Context1 == "none" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
+met$Brain_Region <- as.character(met$Brain_Region)
+met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
+met[met$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
+met$Brain_Region <- factor(x = met$Brain_Region, levels = c("CA1","Neg","VIP","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Sst",dat, met)
+Indiv("Cdkn1a",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
 IndivByDate("Prox1",dat, met)
 IndivProx1Grouped("Fos")
 #plot two genes
-a <- "Iyd"
-b <- "Coch"
+a <- "Cdkn1a"
+b <- "Atf3"
 group <- "Subgroup"
 Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
@@ -515,7 +519,7 @@ colnames(tmp) <- paste( met$Subgroup2)
 tmp2 <- tmp[genes,]
 #p <- apply(X = tmp2, MARGIN = 1, FUN = rawExp)
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
-h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
+h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "row")
 #dev.off()
 #genes <- celltypegenes
 #a <- apply(X = dat[genes,], MARGIN = 1,FUN = rawExp, i = 4)

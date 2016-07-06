@@ -35,7 +35,7 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" & metaProxC$Context1 == "none" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 #outlier <- rownames(pheno[which(pheno$Pseudotime > 12 & pheno$FOS == "F.EE"),])
 #samples <- samples[-c(match(outlier, samples))]
 exprs <- dat <- na.exclude(tpmProxC[, samples])
@@ -97,16 +97,16 @@ metaProxC[colnames(dat),"State_DG"] <- pData(my.data5)$State
 ## Step5) Plot results
 ###########################
 pData(my.data5)$group  <- paste(as.character(met$PROX1), as.character(met$CTIP2),sep = ".")
-g <- "Grin2b"
+g <- "Gprc5a"
 pData(my.data5)$gene  <-as.numeric(dat[g,])
-pData(my.data5)$FOS <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
+pData(my.data5)$FOS <- met$Brain_Region#paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 9.5,height = 6,units = 'in',res = 300)
 plot_spanning_tree2(my.data5,color_by="gene",tit ="Dentate Gyrus ICA" )
 #dev.off()
 plot_spanning_tree(my.data5,color_by = "FOS" )
 
 ###
-pseudoPlot("Acvr1c")
+pseudoPlot("Arc")
 
 ###########################
 ## Extract samples of interest

@@ -4,11 +4,12 @@
 ## Reduced sample size difexp
 ####
 
-samples.2 <- metaProxC[metaProxC$Subgroup == "CA2" & metaProxC$outlier == "in" & metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" &metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples.2 <- metaProxC[metaProxC$Subgroup == "CA1" & metaProxC$Context1 == "none"& metaProxC$outlier == "in" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" &metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 
 genes <- vector()
-for (i in 1:100){
-samples.1 <- metaProxC[metaProxC$Subgroup != "CA2" & metaProxC$interneuron == FALSE & metaProxC$outlier == "in" & metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" &metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+for (i in 1:20){
+samples.1 <- metaProxC[metaProxC$Subgroup != "CA1" &  metaProxC$Context1 == "none" & metaProxC$outlier == "in" & metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" | 
+                         metaProxC$Subgroup == "CA1" & metaProxC$FOS == "N" &  metaProxC$Context1 == "none" & metaProxC$outlier == "in" & metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 samples <- c(samples.2, sample(x = samples.1,size = length(samples.2),replace = FALSE))
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
@@ -16,7 +17,7 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$Subgroup == "CA2"# & as.numeric(log(dat["Gad2",])) > 4
+group <- met$Subgroup == "CA1" & met$FOS == "F"# & as.numeric(log(dat["Gad2",])) > 4
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
@@ -29,3 +30,6 @@ genes <- c(genes, rownames(res[res$logFC > 0 & res$f < 0.05,]))
 genes2 <- as.data.frame(table(genes))
 genes2 <- genes2[order(genes2$Freq,decreasing = TRUE),]
 #SubgroupNeg <- genes2
+write.table(x = as.character(genes2[genes2$Freq > 12,"genes"]),file = "~/Documents/test.txt",quote = FALSE,row.names = FALSE,col.names = FALSE)
+
+#dg.genes2 <- genes2
