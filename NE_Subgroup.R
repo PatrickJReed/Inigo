@@ -35,21 +35,48 @@ exact <- function(dat, variable, Pair){
 }
 Test <- function(term = "CA1",Dat, Met){
   if (term == "Neg"){
-    group <- Met$Subgroup == "CA1" | Met$Subgroup == "IN"
+    group <- Met$Subgroup == "CA3" | Met$Subgroup == "IN"
   }else{
     group <- Met$Subgroup == term
   }
   Pair <- levels(as.factor(as.character(group)))
   res <- exact(Dat, group, Pair)
-  a <- apply(tpmProxC[,colnames(dat)[group == TRUE]],1,rawExp,2)
-  b <- apply(tpmProxC[,colnames(dat)[group == FALSE]],1,rawExp,2)
+  a <- apply(tpmProxC[,colnames(dat)[group == TRUE]],1,rawExp,1)
+  b <- apply(tpmProxC[,colnames(dat)[group == FALSE]],1,rawExp,1)
   res$a <- a[rownames(res)]
   res$b <- b[rownames(res)]
-  genes <- rownames(res[res$logFC > 0 & res$f < 0.05 & res$a > (sum(group) * (1/3)) &  res$b < (sum(group == FALSE)/2),])
+  genes <- rownames(res[res$logFC > 0 & res$f < 0.01 & res$a > (sum(group) * (1/2)) &  res$b < (sum(group == FALSE)/2),])
   
   return(genes)
   
 }
+SubsampleEdgeR <- function(samples.2, conditon = "DG" , met){
+  genes <- vector()
+  for (i in 1:20){
+    a <- is.na(match(rownames(met), samples.2))
+    samples.1 <- rownames(met)[a]
+    samples <- c(samples.2, sample(x = samples.1,size = length(samples.2),replace = FALSE))
+    dat <- na.exclude(countProxC[, samples])
+    dat <- dat[rowSums(dat) > 0,]
+    met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+    ###################
+    #Assign groups
+    ###################
+    group <- met$Subgroup == condition
+    Pair <- levels(as.factor(as.character(group)))
+    ###################
+    # Test genes
+    ###################
+    #!!!Run exact test
+    res <- exact(dat, group, Pair)
+    genes <- c(genes, rownames(res[res$logFC > 0 & res$f < 0.05,]))
+  }
+  
+  genes2 <- as.data.frame(table(genes))
+  genes2 <- genes2[order(genes2$Freq,decreasing = TRUE),]
+  return(genes2)
+}
+
 #################
 ## Dataset for major groups
 #################
@@ -61,7 +88,11 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ca1.genes <- Test(term = "CA1",Dat = dat, Met = met)
 dg.genes <- Test(term = "DG",Dat = dat, Met = met)
 vip.genes <- Test(term = "VIP",Dat = dat, Met = met)
-neg.genes <- Test(term = "Neg",Dat = dat, Met = met)
+#
+samples <- rownames(metaProxC[metaProxC$Context1 == "none" & metaProxC$outliers == "in" & metaProxC$Subgroup != "Unk" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" ,])
+met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+ca3.genes <- SubsampleEdgeR(samples.2, conditon = "CA3" , met)
+in.genes <- SubsampleEdgeR(samples.2, conditon = "IN" , met)
 #################
 ## Dataset for minor groups
 #################
@@ -128,10 +159,10 @@ table(data.frame(met$Subgroup, pred.all[samples]))
 samples <- names(pred.all[pred.all == "CA1" | pred.all == "CA3" ])
 met <- metaProxC[samples,]
 samples <- rownames(met[met$FOS == "N" & met$Subgroup != "Unk" & met$Mouse_condition == "HC" ,])
-samples.1 <- rownames(met[met$Subgroup == "CA1",])
-samples.2 <- rownames(met[met$Subgroup == "CA3",])
-samples.1 <- sample(x = samples.1,size = length(samples.2))
-samples <- c(samples.1,samples.2)
+#samples.1 <- rownames(met[met$Subgroup == "CA1",])
+#samples.2 <- rownames(met[met$Subgroup == "CA3",])
+#samples.1 <- sample(x = samples.1,size = length(samples.2))
+#samples <- c(samples.1,samples.2)
 dat <- na.exclude(countProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
@@ -140,14 +171,15 @@ dat2 <- t(dat[all.genes, ])
 dat2 <- data.frame(dat2)
 dat2$Subgroup.1 <- as.character(met$Subgroup)
 dat2$Subgroup.1 <- as.factor(dat2$Subgroup.1)
-rf.model2 <- randomForest(Subgroup.1 ~ . , dat2)
+rf.model2 <- randomForest(Subgroup.1 ~ . , dat2, replace = FALSE, ntree = 10000)
 rf.model2
 gini <- rf.model2$importance
 gini <- gini[order(gini,decreasing=TRUE),]
 
 ###
-samples <- names(pred.all[pred.all == "CA1" | pred.all == "CA3" | pred.all == "IN"])
+samples <- names(pred.all[pred.all == "CA1" | pred.all == "CA3" ])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+#samples <- rownames(met[met$Brain_Region == "CA3_other_negs",])
 dat <- na.exclude(countProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
