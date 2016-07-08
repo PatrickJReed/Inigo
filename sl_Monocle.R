@@ -35,19 +35,12 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
-#outlier <- rownames(pheno[which(pheno$Pseudotime > 12 & pheno$FOS == "F.EE"),])
-#samples <- samples[-c(match(outlier, samples))]
+samples <- metaProxC[metaProxC$FOS != "L" & metaProxC$Mouse_condition == "HC" &  metaProxC$Subgroup2 != "VIP" &metaProxC$Subgroup2 != "IN" & metaProxC$alignable >  100000 & metaProxC$outliers == "in" & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 exprs <- dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-lab <- as.character(met$FOS)
-
-
-tmp <- as.numeric(scale(colSums(exprs))[,1])
-
 colnames(exprs) <- nm2 <- paste(met$Brain_Region, c(1:nrow(met)),sep = "_")
-df <- data.frame(cells = nm2,labels = lab)
+df <- data.frame(cells = nm2,labels = as.character(met$FOS))
 rownames(df) <- nm2
 phenoData <- new("AnnotatedDataFrame",data=df)
 df <- data.frame(gene_short_name=rownames(exprs))
@@ -65,8 +58,7 @@ my.data <- newCellDataSet(exprs,
 my.data2 <- detectGenes(my.data,min_expr=1)
 expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=10))
 ##
-#a <- RES[[8]]
-genes <- unique(c(rownames(RES2[[9]])[RES2[[9]]$f < 0.01],rownames(res[res$f < 0.01,])))#c(celltypegenes)
+genes <- all.genes
 
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
@@ -82,28 +74,18 @@ pheno$FOS <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep 
 samples.1 <- as.character(pheno[ ,"cells"])
 samples <- colnames(dat)[match(samples.1, colnames(exprs))]
 rownames(pheno) <- samples
-###########################
-## Step4) Gene models
-###########################
-
-#full_model_fits <- fitModel(my.data5[marker_genes,], modelFormulaStr = "expression ~VGAM::s(Pseudotime)")
-#expression_curve_matrix <- responseMatrix(full_model_fits)
-#clusters <- clusterGenes(expression_curve_matrix, k = 5)
-#plot_clusters(my.data5,clusters)
-
-metaProxC[colnames(dat),"State_DG"] <- pData(my.data5)$State
 
 ###########################
 ## Step5) Plot results
 ###########################
 pData(my.data5)$group  <- paste(as.character(met$PROX1), as.character(met$CTIP2),sep = ".")
-g <- "Tcf7l2"
+g <- "Wfs1"
 pData(my.data5)$gene  <-as.numeric(dat[g,])
-pData(my.data5)$FOS <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 9.5,height = 6,units = 'in',res = 300)
 plot_spanning_tree2(my.data5,color_by="gene",tit ="Dentate Gyrus ICA" )
 #dev.off()
-plot_spanning_tree2(my.data5,color_by = "FOS" )
+pData(my.data5)$FOS <- paste(as.character(met$FOS), as.character(met$Subgroup2),sep = ".")
+plot_spanning_tree2(my.data5,color_by = "FOS",tit = "HC Hippocampus" )
 
 ###
 pseudoPlot("Arc")
