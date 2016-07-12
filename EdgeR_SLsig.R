@@ -51,6 +51,10 @@ exact <- function(dat, variable, Pair){
   res <- res[order(res$PValue),]
   #f <- fdrtool(x=res$PValue,statistic="pvalue",plot=FALSE)
   res$f <- p.adjust(res$PValue, method = "fdr")
+  a <- apply(tpmProxC[,colnames(dat)[group == TRUE]],1,rawExp,1)
+  b <- apply(tpmProxC[,colnames(dat)[group == FALSE]],1,rawExp,1)
+  res$a <- a[rownames(res)] / sum(group == TRUE)
+  res$b <- b[rownames(res)] / sum(group == FALSE)
   return(res)
 }
 
@@ -60,41 +64,23 @@ exact <- function(dat, variable, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- rownames(metaProxC[metaProxC$FOS != "L" & metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$outliers == "in"  ,])
+samples <- rownames(metaProxC[ metaProxC$Brain_Region == "DG" & metaProxC$Context2 != "C" & metaProxC$outliers == "in",])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$FOS == "F" & met$Brain_Region == "CA1"
-s <- which(group == FALSE)
-s2 <- sample(s, sum(group))
-samples <- samples[c(s2, which(group == TRUE))]
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-group <- met$FOS == "F" & met$Brain_Region == "CA1"
-
-
+group <- met$Mouse_condition == "5hpA"
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
 ###################
 #!!!Run exact test
 res <- exact(dat, group, Pair)
-
-#!!!or glm
-
-#res <- GLM(dat, group)
-res.NE_P_N_FvN <-  res
-
-
 ############################
 ### Keep track of gene lists 
 ############################
-
-#edgenes <- c("Man1a","Bok","Pcp4","Bcl11b","Fgf2","Ntf3","Igfbp4","Trek2","Prox1","Egfr","Rbfox3")
 
 ##RES = using the 500000 aligned reads cutoff
 #Combine all results into a single list
@@ -104,9 +90,10 @@ res.NE_P_N_FvN <-  res
 #names(RES)[[(length(RES))]] <- "res.HCNE_P_N_FN"
 
 ##RES2 = using the 100000 aligned reads cutoff
-i <- 10
-RES2[[i]] <- res.NE_P_N_FvN
-names(RES2)[i] <- "res.NE_P_N_FvN"
+##RES3 = groups from 'subgroup2'
+i <- 3
+RES3[[i]] <- res.HC_IN
+names(RES3)[i] <- "res.HC_IN"
 #### Find significant genes in each group
 i <- 1
 sum(RES[[i]]$f < 0.05)

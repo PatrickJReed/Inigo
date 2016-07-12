@@ -195,21 +195,21 @@ getErrors <- function(x){
 
 
 
-samples <- metaProxC[   metaProxC$FOS != "L" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,"Sample_ID"]
+samples <- metaProxC[ metaProxC$FOS == "N" & metaProxC$Subgroup2 == "IN" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[next.genes, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-i <- 10#17
+i <- 8#17
 TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=5,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")#,"T3")
 t <- cbind(t,met)
-t$gene <- as.numeric(tpmProxC["Lct",samples])
+t$gene <- as.numeric(tpmProxC["Dpf3",samples])
 
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_hc.tiff",width = 4,height = 4,units = 'in',res = 300,compression = 'lzw')
 #Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
 #dev.off()
-#k <- kmeans(t[,c(1:3)],centers = 7,nstart = 100)
+#k <- kmeans(t[,c(1:2)],centers = 3,nstart = 200)
 #k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
 ggplot(t, aes(T1,T2,  colour = gene))+
@@ -223,7 +223,7 @@ ggplot(t, aes(T1,T2,  colour = gene))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
       axis.ticks = element_line(size=1.5),
       panel.grid.major = element_line(size = 1))+
-  scale_colour_gradient(high = "red",low = "grey")#+
+scale_colour_gradient(high = "red",low = "grey")#+
   #scale_shape_manual(values = c(1:7))+
   #scale_colour_manual(values = c("#00c7e4","black","#6ca425","#a800b3","darkgreen","#e19041"))
 #dev.off()
@@ -254,7 +254,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( Mouse_condition  ~ Subgroup2 + Brain_Region) 
+    facet_grid( Mouse_condition  ~ Subgroup2 + Context1) 
 return(p)
 }
 IndivSubgroup <- function(gene,dat,met){
@@ -479,7 +479,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[metaProxC$Brain_Region != "HDG" &  metaProxC$Brain_Region != "DG" & metaProxC$Context1 == "none" & metaProxC$Subgroup2 != "CA2"  &  metaProxC$Subgroup != "Unk" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
+samples <- metaProxC[   metaProxC$Subgroup2 != "CA2"  &  metaProxC$Subgroup != "Unk" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -490,7 +490,7 @@ met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met[met$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
 met$Brain_Region <- factor(x = met$Brain_Region, levels = c("CA1","Neg","VIP","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Lppr3",dat, met)
+Indiv("Pitx3",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 

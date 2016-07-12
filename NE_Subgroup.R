@@ -39,6 +39,9 @@ Test <- function(term = "CA1",Dat, Met){
   }else{
     group <- Met$Subgroup == term
   }
+  if(term == "Sub"){
+    group <- Met$Subgroup2 == "IN" & Met$Brain_Region == "CA1"
+  }
   Pair <- levels(as.factor(as.character(group)))
   res <- exact(Dat, group, Pair)
   a <- apply(tpmProxC[,colnames(dat)[group == TRUE]],1,rawExp,1)
@@ -50,11 +53,9 @@ Test <- function(term = "CA1",Dat, Met){
   return(genes)
   
 }
-SubsampleEdgeR <- function(samples.2, conditon = "DG" , met){
+SubsampleEdgeR <- function(samples.2, samples.1, condition = "DG" ){
   genes <- vector()
   for (i in 1:20){
-    a <- is.na(match(rownames(met), samples.2))
-    samples.1 <- rownames(met)[a]
     samples <- c(samples.2, sample(x = samples.1,size = length(samples.2),replace = FALSE))
     dat <- na.exclude(countProxC[, samples])
     dat <- dat[rowSums(dat) > 0,]
@@ -84,36 +85,17 @@ samples <- rownames(metaProxC[  metaProxC$Context1 == "none" & metaProxC$outlier
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-### Get genes
+### Get genes for major groups
 ca1.genes <- Test(term = "CA1",Dat = dat, Met = met)
 dg.genes <- Test(term = "DG",Dat = dat, Met = met)
 vip.genes <- Test(term = "VIP",Dat = dat, Met = met)
-#
-samples <- rownames(metaProxC[metaProxC$Context1 == "none" & metaProxC$outliers == "in" & metaProxC$Subgroup != "Unk" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" ,])
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-ca3.genes <- SubsampleEdgeR(samples.2, conditon = "CA3" , met)
-in.genes <- SubsampleEdgeR(samples.2, conditon = "IN" , met)
-#################
-## Dataset for minor groups
-#################
-## CA3
-samples <- rownames(metaProxC[  metaProxC$Subgroup == "CA3" & metaProxC$Context1 == "none" & metaProxC$Subgroup != "Unk" &  metaProxC$outliers == "in" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" | 
-                                  metaProxC$Subgroup == "CA1" & metaProxC$Context1 == "none" & metaProxC$Subgroup != "Unk" &  metaProxC$outliers == "in" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-### Get genes
-ca3.genes <- Test("CA3",Dat = dat, Met = met)
-ca3.genes <- c(ca3.genes,Test("CA1",Dat = dat, Met = met))
-## IN
-samples <- rownames(metaProxC[  metaProxC$Subgroup == "CA3" & metaProxC$Context1 == "none" & metaProxC$Subgroup != "Unk" &  metaProxC$outliers == "in" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" | 
-                                  metaProxC$Subgroup == "IN" & metaProxC$Context1 == "none" & metaProxC$Subgroup != "Unk" &  metaProxC$outliers == "in" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-in.genes <- Test("IN",Dat = dat, Met = met)
+neg.genes <- Test(term = "Neg",Dat = dat, Met = met)
+ca3.genes <- Test(term = "CA3",Dat = dat, Met = met)
+in.genes <- Test(term = "IN",Dat = dat, Met = met)
 
-all.genes <- unique(c(ca1.genes,dg.genes,vip.genes,ca3.genes,in.genes))
+marker.genes <- c("Calb2","Cacng5","Fibcd1","Iyd","Coch","Wfs1","Dcn")
+#
+all.genes <- unique(c(ca1.genes,dg.genes,vip.genes,ca3.genes,in.genes,neg.genes))
 #################
 ## Predict based on these genes
 #################
@@ -122,11 +104,11 @@ all.genes <- unique(c(ca1.genes,dg.genes,vip.genes,ca3.genes,in.genes))
 #################
 # First test HC to make sure they're correct
 samples <- rownames(metaProxC[  metaProxC$Context1 == "none" & metaProxC$Subgroup != "Unk" & metaProxC$outliers == "in" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" ,])
-dat <- na.exclude(countProxC[, samples])
+dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 colnames(dat) <- paste(met$Subgroup,1:ncol(dat),sep = ".")
 #Random Forest
-all.genes <- unique(c(ca1.genes,dg.genes,vip.genes,ca3.genes,in.genes,neg.genes))
+all.genes <- unique(c(marker.genes,ca1.genes,dg.genes,vip.genes,ca3.genes,in.genes,neg.genes))
 dat2 <- t(dat[all.genes, ])
 dat2 <- data.frame(dat2)
 dat2$Subgroup.1 <- as.character(met$Subgroup)
@@ -134,26 +116,53 @@ dat2$Subgroup.1 <- as.factor(dat2$Subgroup.1)
 rf.model <- randomForest(Subgroup.1 ~ . , dat2)
 gini <- rf.model$importance
 gini <- gini[order(gini,decreasing=TRUE),]
-
+############
+#Run again to refine the gene list
+############
+next.genes <- names(gini[gini > quantile(gini, 0.7)])
+dat2 <- t(dat[next.genes, ])
+dat2 <- data.frame(dat2)
+p <- apply(dat2, 2,rawExp)
+dat2 <- dat2[,p > 0]
+dat2$Subgroup.1 <- as.character(met$Subgroup)
+dat2$Subgroup.1 <- as.factor(dat2$Subgroup.1)
+rf.model <- randomForest(Subgroup.1 ~ . , dat2)
+gini <- rf.model$importance
+gini <- gini[order(gini,decreasing=TRUE),]
 
 # Now predict
 samples <- rownames(metaProxC[  metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,])
-dat <- na.exclude(countProxC[, samples])
+dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
 #Random Forest
-all.genes <- unique(c(ca1.genes,dg.genes,vip.genes,ca3.genes,in.genes,neg.genes))
-dat2 <- t(dat[all.genes, ])
+dat2 <- t(dat[next.genes, ])
 dat2 <- data.frame(dat2)
 pred.all <- predict(rf.model,newdata = dat2)
 table(pred.all,met$Brain_Region)
 #Check HC again
 samples <- rownames(metaProxC[  metaProxC$Context1 == "none" & metaProxC$Subgroup != "Unk" & metaProxC$outliers == "in" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" ,])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-table(data.frame(met$Subgroup, pred.all[samples]))
+table(data.frame(met$Brain_Region, pred.all[samples]))
 #Note: HC is Perfect!!!!
 #metaProxC[names(pred.all),"Subgroup2"] <- as.character(pred.all)
 ############
+# Now predict
+samples <- rownames(metaProxC[  metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,])
+dat <- na.exclude(tpmProxC[, samples])
+met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+dat2 <- t(dat[next.genes, ])
+
+p <- apply(dat2, 2,rawExp)
+dat2 <- dat2[,p > 0]
+#dat2 <- dat2[,-c(grep("Rik",all.genes))]
+dat2 <- as.data.frame(dat2)
+dat2$Subgroup.1 <- as.character(met$Subgroup2)
+dat2$Subgroup.1 <- as.factor(dat2$Subgroup.1)
+rf.model <- randomForest(Subgroup.1 ~ . , dat2)
+gini <- rf.model$importance
+gini <- gini[order(gini,decreasing=TRUE),]
+
 
 #Random Forest
 samples <- names(pred.all[pred.all == "CA1" | pred.all == "CA3" ])

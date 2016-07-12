@@ -3,7 +3,32 @@
 ####
 ## Reduced sample size difexp
 ####
-
+SubsampleEdgeR <- function(samples.2, conditon = "DG" , met){
+  genes <- vector()
+  for (i in 1:20){
+    a <- is.na(match(rownames(met), samples.2))
+    samples.1 <- rownames(met)[a]
+    samples <- c(samples.2, sample(x = samples.1,size = length(samples.2),replace = FALSE))
+    dat <- na.exclude(countProxC[, samples])
+    dat <- dat[rowSums(dat) > 0,]
+    met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+    ###################
+    #Assign groups
+    ###################
+    group <- met$Subgroup == condition
+    Pair <- levels(as.factor(as.character(group)))
+    ###################
+    # Test genes
+    ###################
+    #!!!Run exact test
+    res <- exact(dat, group, Pair)
+    genes <- c(genes, rownames(res[res$logFC > 0 & res$f < 0.05,]))
+  }
+  
+  genes2 <- as.data.frame(table(genes))
+  genes2 <- genes2[order(genes2$Freq,decreasing = TRUE),]
+  return(genes2)
+}
 samples.2 <- metaProxC[metaProxC$Subgroup == "CA1" & metaProxC$Context1 == "none"& metaProxC$outlier == "in" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" &metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 
 genes <- vector()

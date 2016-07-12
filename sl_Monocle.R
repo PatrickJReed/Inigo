@@ -35,7 +35,7 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$FOS != "L" & metaProxC$Mouse_condition == "HC" &  metaProxC$Subgroup2 != "VIP" &metaProxC$Subgroup2 != "IN" & metaProxC$alignable >  100000 & metaProxC$outliers == "in" & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$FOS != "N" & metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 != "VIP" &metaProxC$Subgroup2 != "IN" & metaProxC$alignable >  100000 & metaProxC$outliers == "in" & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
 exprs <- dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
@@ -58,7 +58,8 @@ my.data <- newCellDataSet(exprs,
 my.data2 <- detectGenes(my.data,min_expr=1)
 expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=10))
 ##
-genes <- all.genes
+a <- RES2[[9]]
+genes <- rownames(a[a$f < 0.01,])
 
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
@@ -79,7 +80,7 @@ rownames(pheno) <- samples
 ## Step5) Plot results
 ###########################
 pData(my.data5)$group  <- paste(as.character(met$PROX1), as.character(met$CTIP2),sep = ".")
-g <- "Wfs1"
+g <- "Tanc1"
 pData(my.data5)$gene  <-as.numeric(dat[g,])
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 9.5,height = 6,units = 'in',res = 300)
 plot_spanning_tree2(my.data5,color_by="gene",tit ="Dentate Gyrus ICA" )
