@@ -254,7 +254,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( Mouse_condition  ~ Subgroup2 + Context1) 
+    facet_grid( Mouse_condition  ~ Context1 ) 
 return(p)
 }
 IndivSubgroup <- function(gene,dat,met){
@@ -479,7 +479,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[   metaProxC$Subgroup2 != "CA2"  &  metaProxC$Subgroup != "Unk" & metaProxC$outlier == "in" & metaProxC$alignable >  100000 &  metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]#
+samples <- metaProxC[ metaProxC$Brain_Region == "DG"  & metaProxC$outlier == "in" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -490,7 +490,7 @@ met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met[met$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
 met$Brain_Region <- factor(x = met$Brain_Region, levels = c("CA1","Neg","VIP","DG"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Pitx3",dat, met)
+Indiv("Dgat2l6",dat, met)
           #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
@@ -520,7 +520,7 @@ genes <- c("Nxph1","Dcn","Bcl11b","Wfs1","Lppr3","Neurod6","Gad2")
 tmp2 <- tmp[genes,]
 #p <- apply(X = tmp2, MARGIN = 1, FUN = rawExp)
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
-h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "row")
+h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 #dev.off()
 #genes <- celltypegenes
 #a <- apply(X = dat[genes,], MARGIN = 1,FUN = rawExp, i = 4)
