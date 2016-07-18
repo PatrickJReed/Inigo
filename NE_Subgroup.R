@@ -130,7 +130,7 @@ rf.model <- randomForest(Subgroup.1 ~ . , dat2)
 gini <- rf.model$importance
 gini <- gini[order(gini,decreasing=TRUE),]
 
-# Now predict
+# Now predict with adding in Protein Stain
 samples <- rownames(metaProxC[  metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,])
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -199,5 +199,5 @@ pred.second <- predict(rf.model2,newdata = dat2)
 table(data.frame(pred.second,met$Brain_Region))
 
 
-metaProxC[names(pred.second),"Subgroup2"] <- as.character(pred.second)
+#metaProxC[names(pred.second),"Subgroup2"] <- as.character(pred.second)
 

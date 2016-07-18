@@ -64,14 +64,15 @@ exact <- function(dat, variable, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- rownames(metaProxC[ metaProxC$Brain_Region == "DG" & metaProxC$Context2 != "C" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$Brain_Region == "CA1" & metaProxC$outliers == "in"
+                                ,])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$Mouse_condition == "5hpA"
+group <- met$Subgroup2 == "IN"
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
