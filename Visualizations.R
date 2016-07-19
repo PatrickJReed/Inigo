@@ -241,6 +241,7 @@ Indiv <- function(gene,dat,met){
   tmp[tmp$fos == "F","FOS"] <- "High"
   tmp[tmp$fos == "L","FOS"] <- "Low"
   tmp[tmp$fos == "N","FOS"] <- "None"
+  tmp$FOS <- factor(tmp$FOS, levels = c("N","L","F"))
   #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
   p <- ggplot(tmp, aes(FOS,exp))+
     geom_violin()+#outlier.shape=NA)+
@@ -252,7 +253,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid(   ~  Subgroup2 ) 
+    facet_grid( Mouse_condition   ~  Subgroup2 ) 
 return(p)
 }
 IndivSubgroup <- function(gene,dat,met){
@@ -378,22 +379,29 @@ scaleMe <- function(x){
   scale(x)[,1]
 }
 
-heatMe <- function(dat,met,genes,k1= 10 , k2 = NULL, sampleorder = NULL,geneorder = NULL,  cutoff = NULL){
+heatMe <- function(dat,met,genes,k1= NULL , k2 = NULL, sampleorder = NULL,geneorder = NULL,  cutoff = NULL,samplenames=NULL){
   tmp <- na.exclude(dat[genes,])
-  colnames(tmp) <- paste(met$PROX1,met$CTIP2,met$FOS,met$Mouse_condition,c(1:nrow(met)),sep = ".")
-  tmp.1 <- t(apply(X=tmp,MARGIN=1,FUN=scaleMe))
+  if(!is.null(samplenames)){
+    colnames(tmp) <- samplenames
+  }else{
+    colnames(tmp) <- paste(met$PROX1,met$CTIP2,met$FOS,met$Mouse_condition,c(1:nrow(met)),sep = ".")
+  }
+  tmp.1 <- t(scale(t(tmp)))
   tmp2 <- melt(t(na.exclude(tmp.1)))
-    o1 <- sampleorder#cutree(hclust(dist(t(tmp))),k=k1)
-
+  if (!is.null(k1)){
+    o1 <- cutree(hclust(dist(t(na.exclude(tmp.1)))),k=k1)
+  }else{
+    o1 <- sampleorder
+  }
   if(!is.null(geneorder)){
     o2 <- geneorder
   }
   if(!is.null(k2)){
-    o2 <- cutree(hclust(dist(tmp)),k=k2)
+    o2 <- cutree(hclust(dist(na.exclude(tmp.1))),k=k2)
   }else{
-    o2 <- 1:length(genes)
+    o2 <- 1:nrow(na.exclude(tmp.1))
   }
-  tmp2$o1 <- rep(as.numeric(o1), nrow(tmp))
+  tmp2$o1 <- as.numeric(o1)
   tmp2$o2 <- rep(as.numeric(o2), each = ncol(tmp))
   if(!is.null(cutoff)){
     tmp2[tmp2$value > cutoff, "value"] <- cutoff + 0.1
@@ -409,6 +417,106 @@ heatMe <- function(dat,met,genes,k1= 10 , k2 = NULL, sampleorder = NULL,geneorde
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   return(p1)
 }
+heatMeRaw <- function(dat,met,genes,k1= NULL , k2 = NULL, sampleorder = NULL,geneorder = NULL,  cutoff = NULL,samplenames=NULL){
+  tmp <- na.exclude(dat[genes,])
+  if(!is.null(samplenames)){
+    colnames(tmp) <- samplenames
+  }else{
+    colnames(tmp) <- paste(met$PROX1,met$CTIP2,met$FOS,met$Mouse_condition,c(1:nrow(met)),sep = ".")
+  }
+  tmp.1 <- tmp
+  tmp2 <- melt(t(na.exclude(tmp.1)))
+  if (!is.null(k1)){
+    o1 <- cutree(hclust(dist(t(na.exclude(tmp.1)))),k=k1)
+  }else{
+    o1 <- sampleorder
+  }
+  if(!is.null(geneorder)){
+    o2 <- geneorder
+  }
+  else if(!is.null(k2)){
+    o2 <- cutree(hclust(dist(na.exclude(tmp.1))),k=k2)
+  }else{
+    o2 <- 1:nrow(na.exclude(tmp.1))
+  }
+  tmp2$o1 <- as.numeric(o1)
+  tmp2$o2 <- rep(as.numeric(o2), each = ncol(tmp))
+  if(!is.null(cutoff)){
+    tmp2[tmp2$value > cutoff, "value"] <- cutoff + 0.1
+    tmp2[tmp2$value < (-1 * cutoff), "value"] <- (-1 * cutoff) - 0.1
+  }
+  p1 <- ggplot(tmp2, aes(reorder(X1,o1), reorder(X2,o2) , fill = value))+
+    geom_tile()+
+    theme(axis.title.x=element_blank(),
+          axis.title.y=element_blank()
+    )+
+    scale_fill_gradient2(high="red",mid = "white",low="blue")+
+    #theme_bw(base_size=22)+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  return(p1)
+}
+
+heatMeAvg <- function(dat,met,genes,group = "Subgroup2", k1= NULL , k2 = NULL, sampleorder = NULL,geneorder = NULL,  cutoff = NULL,samplenames=NULL){
+  tmp <- na.exclude(dat[genes,])
+  if(!is.null(samplenames)){
+    colnames(tmp) <- samplenames
+  }else{
+    colnames(tmp) <- paste(met$PROX1,met$CTIP2,met$FOS,met$Mouse_condition,c(1:nrow(met)),sep = ".")
+  }
+  tmp.1 <- na.exclude(t(scale(t(tmp))))
+  tmp3.m <- vector()
+  tmp3.p <- vector()
+  nm <- vector()
+  for(g in unique(met[,group])){
+    if (!is.null(dim(tmp.1[,met[,group] == g])[1])){
+      #mean
+      a <- apply(tmp.1[,met[,group] == g],1,mean)
+      tmp3.m <- cbind(tmp3.m, as.numeric(a))
+      #prop
+      a <- apply(tmp.1[,met[,group] == g],1,propExp)
+      tmp3.p <- cbind(tmp3.p, as.numeric(a))
+      nm <- c(nm, g)
+    }
+  }
+  colnames(tmp3.m) <- colnames(tmp3.p) <- nm
+  rownames(tmp3.m) <- rownames(tmp3.p) <- rownames(tmp.1)
+  tmp3.m <- tmp3.m
+  tmp3.p <- tmp3.p
+  tmp4 <- rbind(melt(t(tmp3.m)), melt(t(tmp3.p)))
+  tmp4[,"analysis"] <- c(rep("mean",nrow(melt(t(tmp3.m)))),rep("prop",nrow(melt(t(tmp3.m)))))
+  if (!is.null(k1)){
+    o1 <- cutree(hclust(dist(t(tmp3.m))),k=k1)
+  }else if (!is.null(sampleorder)){
+    o1 <- sampleorder
+  }else{
+    o1 <- 1:ncol(tmp3.m)
+  }
+  if(!is.null(geneorder)){
+    o2 <- geneorder
+  }else if(!is.null(k2)){
+    o2 <- cutree(hclust(dist(na.exclude(tmp3.m))),k=k2)
+  }else{
+    o2 <- 1:nrow(na.exclude(tmp3.m))
+  }
+  tmp4$o1 <- as.numeric(o1)
+  tmp4$o2 <- rep(as.numeric(o2), each = ncol(tmp3.m))
+  tmp4$value <- as.numeric(as.character(tmp4$value))
+  if(!is.null(cutoff)){
+    tmp4[tmp4$value > cutoff, "value"] <- cutoff + 0.1
+    tmp4[tmp4$value < (-1 * cutoff), "value"] <- (-1 * cutoff) - 0.1
+  }
+  p1 <- ggplot(tmp4[tmp4$analysis == "mean",], aes(reorder(X1,o1), reorder(X2,o2) , fill = value))+
+    geom_tile()+
+    theme(axis.title.x=element_blank(),
+          axis.title.y=element_blank()
+    )+
+    scale_fill_gradient2(high="red",mid = "white",low="blue")+
+    #theme_bw(base_size=22)+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))#+
+    #facet_grid(~analysis,scales = "free")
+  return(p1)
+}
+
 # Volcano Plot ------------------------------------------------------------
 
 ## Labels genes that are NS, nominal, or adj significant
@@ -447,7 +555,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" 
+samples <- metaProxC[metaProxC$Subgroup2 == "VIP" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" 
                         
                         ,"Sample_ID"]
                                              
@@ -463,7 +571,7 @@ loading <- loading[order(loading$PC1),]
 Var <- p@R2
 met$group <- paste(met$FOS, met$Subgroup2, sep =".")
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby  = "FOS",shapeby = "Subgroup2",Colors = c("red","blue"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby  = "FOS",Colors = c("red","blue"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -481,7 +589,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG",
+samples <- metaProxC[ metaProxC$Context1 == "none" & metaProxC$Subgroup2 != "CA2"& metaProxC$FOS != "L" & metaProxC$Subgroup2 != "HDG" & metaProxC$outliers == "in" ,
                         "Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
@@ -490,7 +598,7 @@ met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA","5hpAA","5hpAC"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Arc",dat, met)
+Indiv("Grin3a",dat, met)
         #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
@@ -505,38 +613,23 @@ res <- res.HC_N_P_1
 Volcano(res)
 
 ######
-samples <- rownames(metaProxC[ metaProxC$FOS != "L" & metaProxC$Subgroup2  == "IN" & metaProxC$Context1 == "none" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$FOS != "L" & metaProxC$Subgroup2  != "HDG" & metaProxC$Context1 == "none" & metaProxC$outliers == "in",])
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 tmp <- dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
-colnames(tmp) <- paste( met$FOS)
-#rownames(tmp) <- toupper((rownames(tmp)))
-#genes <- c("Man1a","Bcl11b","Slc6a1","Arpp21","Col15a1","Bok","Sst","Camk2a","Gad1","Gad2","Pvalb")
-#genes <- c("Foxg1","Wnt5a","Dcx","Prox1","Rbfox3","Camk2a","Creb1","Neurod1","Sox11")
+colnames(tmp) <- paste( met$Subgroup2,met$FOS)
 #upstream <- c("Creb1","Crebbp","Grin1","Grin2a","Grin2b","Gria1","Gria2","Gria3","Gria4","Gabra1","Gabra2","Gabrb","Cacna1a","Cacna1b","Cacna1c","Cacnai","Mapk3","Mapk1","Elk1","Srf","Rps6ka3")
-#neg <- c("Sostdc1","Ttr","Wfs1","Pantr1","C1ql2","Pvalb","Reln","Map3k15","Sst","Gad1","Cdh24","Mpped1")
-#genes <- c("Ppp1cc","Ppp1cb","Ppp1ca","Per1","Fos","Bdnf","Atf1","Creb1","Crebbp","Kcnip3","Carf")
-genes <- c("Fos","Arc","Egr1","Homer1","Junb","Fosb")
-tmp2 <- tmp[genes,]
-#p <- apply(X = tmp2, MARGIN = 1, FUN = rawExp)
+tmp2 <- tmp[genes2,]
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
-#tmp2 <- tmp2[,colSums(tmp2) > 0]
 h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "row")
 #dev.off()
-#genes <- celltypegenes
-#a <- apply(X = dat[genes,], MARGIN = 1,FUN = rawExp, i = 4)
-#genes <- table(c(genes, names(a[a>4])))
-#genes <- names(genes[genes == 2])
-#o1 <- data.frame(a  = met$Brain_Region, b = cutree(hclust(dist(t(dat[celltypegenes,]))),k=40))
-#sampleorder <- o1$b 
-#sampleorder[o1$a == "DG"] <- sampleorder[o1$a == "DG"] * 1000
-#sampleorder[o1$a == "pIN"] <- sampleorder[o1$a == "pIN"] * 80
-#sampleorder[o1$a == "IN"] <- sampleorder[o1$a == "IN"] * 20
-#sampleorder[o1$a == "CA1"] <- sampleorder[o1$a == "CA1"] * 1
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/celltypes_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
-sampleorder <- c(h$colInd)
-geneorder <- c("Crebbp","Creb1","Fos","Arc","Mapk1")
-heatMe(dat,met,genes,sampleorder = sampleorder,geneorder = c(1,2,3,4,5) , cutoff = 3)
+a <- apply(dat[genes,],1,propExp)
+genes2 <- names(a[a > 0.3])
+heatMeRaw(dat,met,genes2,k1 = 5, geneorder =c(3,1,4,2) , samplenames = paste(met$Subgroup2,1:ncol(dat)))
+heatMe(dat,met,genes2,k1 = 5, k2 = 3 , cutoff = 3,samplenames = paste(met$Subgroup2,1:ncol(dat)))
+heatMeAvg(dat,met,genes2,k1 =2,geneorder =c(3,1,4,2) , samplenames = paste(met$Subgroup2,1:ncol(dat)))
+
 #dev.off()
 ######
 p <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=propExp)

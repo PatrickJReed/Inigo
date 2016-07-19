@@ -1,72 +1,52 @@
 ####
 # Distance between FOS+ and FOS-
-####
-#DG
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "DG"&
-                                metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" &metaProxC$outliers == "in",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-res.DG <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
-#CA1
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "CA1"&
-                                metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" &metaProxC$outliers == "in",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-res.CA1 <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
-#CA1b
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "CA1b"&
-                                metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" &metaProxC$outliers == "in",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-res.CA1b <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
-#CA3
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "CA3"&
-                                metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" &metaProxC$outliers == "in",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-res.CA3 <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
-#IN
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "IN"&
-                                metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" &metaProxC$outliers == "in",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-res.IN <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
-#VIP
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "VIP"&
-                                metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" &metaProxC$outliers == "in",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-res.VIP <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
+Test <- function(celltype = "DG"){
+  samples <- rownames(metaProxC[metaProxC$Subgroup2 == celltype &
+                                  metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" &metaProxC$outliers == "in",])
+  dat <- na.exclude(countProxC[, samples])
+  dat <- dat[rowSums(dat) > 0,]
+  met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+  res <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
+  return(res)
+}
+############################
+# Step 1: Calculate Genes Differentially expressed betwen FOS+ and FOS- depending on cell types
+############################
+res.DG <- Test(celltype = "DG")
+res.CA1 <- Test(celltype = "CA1")
+res.CA1b <- Test(celltype = "CA1b")
+res.CA3 <- Test(celltype = "CA3")
+res.IN <- Test(celltype = "IN")
+res.VIP <- Test(celltype = "VIP")
 
+RES.F <- list(res.DG, res.CA1, res.CA1b, res.CA3, res.IN, res.VIP)
+names(RES.F) <- c("DG","CA1","CA1b","CA3","IN","VIP")
 
-##########
-#
-df <- data.frame(count = c(sum(res.DG$logFC > 0 & res.DG$f < 0.05),
-                           sum(res.CA1$logFC > 0 & res.CA1$f < 0.05),
-                           sum(res.CA1b$logFC > 0 & res.CA1b$f < 0.05),
-                           sum(res.CA3$logFC > 0 & res.CA3$f < 0.05),
-                           sum(res.IN$logFC > 0 & res.IN$f < 0.05),
-                           sum(res.VIP$logFC > 0 & res.VIP$f < 0.05),
-                           
-                           sum(res.DG$logFC < 0 & res.DG$f < 0.05),
-                           sum(res.CA1$logFC < 0 & res.CA1$f < 0.05),
-                           sum(res.CA1b$logFC < 0 & res.CA1b$f < 0.05),
-                           sum(res.CA3$logFC < 0 & res.CA3$f < 0.05),
-                           sum(res.IN$logFC < 0 & res.IN$f < 0.05),
-                           sum(res.VIP$logFC < 0 & res.VIP$f < 0.05)),
-              celltype = c("DG","CA1","CA1b","CA3","IN","VIP"),
-              FOS = c(rep(c("N","F"),each = 6))
-)
+############################
+# Step 2: Plot a count of all differentially expressed genes by cell type
+############################
+p.a <- 0.3
+difexp <- list()
+df <- vector()
+i <- 0
+for (nm in names(RES.F)){
+  for (j in c("F","N")){
+    i <- i + 1
+    r <- RES.F[[nm]]
+    if (j == "F"){
+      difexp[[i]] <- rownames(r[r$logFC < 0 & r$f < 0.05 & r$a > p.a,])
+    }else{
+      difexp[[i]] <- rownames(r[r$logFC > 0 & r$f < 0.05 & r$a < p.a ,])
+    }
+    names(difexp)[i] <- paste(nm, j, sep =".")
+    df <- rbind(df, c(nm, j, length(difexp[[i]])))
+  }
+}
+df <- as.data.frame(df)
+df$V3 <- as.numeric(as.character(df$V3))
+df$V2 <- factor(df$V2, levels = c("N","F"))
 
-
-df$FOS <- factor(df$FOS, levels = c("N","F"))
-ggplot(df[df$celltype != "CA1b" & df$celltype!= "CA3",], aes(celltype,count, fill = FOS))+
+ggplot(df[df$V1 != "CA1b" & df$V1 != "CA3",], aes(V1, V3, fill = V2))+
   geom_bar(stat = 'identity', position = "dodge")+
   scale_fill_manual(values = c("blue","red"))+
   ylab("DifExp Genes, count")+
@@ -76,37 +56,129 @@ ggplot(df[df$celltype != "CA1b" & df$celltype!= "CA3",], aes(celltype,count, fil
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5))
 
+############################
+# Step 3: Genes that are only different in one condition
+############################
+df_uniq <- vector()
+difexp_uniq <- list()
+i <- 0
+for (nm in names(difexp)){
+  i <- i + 1
+  other <- names(difexp)[-which(names(difexp) == nm)]
+  a <- rep(difexp[[nm]],(length(difexp)+1))
+  for (j in 1:length(other)){
+    a <- c(a,difexp[[other[j]]])
+  }
+  a <- table(a)
+  difexp_uniq[[i]] <- names(a[a== (length(difexp)+1)])
+  names(difexp_uniq)[i] <- nm
+  uniq <- sum(a == (length(difexp)+1))
+  nm2 <- unlist(strsplit(nm, ".", fixed = TRUE))
+  df_uniq <- rbind(df_uniq, c(nm2[1],nm2[2],uniq))
+}
 
-###########
-#
-dg.genes <- rownames(res.DG[res.DG$logFC < 0 & res.DG$f < 0.05 ,])
-ca1.genes <- rownames(res.CA1[res.CA1$logFC < 0 & res.CA1$f < 0.05,])
-in.genes <- rownames(res.IN[res.IN$logFC < 0 & res.IN$f < 0.05,])
-vip.genes <- rownames(res.VIP[res.VIP$logFC < 0 & res.VIP$f < 0.05,])
+df_uniq <- as.data.frame(df_uniq)
+df_uniq$V3 <- as.numeric(as.character(df_uniq$V3))
+df_uniq$V2 <- factor(df_uniq$V2, levels = c("N","F"))
 
+ggplot(df_uniq[df_uniq$V1 != "CA1b" & df_uniq$V1 != "CA3",], aes(V1, V3, fill = V2))+
+  geom_bar(stat = 'identity', position = "dodge")+
+  scale_fill_manual(values = c("blue","red"))+
+  ylab("Unique DifExp Genes, count")+
+  labs(title = "Differential Expression")+
+  theme_bw()+
+  theme(text=element_text(size=20))+
+  theme(panel.border = element_rect(colour=c("black"),size=2),
+        axis.ticks = element_line(size=1.5))
 
-a <- table(c(rep(dg.genes,5),
-       ca1.genes,
-       in.genes,
-       vip.genes))
-
-genes <- names(a[a==5])
-b <- res.DG[genes,]
-b <- b[order(b$f),]
 ######
-# Difexp versus 
+# Step 4: Distinguish Celltype-specific activation from cell-type specific 'quietness'
 ######
-samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 != "DG" & metaProxC$FOS == "N" & metaProxC$Subgroup2 != "HDG" & metaProxC$outliers == "in"|
-                                metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 == "DG" & metaProxC$FOS == "F" & metaProxC$outliers == "in",])
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-res.DGonly <- exact(dat, group = (met$FOS == "F"), Pair = c(TRUE,FALSE))
+RES.Direction <- list()
+cell.Fspecific <- list()
+cell.quiet <- list()
+i <- 0
+i2 <- 0
+for(s in unique(met$Subgroup2)){
+  for(j in c("F","N")){
+    i <- i + 1
+    nm <- paste(s,j,sep = ".")
+    if(j == "F"){
+    samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 != s & metaProxC$FOS == "N" & metaProxC$Subgroup2 != "HDG" & metaProxC$outliers == "in"|
+                                    metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 == s & metaProxC$FOS == "F" & metaProxC$outliers == "in",])
+    }else{
+      samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 != s & metaProxC$FOS == "F" & metaProxC$Subgroup2 != "HDG" & metaProxC$outliers == "in"|
+                                      metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 == s & metaProxC$FOS == "N" & metaProxC$outliers == "in",])
+    }
+    dat <- na.exclude(countProxC[, samples])
+    dat <- dat[rowSums(dat) > 0,]
+    met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+    res <- exact(dat, group = (met$FOS == j), Pair = c(TRUE,FALSE))
+    ##Save difexp results 
+    RES.Direction[[i]] <- res
+    names(RES.Direction)[i] <- nm 
+    ##Save genes that are either cell-specific, or cell-quiet
+    if(j == "F"){
+      i2 <- i2 + 1
+      genes <- difexp_uniq[[nm]]
+      res2 <- res[genes,]
+      cell.Fspecific[[i2]] <- rownames(na.exclude(res2[res2$logFC < 0 & res2$f < 0.05,]))
+      names(cell.Fspecific)[i2] <- s
+    }else{
+      genes <- difexp_uniq[[nm]]
+      res2 <- res[genes,]
+      cell.quiet[[i2]] <- rownames(na.exclude(res2[res2$logFC < 0 & res2$f < 0.05,]))
+      names(cell.quiet)[i2] <- s
+    }
+  }
+}
 
-res2 <- res.DGonly[genes,]
-dg.iegspecific <- rownames(na.exclude(res2[res2$logFC < 0 & res2$f < 0.05,]))
-dg.quiet <- rownames(na.exclude(res2[res2$f > 0.05,]))
+######
+# Step 5: Count genes that are cell-specific
+######
+a <- RES.F[["VIP"]][cell.Fspecific[["VIP"]],]
+a <- a[order(a$PValue),]
+######
+# Step 6: Count genes that are cell-independent
+######
+excitF <- table(c(difexp[[1]], difexp[[3]]))
+excitN <- table(c(difexp[[2]], difexp[[4]]))
+inhibF <- table(c(difexp[[9]], difexp[[11]]))
+inhibN <- table(c(difexp[[10]], difexp[[12]]))
+allF <- table(c(difexp[[1]], difexp[[3]],difexp[[9]], difexp[[11]]))
+allN <- table(c(difexp[[2]], difexp[[4]],difexp[[10]], difexp[[12]]))
+notinhib <- table(c(rep(names(excitF[excitF == 2]),3),difexp[[9]], difexp[[11]]))
 
+a <- head(RES.F[[1]][names(notinhib[notinhib == 3]),])
+a <- a[order(a$PValue),]
+
+sum(excitF == 2)
+sum(excitN == 2)
+sum(inhibF == 2)
+sum(inhibN == 2)
+sum(allF == 4)
+sum(allN == 4)
+sum(notinhib == 3)
+
+df <- res.DGonly[genes,]
+df[dg.iegspecific,"group"] <- "DG Specific"
+df[dg.quiet,"group"] <- "DG"
+
+ggplot(df, aes(group, -logFC,colour = -log(f)))+
+  geom_violin()+
+  geom_point()+
+  scale_colour_gradient(high = "red",low = 'blue')+
+  ylab("DG (F+) vs. nonDG (F-)\nlogFC")+
+  theme_bw()+
+  theme(text=element_text(size=16))+
+  theme(panel.border = element_rect(colour=c("black"),size=2),
+        axis.ticks = element_line(size=1.5),
+        panel.grid.major = element_line(colour = "black"))+
+  labs(title=("Genes Activated in DG FOS+ Nuclei"))
+
+
+res3 <- res.DG[dg.iegspecific,]
+res3 <- res3[order(res3$PValue),]
 ###### 
 # Identify genes that are already on in other cell types
 ###### 
