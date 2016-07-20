@@ -1,4 +1,6 @@
 ####
+#save(list = c("RES.F", "RES.Direction", "df_uniq", "difexp_uniq", "difexp","cell.Fspecific", "cell.quiet"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/cellspecific.rda",compress = TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/cellspecific.rda")
 # Distance between FOS+ and FOS-
 Test <- function(celltype = "DG"){
   samples <- rownames(metaProxC[metaProxC$Subgroup2 == celltype &
@@ -92,14 +94,14 @@ ggplot(df_uniq[df_uniq$V1 != "CA1b" & df_uniq$V1 != "CA3",], aes(V1, V3, fill = 
         axis.ticks = element_line(size=1.5))
 
 ######
-# Step 4: Distinguish Celltype-specific activation from cell-type specific 'quietness'
-######
+# Step 4: Generate Differential Expression matrices for
+#         Subtype|FOS vs all else
+#####
+subs <- c("CA1","CA1b","CA3","DG","IN","VIP")
+
 RES.Direction <- list()
-cell.Fspecific <- list()
-cell.quiet <- list()
 i <- 0
-i2 <- 0
-for(s in unique(met$Subgroup2)){
+for(s in subs){
   for(j in c("F","N")){
     i <- i + 1
     nm <- paste(s,j,sep = ".")
@@ -117,17 +119,32 @@ for(s in unique(met$Subgroup2)){
     ##Save difexp results 
     RES.Direction[[i]] <- res
     names(RES.Direction)[i] <- nm 
-    ##Save genes that are either cell-specific, or cell-quiet
+  }
+}
+
+######
+# Step 5: Save genes that are either cell-specific, or cell-quiet
+######
+subs <- c("CA1","CA1b","DG","IN","VIP")
+cell.Fspecific <- list()
+cell.quiet <- list()
+i2 <- 0
+for(s in unique(subs)){
+  for(j in c("F","N")){
+    nm <- paste(s,j,sep = ".")
+    res <- RES.Direction[[nm]]
     if(j == "F"){
       i2 <- i2 + 1
       genes <- difexp_uniq[[nm]]
       res2 <- res[genes,]
-      cell.Fspecific[[i2]] <- rownames(na.exclude(res2[res2$logFC < 0 & res2$f < 0.05,]))
+      a <- res2[res2$logFC < 0 & res2$f < 0.05,]
+      a <- a[order(a$PValue),]
+      cell.Fspecific[[i2]] <- a
       names(cell.Fspecific)[i2] <- s
     }else{
       genes <- difexp_uniq[[nm]]
       res2 <- res[genes,]
-      cell.quiet[[i2]] <- rownames(na.exclude(res2[res2$logFC < 0 & res2$f < 0.05,]))
+      cell.quiet[[i2]] <- rownames(na.exclude(res2[res2$logFC > 0 & res2$f < 0.05,]))
       names(cell.quiet)[i2] <- s
     }
   }

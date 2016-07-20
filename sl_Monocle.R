@@ -6,22 +6,35 @@ library(monocle)
 library(ggplot2)
 library(parallel)
 #save(list=c("linear_monocle.dg","linear_monocle.ca1","res.n.ee.left_v_right","res.n.ee.right","res.n.ee.left","my.data5.dg","my.data5.ca1","pheno.dg","pheno.ca1"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda",compress=TRUE)
-load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda")
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda")
+##### Below is newer data as of 7/20/2016
+#save(list=c("allnuclei"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle2.rda",compress=TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle2.rda")
 ###########################
 ## Functions
 ###########################
-pseudoPlot <- function(gene){
-  tmp <- pheno
+pseudoPlot <- function(gene,color_by = "FOS", shape_by = NULL , COLORS = NULL){
+  tmp <- pData(my.data5)
   tmp[,"TPM"] <- as.numeric(dat[gene,])
-  
-  plt <- ggplot(tmp, aes(Pseudotime, TPM,colour = FOS))+
-    geom_point()+
-    labs(title = gene)+
-    geom_smooth(size = 1, colour = "black",group = "1")+
+  tmp[,"color_by"] <- tmp[,color_by]
+  if(!is.null(shape_by)){
+    tmp[,"shape_by"] <- tmp[,shape_by]
+    plt <- ggplot(tmp, aes(Pseudotime, TPM,colour = color_by, shape= shape_by))+
+      geom_point()
+  }else{
+  plt <- ggplot(tmp, aes(Pseudotime, TPM,colour = color_by))+
+    geom_point()
+  }
+   plt <- plt + labs(title = gene)+
+    geom_smooth(size = 1, colour = "black",group = 1)+
     theme_bw(base_size = 15)+
     xlab("Pseudotime")+
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))
+     if(!is.null(COLORS)){
+       plt <- plt + scale_colour_manual(values = COLORS)
+     }
+
   return(plt)
 }
 modelMe <- function(g){
@@ -35,11 +48,11 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$FOS != "N" & metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 != "VIP" &metaProxC$Subgroup2 != "IN" & metaProxC$alignable >  100000 & metaProxC$outliers == "in" & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Context1 != "A" & metaProxC$Subgroup2 != "HDG"  & metaProxC$outliers == "in" ,"Sample_ID"]
 exprs <- dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-colnames(exprs) <- nm2 <- paste(met$Brain_Region, c(1:nrow(met)),sep = "_")
+colnames(exprs) <- nm2 <- paste(met$Subgroup2, c(1:nrow(met)),sep = "_")
 df <- data.frame(cells = nm2,labels = as.character(met$FOS))
 rownames(df) <- nm2
 phenoData <- new("AnnotatedDataFrame",data=df)
@@ -58,8 +71,14 @@ my.data <- newCellDataSet(exprs,
 my.data2 <- detectGenes(my.data,min_expr=1)
 expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=10))
 ##
-a <- RES2[[9]]
-genes <- rownames(a[a$f < 0.01,])
+genes <- vector()
+for(i in 1:length(RES.F)){
+  a <- RES.F[[i]]
+  genes <- c(genes,rownames(a[a$f < 0.01 & a$a > 0.2,]))
+}
+genes <- unique(genes)
+a <- table(c(genes, genes,rownames(cell.Fspecific[["DG"]])))
+genes <- names(a[a==2])
 
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
@@ -85,11 +104,15 @@ pData(my.data5)$gene  <-as.numeric(dat[g,])
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 9.5,height = 6,units = 'in',res = 300)
 plot_spanning_tree2(my.data5,color_by="gene",tit ="Dentate Gyrus ICA" )
 #dev.off()
-pData(my.data5)$FOS <- paste(as.character(met$FOS), as.character(met$Subgroup2),sep = ".")
-plot_spanning_tree2(my.data5,color_by = "FOS",tit = "HC Hippocampus" )
+pData(my.data5)$FOS <- paste(as.character(met$FOS),as.character(met$Mouse_condition),sep = ".")
+pData(my.data5)$Subgroup2 <- factor(met$Subgroup2,levels = c("CA1","CA1b","CA3","DG","VIP","IN","CA2"))
+
+pData(my.data5)$Mouse_condition <- paste(as.character(met$Mouse_condition),sep = ".")
+pData(my.data5)$pickMe <- met$Mouse_condition == "EE" & met$Subgroup2 == "CA1" & met$FOS == "N"
+plot_spanning_tree2(my.data5,shape_by = "Subgroup2",color_by = "FOS",tit = "HC Hippocampus" ,COLORS = c("red","#f98e04","#e1ba04","blue","skyblue"))#, Subset = "EE", Subset_col = "Mouse_condition")
 
 ###
-pseudoPlot("Arc")
+pseudoPlot("Arc",color_by = "labels",COLORS = c("red","orange","blue"))
 
 ###########################
 ## Extract samples of interest
@@ -153,3 +176,17 @@ a <- res[res$logFC.1 < 0 & res$f.4 < 0.05 & res$PValue.7 > 0.05,]
 a <- a[order(a$PValue.3),]
 
 
+
+############
+# 
+S_matrix <- reducedDimS(my.data5)
+lib_info_with_pseudo <- pData(my.data5)
+ica_space_df <- data.frame(t(S_matrix[c(x, y), ]))
+colnames(ica_space_df) <- c("ICA_dim_1", "ICA_dim_2")
+ica_space_df$sample_name <- row.names(ica_space_df)
+df <- as.data.frame(merge(ica_space_df, lib_info_with_pseudo, 
+                                 by.x = "sample_name", by.y = "row.names"))
+df$labels2 <- df$labels
+df[df$labels2 == "L","labels2"] <- "F"
+ggplot(df[df$Subgroup2 != "CA2",], aes(ICA_dim_2, fill = Subgroup2, alpha = 0.5))+
+  geom_density()
