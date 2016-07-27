@@ -1,10 +1,10 @@
 #Scale expression
 #Identify data
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG",
+samples <- metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG",
                      "Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-genes <- c("Arc","Fos","Egr1","Fosb","Junb")
+#genes <- c("Arc","Fos","Egr1","Fosb","Junb")
 #genes <- rownames(na.exclude(dat))
 #Scale data
 dat.s <- na.exclude(t(scale(t(dat[genes,]))))
@@ -40,3 +40,5 @@ ggplot(ieg.sorted, aes(FOS, ieg))+
   geom_violin()+
   geom_point()+
   facet_grid(~celltype)
+
+####

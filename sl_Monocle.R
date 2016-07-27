@@ -8,7 +8,7 @@ library(parallel)
 #save(list=c("linear_monocle.dg","linear_monocle.ca1","res.n.ee.left_v_right","res.n.ee.right","res.n.ee.left","my.data5.dg","my.data5.ca1","pheno.dg","pheno.ca1"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda",compress=TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle.rda")
 ##### Below is newer data as of 7/20/2016
-#save(list=c("allnuclei"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle2.rda",compress=TRUE)
+#save(list=c("allnuclei","inhib","vip","IN"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle2.rda",compress=TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle2.rda")
 ###########################
 ## Functions
@@ -48,7 +48,7 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$Context1 != "A" & metaProxC$Subgroup2 != "HDG"  & metaProxC$outliers == "in" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Context1 != "A" & metaProxC$Subgroup2 == "DG"  & metaProxC$outliers == "in","Sample_ID"]
 exprs <- dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
@@ -77,8 +77,8 @@ for(i in 1:length(RES.F)){
   genes <- c(genes,rownames(a[a$f < 0.01 & a$a > 0.2,]))
 }
 genes <- unique(genes)
-a <- table(c(genes, genes,rownames(cell.Fspecific[["DG"]])))
-genes <- names(a[a==2])
+#a <- table(c(genes, genes,rownames(cell.Fspecific[["DG"]])))
+#genes <- names(a[a==2])
 
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
@@ -98,21 +98,18 @@ rownames(pheno) <- samples
 ###########################
 ## Step5) Plot results
 ###########################
-pData(my.data5)$group  <- paste(as.character(met$PROX1), as.character(met$CTIP2),sep = ".")
-g <- "Tanc1"
-pData(my.data5)$gene  <-as.numeric(dat[g,])
-#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 9.5,height = 6,units = 'in',res = 300)
-plot_spanning_tree2(my.data5,color_by="gene",tit ="Dentate Gyrus ICA" )
-#dev.off()
 pData(my.data5)$FOS <- paste(as.character(met$FOS),as.character(met$Mouse_condition),sep = ".")
 pData(my.data5)$Subgroup2 <- factor(met$Subgroup2,levels = c("CA1","CA1b","CA3","DG","VIP","IN","CA2"))
-
+pData(my.data5)$samples <- colnames(exprs)
 pData(my.data5)$Mouse_condition <- paste(as.character(met$Mouse_condition),sep = ".")
 pData(my.data5)$pickMe <- met$Mouse_condition == "EE" & met$Subgroup2 == "CA1" & met$FOS == "N"
-plot_spanning_tree2(my.data5,shape_by = "Subgroup2",color_by = "FOS",tit = "HC Hippocampus" ,COLORS = c("red","#f98e04","#e1ba04","blue","skyblue"))#, Subset = "EE", Subset_col = "Mouse_condition")
+plot_spanning_tree2(my.data5,
+                    color_by = "FOS",tit = "DG" ,
+                    COLORS = c("red","#f98e04","#e1ba04","blue","skyblue"))#,
+                    #SHAPES = c(15,17))#"#f98e04","#e1ba04","blue","skyblue"))#, Subset = "EE", Subset_col = "Mouse_condition")
 
 ###
-pseudoPlot("Arc",color_by = "labels",COLORS = c("red","orange","blue"))
+pseudoPlot("Lrrtm3",color_by = "Subgroup2",COLORS = c("red","blue","skyblue"))
 
 ###########################
 ## Extract samples of interest

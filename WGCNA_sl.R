@@ -5,13 +5,13 @@ library("WGCNA")
 library("DESeq2")
 library("Rsamtools")
 
-samples <- metaProxC[metaProxC$Mouse_condition == "EE"  & metaProxC$outliers == "in" ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Subgroup == "DG"  & metaProxC$outliers == "in" ,"Sample_ID"]
 dat <- tpmProxC[, samples]
 rownames(dat) <- toupper(rownames(dat))
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-m <- apply(X = dat,1,rawExp, i  = 2)
-vstMat2 <- dat[m > (0.60 * (ncol(dat))) & m < (0.9* (ncol(dat))),]
+m <- apply(X = dat,1,mean)
+vstMat2 <- dat[m > 3,]
 ##################################
 #### Setup the WGCNA-Style Objects
 ##################################
@@ -33,6 +33,7 @@ sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)
 plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
      xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",
      main = paste("Scale independence"));
+abline(h=0.90,col="red")
 #choose the power for the experiment
 POWER = 5
 #Calculate the network
@@ -51,8 +52,8 @@ sizeGrWindow(12, 9)
 mergedColors = labels2colors(net$colors)
 # Plot the dendrogram and the module colors underneath
 plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
-                    "Module colors",
-                    dendroLabels = 0.9,hang = 0.03,
+                    "Module Colors",
+                    dendroLabels = FALSE,hang =0.03,
                     addGuide = TRUE, guideHang = 0.1)
 
 tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/HCorder2.tiff",width = 18,height = 10,units = "in",res = 300)
