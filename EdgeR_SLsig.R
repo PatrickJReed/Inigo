@@ -66,15 +66,14 @@ exact <- function(dat, group, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- rownames(metaProxC[metaProxC$Context1 != "A" & metaProxC$FOS != "L"  & metaProxC$Subgroup2 != "HDG"  & metaProxC$outliers == "in"
-                                ,])
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$outliers == "in",])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$Subgroup2 == "CA1" & met$FOS == "F" | met$Subgroup2 == "CA1b" & met$FOS == "F"
+group <- met$Subgroup2 == "VIP"
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
@@ -84,7 +83,7 @@ res <- exact(dat, group, Pair)
 ############################
 ### Keep track of gene lists 
 ############################
-variable1 <- pData(my.data5)$ICA_
+variable1 <- pData(my.data5)$Pseudotime
 res <- GLM(dat, variable1)
 #######
 S_matrix <- reducedDimS(my.data5)
