@@ -5,6 +5,9 @@ library(scatterplot3d)
 library(fdrtool)
 library(ggplot2)
 ### other function
+maximum <- function(i,g){
+    return(sum(tpmProxC[names(Max[i]),colnames(dat)[group == g]] > Max[i]) / sum(group == g))
+}
 GLM <- function(dat, variable1, variable2 = NULL, prefit=FALSE){
   if(is.null(variable2)){
     design <- model.matrix(~variable1)
@@ -57,6 +60,7 @@ exact <- function(dat, group, Pair){
   b <- apply(tpmProxC[,colnames(dat)[group == FALSE]],1,rawExp,1)
   res$a <- a[rownames(res)] / sum(group == TRUE)
   res$b <- b[rownames(res)] / sum(group == FALSE)
+
   return(res)
 }
 
@@ -66,20 +70,39 @@ exact <- function(dat, group, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- rownames(metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$Subgroup2 == "VIP" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$Subgroup2 == "VIP"
+group <- met$FOS == "F"
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
 ###################
+#Arccutoff
+#arc <- as.numeric(tpmProxC["Arc",samples])
+#hist(arc)
+#arc <- arc[order(arc)]
+#difarc <- c(0,diff(arc[order(arc)]))
+#elbow <- max(difarc)
+#cutoff <- mean(c(arc[which(difarc == elbow)], arc[which(difarc == elbow) -1]))
+
+
+#arcexp <- colnames(tpmProxC[,samples])[as.vector(tpmProxC["Arc",samples] < cutoff)]
+#arcnone <- rownames(metaProxC[arcexp,])[as.vector(metaProxC[arcexp,"FOS"] == "N")]
+#metaProxC[arcnone, "EE_ArcGroup"] <- "N"
+
+
 #!!!Run exact test
 res <- exact(dat, group, Pair)
+Max <- apply(tpmProxC[rownames(res),colnames(dat)[group == FALSE]],1,max)
+res$propAGtMaxB <- unlist(lapply(X = 1:length(Max),maximum,g = TRUE))
+
+Max <- apply(tpmProxC[rownames(res),colnames(dat)[group == TRUE]],1,max)
+res$propBGtMaxA <- unlist(lapply(X = 1:length(Max),maximum,g = FALSE))
 ############################
 ### Keep track of gene lists 
 ############################
