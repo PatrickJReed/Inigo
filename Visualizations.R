@@ -555,13 +555,10 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$Subgroup2 != "CA2" & metaProxC$Subgroup2 == "IN"  & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" |
-                       metaProxC$Subgroup2 != "CA2" & metaProxC$Brain_Region == "CA1"  & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" 
-                        
-                        ,"Sample_ID"]
+samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "VIP"  & metaProxC$Subgroup2 != "CA2" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" ,"Sample_ID"]
                                              
 dat <- na.exclude(tpmProxC[, samples])
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+met <- metaProxC[samples,]
 #gene <- "Meg3"
 #Calculate the components
 p <- pca(t(dat[,samples]),nPcs = 10)
@@ -571,8 +568,9 @@ loading <- as.data.frame(p@loadings)
 loading <- loading[order(loading$PC1),]
 Var <- p@R2
 met$group <- paste(met$FOS, met$Mouse_condition, sep =".")
+met$Vip <- as.numeric(dat["Vip",] > 7)
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby  = "group")#,Colors = c("red","blue"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby = "Vip",shapeby  = "group")#,Colors = c("red","blue"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -590,7 +588,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$Brain_Region == "DG" & metaProxC$Mouse_condition != "HC"  &metaProxC$Subgroup2 != "CA2" & metaProxC$outliers == "in" ,
+samples <- metaProxC[ metaProxC$Subgroup2 != "CA2" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
                         "Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
@@ -600,15 +598,15 @@ met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA","5hpAA","5hpAC"))
 met[met$Subgroup2 == "CA1b","Subgroup2"] <- c("CA1v")
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Scn7a",dat, met)
+Indiv("Ece1",dat, met)
         #dev.off()
 IndivSubgroup("Ifi203",dat, met)
 
 IndivByDate("Prox1",dat, met)
 IndivProx1Grouped("Fos")
 #plot two genes
-a <- "Pik3c3"#Bap1
-b <- "Wfs1"
+a <- "Kcnq4"#Bap1
+b <- "Vip"
 group <- "FOS"
 Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
