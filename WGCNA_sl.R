@@ -5,19 +5,19 @@ library("WGCNA")
 library("DESeq2")
 library("Rsamtools")
 
-samples <- metaProxC[metaProxC$Subgroup == "DG"  & metaProxC$outliers == "in" ,"Sample_ID"]
+samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
 dat <- tpmProxC[, samples]
 rownames(dat) <- toupper(rownames(dat))
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-m <- apply(X = dat,1,mean)
+m <- apply(X = dat,1,meanNoZero)
 vstMat2 <- dat[m > 3,]
 ##################################
 #### Setup the WGCNA-Style Objects
 ##################################
 #Define data set dimensions
 datExpr <- as.data.frame(na.exclude(t(vstMat2)))
-
+datTraits <- met[rownames(datExpr),]
 
 ##################################
 #### Run WGCNA
@@ -37,8 +37,8 @@ abline(h=0.90,col="red")
 #choose the power for the experiment
 POWER = 5
 #Calculate the network
-net = blockwiseModules(datExpr,maxBlockSize=50, power = POWER,
-                       TOMType = "unsigned", minModuleSize = 10,
+net = blockwiseModules(datExpr,maxBlockSize=500, power = POWER,
+                       TOMType = "unsigned", minModuleSize = 5,
                        reassignThreshold = 0, #mergeCutHeight = 0.99,
                        numericLabels = TRUE, pamRespectsDendro = FALSE,
                        TOMDenom="min",
@@ -56,14 +56,45 @@ plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
                     dendroLabels = FALSE,hang =0.03,
                     addGuide = TRUE, guideHang = 0.1)
 
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/HCorder2.tiff",width = 18,height = 10,units = "in",res = 300)
-plotClusterTreeSamples(
-  t(datExpr),
-  #y = met$Brain_Region, 
-  yLabels = NULL,
-  main = "Sample dendrogram and trait indicator", 
-  )
-dev.off()
+#######
+# Identify Association with trait
+#######
+moduleColors = labels2colors(net$colors)
+MEsO = moduleEigengenes(datExpr, moduleColors)$eigengenes
+MEs <- data.frame(orderMEs(MEsO))
+MEs$Subgroup2 <- as.factor(datTraits$Subgroup2)
+MEs$FOS <- as.factor(datTraits$FOS)
+df <- vector()
+for(i in 1:(ncol(MEs)-2)){
+  tmp <- data.frame(ME = MEs[,i], Subgroup2 = MEs$Subgroup2,FOS = MEs$FOS)
+  model <- summary(lm(ME ~ Subgroup2*FOS, tmp))$coefficients
+  df <- rbind(df, c(as.vector(as.matrix(model)), colnames(MEs)[i]))
+}
+colnames(df) <- c(paste(rep(c("Est","StdErr","t","p"), each = 10), rep(c("Int","CA3","DG","IN","VIP","FOSN","CA3FOSN","DGFOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
+df <- data.frame(df)
+df2 <- as.data.frame(t(data.frame(apply(df[,c(1:40)], 1, as.numeric))))
+df2$ME <- as.vector(df$ME)
+colnames(df2) <- c(paste(rep(c("Est","StdErr","t","p"), each = 10), rep(c("Int","CA3","DG","IN","VIP","FOSN","CA3FOSN","DGFOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
+rownames(df2) <- df2$ME
+#view this
+sizeGrWindow(10,6)
+textMatrix = paste(signif(moduleTraitCor, 2), "\n(",
+                   signif(moduleTraitPvalue, 1), ")", sep = "");
+dim(textMatrix) = dim(moduleTraitCor)
+par(mar = c(6, 8.5, 3, 3));
+labeledHeatmap(Matrix = moduleTraitCor,
+               xLabels = names(datTraits),
+               yLabels = names(MEs),
+               ySymbols = names(MEs),
+               colorLabels = FALSE,
+               colors = greenWhiteRed(50),
+              # textMatrix = textMatrix,
+               setStdMargins = FALSE,
+               cex.text = 0.5,
+               zlim = c(-1,1),
+               main = paste("Module-trait relationships"))
+
+
 #identify labels/colors
 moduleLabels = net$colors
 table(moduleLabels)
@@ -82,12 +113,12 @@ ggplot(modE2, aes(X1, value,colour = X2))+
 # ##########################################
 
 # Recalculate topological overlap if needed
-TOM = TOMsimilarityFromExpr(datExpr, power = POWER);
+TOM = TOMsimilarityFromExpr((datExpr), power = POWER);
 # Read in the annotation file
 #annot = read.csv(file = "GeneAnnotation.csv");
 # Select modules
-head(moduleLabels[which(moduleColors == "midnightblue")])
-modules = c(36)#, "red");
+head(moduleLabels[which(moduleColors == "brown")])
+modules = c(10)#, "red");
 # Select module probes
 probes = rownames(vstMat2)
 inModule = is.finite(match(moduleLabels, modules));
@@ -103,12 +134,12 @@ rownames(TOM) <- (probes)
 dimnames(TOM) <- list(probes)
 
 # Export the network into edge and node list files Cytoscape can read
-cyt = exportNetworkToCytoscape(TOM,#modTOM,
+cyt = exportNetworkToCytoscape(modTOM,
                                weighted = TRUE,
-                               threshold = 0.15,
+                               threshold = 0.01,
                                nodeNames = modProbes,
                                nodeAttr = moduleColors[inModule]);
-#write.table(na.exclude(cyt$edgeData),"~/Documents/test.txt",quote=FALSE,row.names=FALSE)
+write.table(na.exclude(cyt$edgeData),"~/Documents/test.txt",quote=FALSE,row.names=FALSE)
 
 ##########
 tmp <- as.data.frame(cyt$edgeData)
