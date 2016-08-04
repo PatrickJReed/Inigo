@@ -555,7 +555,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "VIP"  & metaProxC$Subgroup2 != "CA2" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" ,"Sample_ID"]
+samples <- metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$Brain_Region != "CA3_other_negs"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2 != "CA2"  & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" ,"Sample_ID"]
                                              
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -567,16 +567,19 @@ scores <- cbind(scores,met)
 loading <- as.data.frame(p@loadings)
 loading <- loading[order(loading$PC1),]
 Var <- p@R2
-met$group <- paste(met$FOS, met$Mouse_condition, sep =".")
+met$Brain_Region <- as.character(met$Brain_Region)
+met[met$Brain_Region == "HDG", "Brain_Region"] <- "VIP"
+met$group <- paste(met$FOS,  met$Brain_Region, sep =".")
 met$Vip <- as.numeric(dat["Vip",] > 7)
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby = "Vip",shapeby  = "group")#,Colors = c("red","blue"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby = "FOS", shapeby = "Brain_Region")#,Colors = c("red","blue"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
 #PCA 1D
-component <- 2
-group <- "GFAP"
+component <- 1
+group <- "group"
+
 PC1D(scores,dat,met,group,component)
 scores2 <- cbind(scores, met)
 anova(lm(PC1~alignable,scores2 ))
@@ -588,7 +591,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$Subgroup2 != "CA2" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
+samples <- metaProxC[ metaProxC$FOS != "L" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$Subgroup2 != "CA2" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
                         "Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
@@ -596,32 +599,21 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA","5hpAA","5hpAC"))
-met[met$Subgroup2 == "CA1b","Subgroup2"] <- c("CA1v")
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Ece1",dat, met)
-        #dev.off()
-IndivSubgroup("Ifi203",dat, met)
-
-IndivByDate("Prox1",dat, met)
-IndivProx1Grouped("Fos")
-#plot two genes
-a <- "Kcnq4"#Bap1
-b <- "Vip"
+Indiv("Hdac4",dat, met)
+#
+a <- "Prkar2b"#Bap1
+b <- "Fos"
 group <- "FOS"
 Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
 Volcano(res)
 
-######
-samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$Context1 != "A" & metaProxC$Subgroup2 == "CA1" & metaProxC$FOS != "L" & metaProxC$Subgroup2 != "CA2" & metaProxC$Subgroup2  != "HDG" & metaProxC$Context1 == "none" & metaProxC$outliers == "in",])
-#metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
-tmp <- dat <- tpmProxC[, samples]
-met <- metaProxC[samples,]
+tmp <- dat 
 colnames(tmp) <- paste( met$Subgroup2,met$FOS)
-#upstream <- c("Creb1","Crebbp","Grin1","Grin2a","Grin2b","Gria1","Gria2","Gria3","Gria4","Gabra1","Gabra2","Gabrb","Cacna1a","Cacna1b","Cacna1c","Cacnai","Mapk3","Mapk1","Elk1","Srf","Rps6ka3")
-tmp2 <- tmp[genes2,]
+tmp2 <- tmp[genes,]
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
-h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "row")
+h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 #dev.off()
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/celltypes_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
 a <- apply(dat[genes,],1,propExp)
@@ -630,8 +622,8 @@ samples <- rownames(metaProxC[ metaProxC$Subgroup2 == "IN" & metaProxC$Mouse_con
 tmp <- dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
 heatMeRaw(dat,met,genes,k1 = 3,geneorder = c(1:length(genes)), samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
-heatMe(dat,met,genes,k1 = 3, k2 = 3 , cutoff = 3,samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
-heatMeAvg(dat,met,genes,k1 =3,geneorder = c(1:length(genes)), samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
+heatMe(dat,met,genes,k1 = 2, k2 = 5 , cutoff = 3,samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
+heatMeAvg(dat,met,genes,k1 =3,k2 = 4 )
 
 #dev.off()
 ######
