@@ -12,6 +12,7 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
 m <- apply(X = dat,1,meanNoZero)
 vstMat2 <- dat[m > 3,]
+vstMat2 <- vstMat2[-c(grep("(^GM)",rownames(vstMat2), perl = TRUE)),]
 ##################################
 #### Setup the WGCNA-Style Objects
 ##################################
@@ -62,7 +63,7 @@ plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
 moduleColors = labels2colors(net$colors)
 MEsO = moduleEigengenes(datExpr, moduleColors)$eigengenes
 MEs <- data.frame(orderMEs(MEsO))
-MEs$Subgroup2 <- as.factor(datTraits$Subgroup2)
+MEs$Subgroup2 <- factor(datTraits$Subgroup2, levels = c("DG","CA1","CA1b","CA3","IN","VIP"))
 MEs$FOS <- as.factor(datTraits$FOS)
 df <- vector()
 for(i in 1:(ncol(MEs)-2)){
@@ -70,11 +71,11 @@ for(i in 1:(ncol(MEs)-2)){
   model <- summary(lm(ME ~ Subgroup2*FOS, tmp))$coefficients
   df <- rbind(df, c(as.vector(as.matrix(model)), colnames(MEs)[i]))
 }
-colnames(df) <- c(paste(rep(c("Est","StdErr","t","p"), each = 10), rep(c("Int","CA3","DG","IN","VIP","FOSN","CA3FOSN","DGFOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
+colnames(df) <- c(paste(rep(c("Est","StdErr","t","p"), each = 12), rep(c("Int","CA1","CA1b","CA3","IN","VIP","FOSN","CA1FOSN","CA1bFOSN","CA3FOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
 df <- data.frame(df)
-df2 <- as.data.frame(t(data.frame(apply(df[,c(1:40)], 1, as.numeric))))
+df2 <- as.data.frame(t(data.frame(apply(df[,c(1:48)], 1, as.numeric))))
 df2$ME <- as.vector(df$ME)
-colnames(df2) <- c(paste(rep(c("Est","StdErr","t","p"), each = 10), rep(c("Int","CA3","DG","IN","VIP","FOSN","CA3FOSN","DGFOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
+colnames(df2) <- c(paste(rep(c("Est","StdErr","t","p"), each = 12), rep(c("Int","CA1","CA1b","CA3","IN","VIP","FOSN","CA1FOSN","CA1bFOSN","CA3FOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
 rownames(df2) <- df2$ME
 #view this
 sizeGrWindow(10,6)
@@ -113,12 +114,13 @@ ggplot(modE2, aes(X1, value,colour = X2))+
 # ##########################################
 
 # Recalculate topological overlap if needed
+enableWGCNAThreads()
 TOM = TOMsimilarityFromExpr((datExpr), power = POWER);
 # Read in the annotation file
 #annot = read.csv(file = "GeneAnnotation.csv");
 # Select modules
-head(moduleLabels[which(moduleColors == "brown")])
-modules = c(10)#, "red");
+head(moduleLabels[which(moduleColors == "cyan")])
+modules = c(14)#, "red");
 # Select module probes
 probes = rownames(vstMat2)
 inModule = is.finite(match(moduleLabels, modules));
