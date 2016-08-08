@@ -70,31 +70,20 @@ exact <- function(dat, group, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "VIP" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
+
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "VIP" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in"|
+                                metaProxC$Mouse_condition == "HC" & metaProxC$Subgroup2 == "VIP" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$FOS == "F"
+group <- met$Mouse_condition == "EE"#  met$FOS == "F" #
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
 ###################
-#Arccutoff
-#arc <- as.numeric(tpmProxC["Arc",samples])
-#hist(arc)
-#arc <- arc[order(arc)]
-#difarc <- c(0,diff(arc[order(arc)]))
-#elbow <- max(difarc)
-#cutoff <- mean(c(arc[which(difarc == elbow)], arc[which(difarc == elbow) -1]))
-
-
-#arcexp <- colnames(tpmProxC[,samples])[as.vector(tpmProxC["Arc",samples] < cutoff)]
-#arcnone <- rownames(metaProxC[arcexp,])[as.vector(metaProxC[arcexp,"FOS"] == "N")]
-#metaProxC[arcnone, "EE_ArcGroup"] <- "N"
-
 
 #!!!Run exact test
 res <- exact(dat, group, Pair)
@@ -103,6 +92,7 @@ res$propAGtMaxB <- unlist(lapply(X = 1:length(Max),maximum,g = TRUE))
 
 Max <- apply(tpmProxC[rownames(res),colnames(dat)[group == TRUE]],1,max)
 res$propBGtMaxA <- unlist(lapply(X = 1:length(Max),maximum,g = FALSE))
+
 ############################
 ### Keep track of gene lists 
 ############################
@@ -118,3 +108,4 @@ df <- as.data.frame(merge(ica_space_df, lib_info_with_pseudo,
                           by.x = "sample_name", by.y = "row.names"))
 variable1 <- df$ICA_dim_2   
 res <- GLM(dat, variable1)
+

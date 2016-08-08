@@ -19,7 +19,48 @@ library(Rtsne)
 ## FUNCTIONS THAT WILL PLOT FOR YOU
 ###############################################
 
-
+propExp <- function(x,i=1){
+  if(sum(is.na(x)) > i){
+    sum(!is.na(x))/length(x)
+  }else{
+    sum(x > i)/length(x)
+  }
+}
+rawExp <- function(x,i=2){
+  #if(sum(is.na(x)) > i){
+  #  sum(!is.na(x))
+  #}else{
+  sum(na.exclude(x) > i)
+  #}
+}
+meanNoZero <- function(x,i=0){
+  a <- mean(x[x>i])
+  if(sum(is.na(x)) > i){
+    a <- mean(x[!is.na(x)])
+  }else if(sum(x>i) == 0){
+    a <- 0
+  }
+  return(a)
+}
+varNoZero <- function(x){
+  sd(x[x >0])
+}
+MedNoZero <- function(x){
+  median(x[x >0])
+}
+countExp <- function(x){
+  sum(x > 0)
+}
+scaleME <- function(x){
+  return(scale(x)[,1])
+}
+elbow <- function(x){
+  x <- as.vector(scale(x[order(x)]))
+  x.1 <- c(0,diff(x))
+  elbow <- max(x.1)
+  cutoff <- mean(c(x[which(x.1 == elbow)], x[which(x.1 == elbow) -1]))
+  return(cutoff)
+}
 # PCA 2D ---------------------------------------------------------------------
 PC2D <- function(scores,Var, dat, met, colorby = NULL,shapeby = NULL,Colors = NULL, gene = NA){
 
@@ -186,51 +227,9 @@ PCGene <- function(dat, met,gene, component){
   return(p)
 }
 # tsne --------------------------------------------------------------------
-
-
 getErrors <- function(x){
   return(strsplit(stdout[x]," ")[[1]][5])
 }
-
-
-
-
-samples <- metaProxC[  metaProxC$FOS == "N" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
-                      "Sample_ID"]
-dat <- na.exclude(tpmProxC[, samples])
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
-
-i <- 17#17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=6,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
-t <- as.data.frame(TSNE$Y)
-colnames(t) <- c("T1","T2")#,"T3")
-t <- cbind(t,met)
-t$gene <- as.numeric(tpmProxC["Dcn",samples])
-t$group <- paste(met$FOS, met$Subgroup2, sep =".")
-t$Subgroup2 <- met$Subgroup2
-#Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
-#dev.off()
-#k <- kmeans(t[,c(1:2)],centers = 2,nstart = 200)
-#k <- as.factor(k$cluster)
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
-ggplot(t, aes(T1,T2,  colour = gene, shape = Mouse_condition))+
-  geom_point(alpha = 0.7, size = 5)+
-  theme_bw()+
-  xlab("TSNE1")+
-  ylab("TSNE2")+
-  theme(text=element_text(size=20))+
-  theme(panel.border = element_rect(colour=c("black"),size=2),
-      axis.ticks = element_line(size=1.5),
-      panel.grid.major = element_line(size = 1))#+
-  #scale_colour_gradient(high = "red",low = "grey")#+
-  #scale_colour_manual(values = c("#00c7e4","black","#6ca425","#a800b3","darkgreen","#e19041"))
-#dev.off()
-
-
-
-t[t$X < 0 & t$Y < -5, "group"] <- "IN"
-t[is.na(t$group),"group"] <- "EX"
-
 # Inidividual Genes (tpm) -------------------------------------------------
 Indiv <- function(gene,dat,met){
   
@@ -378,7 +377,6 @@ Plot2Genes <- function(a,b,dat,met,group="FOS"){
 scaleMe <- function(x){
   scale(x)[,1]
 }
-
 heatMe <- function(dat,met,genes,k1= NULL , k2 = NULL, sampleorder = NULL,geneorder = NULL,  cutoff = NULL,samplenames=NULL){
   tmp <- na.exclude(dat[genes,])
   if(!is.null(samplenames)){
@@ -455,7 +453,6 @@ heatMeRaw <- function(dat,met,genes,k1= NULL , k2 = NULL, sampleorder = NULL,gen
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   return(p1)
 }
-
 heatMeAvg <- function(dat,met,genes,group = "Subgroup2", k1= NULL , k2 = NULL, sampleorder = NULL,geneorder = NULL,  cutoff = NULL,samplenames=NULL){
   tmp <- na.exclude(dat[genes,])
   if(!is.null(samplenames)){
@@ -591,7 +588,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$Subgroup2 == "DG" & metaProxC$FOS != "L" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$Subgroup2 != "CA2" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
+samples <- metaProxC[ metaProxC$FOS != "L" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$Subgroup2 != "CA2" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
                         "Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
@@ -600,7 +597,7 @@ met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA","5hpAA","5hpAC"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Sertad1",dat, met)
+Indiv("Rest",dat, met)
 #
 a <- "Calb2"#Bap1
 b <- "Vip"
@@ -616,48 +613,42 @@ tmp2 <- tmp[genes,]
 h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "row")
 #dev.off()
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/celltypes_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
-a <- apply(dat[genes,],1,propExp)
-genes2 <- names(a[a > 0.3])
-samples <- rownames(metaProxC[ metaProxC$Subgroup2 == "IN" & metaProxC$Mouse_condition == "EE" &  metaProxC$FOS != "L" & metaProxC$Subgroup2 != "CA2" & metaProxC$Subgroup2  != "HDG" & metaProxC$Context1 == "none" & metaProxC$outliers == "in",])
-tmp <- dat <- tpmProxC[, samples]
-met <- metaProxC[samples,]
 heatMeRaw(dat,met,genes,k1 = 3,geneorder = c(1:length(genes)), samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 heatMe(dat,met,genes,k1 = 10, k2 = 10 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 heatMeAvg(dat,met,genes,k1 =3,k2 = 4 )
 
-#dev.off()
-######
-p <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=propExp)
-m <- apply(X=tpmProx[,metaProx$prox == "P"],MARGIN=1,FUN=meanNoZero)
-plot(p,m)
-rownames(tpmProx[m > 10 & p < 0.05,])
 
-
-
-#####
-samples <- metaProxC[ metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
-#metaProxC$Brain_Region == "CA3_other_negs" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII","Sample_ID"]
-#dat.1 <- na.exclude(countProxC[, samples])
+###########
+## T-sne
+###########
+samples <- metaProxC[  metaProxC$FOS == "N" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
+                       "Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-df <- melt(t(dat))
-df$IN <- met$IN
-df$Brain_Region <- met$Brain_Region
-df$Brain_Region <- as.character(df$Brain_Region)
-df$FOS <- met$FOS
+i <- 17#17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=6,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
+t <- as.data.frame(TSNE$Y)
+colnames(t) <- c("T1","T2")#,"T3")
+t <- cbind(t,met)
+t$gene <- as.numeric(tpmProxC["Dcn",samples])
+t$group <- paste(met$FOS, met$Subgroup2, sep =".")
+t$Subgroup2 <- met$Subgroup2
+#Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
+#dev.off()
+#k <- kmeans(t[,c(1:2)],centers = 2,nstart = 200)
+#k <- as.factor(k$cluster)
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/tsne_all.tiff",width = 10,height = 8,units = 'in',res = 300,compression = 'lzw')
+ggplot(t, aes(T1,T2,  colour = gene, shape = Mouse_condition))+
+  geom_point(alpha = 0.7, size = 5)+
+  theme_bw()+
+  xlab("TSNE1")+
+  ylab("TSNE2")+
+  theme(text=element_text(size=20))+
+  theme(panel.border = element_rect(colour=c("black"),size=2),
+        axis.ticks = element_line(size=1.5),
+        panel.grid.major = element_line(size = 1))#+
+#scale_colour_gradient(high = "red",low = "grey")#+
+#scale_colour_manual(values = c("#00c7e4","black","#6ca425","#a800b3","darkgreen","#e19041"))
+#dev.off()
 
-df[df$Brain_Region == "CA3_other_negs","Brain_Region"] <- "Neg"
-df[df$Brain_Region == "HDG","Brain_Region"] <- "P+Neg"
-
-
-gene <- "Serpine2"
-
-
-ggplot(df[as.character(df$X2) == gene,], aes(as.factor(IN), value, colour = FOS))+
-  geom_violin()+
-  geom_point(data = df[as.character(df$X2) == gene,], aes(as.factor(IN), value, colour = Brain_Region))+
-  labs(title  = gene)+
-  theme_bw(base_size = 16)+
-  facet_grid(~FOS)#+
-  #scale_colour_manual(values = c("black","#00c7e4","#a800b3","#6ca425","#e19041"))
