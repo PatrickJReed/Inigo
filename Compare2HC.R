@@ -95,3 +95,83 @@ ggplot(df, aes(b,d))+#, fill = vsHomecage))+
   xlab("Cell Type")+
   labs(title = c("Activity-induced gene expression\nAll Genes"))+
   ylab("Gene Count")
+
+
+###################
+# Combine into one list
+###################
+FOS.F.LOW <- vector()
+for (i in seq(1,length(SigGenes),4)){
+  FOS.F.LOW <- c(FOS.F.LOW, SigGenes[[i]])
+}
+genes <- FOS.F.LOW <- unique(FOS.F.LOW)
+a2 <- data.frame(row.names = genes)
+for (j in c("DG","CA1","VIP")){
+  nm <- paste(j,"FOSplow",sep ="." )
+  a2[SigGenes[[nm]],nm] <- 1
+  a2[is.na(a2[,nm]),nm] <- 0
+}
+a2$AllCells <- rowSums(a2)
+
+a2$Cell <- NA
+for (i in 1:nrow(a2)){
+  if(a2[i,"AllCells"] == 1){
+    a2[i,"Cell"] <- do.call("rbind",strsplit(colnames(a2)[which(a2[i,c(1:3)] == 1)],split = ".",fixed = TRUE))[,1]
+  }else{
+    "none"
+  }
+}
+
+#####
+FOS.F.HIGH <- vector()
+for (i in seq(2,length(SigGenes),4)){
+  FOS.F.HIGH <- c(FOS.F.HIGH, SigGenes[[i]])
+}
+FOS.F.HIGH <- unique(FOS.F.HIGH)
+genes <- FOS.F.HIGH <- unique(FOS.F.HIGH)
+a2 <- data.frame(row.names = genes)
+for (j in c("DG","CA1","VIP")){
+  nm <- paste(j,"FOSphigh",sep ="." )
+  a2[SigGenes[[nm]],nm] <- 1
+  a2[is.na(a2[,nm]),nm] <- 0
+}
+a2$AllCells <- rowSums(a2)
+a2$Cell <- NA
+for (i in 1:nrow(a2)){
+  if(a2[i,"AllCells"] == 1){
+    a2[i,"Cell"] <- do.call("rbind",strsplit(colnames(a2)[which(a2[i,c(1:3)] == 1)],split = ".",fixed = TRUE))[,1]
+  }else{
+    "none"
+  }
+}
+
+
+FOS.N.LOW <- vector()
+for (i in seq(3,length(SigGenes),4)){
+  FOS.N.LOW <- c(FOS.N.LOW, SigGenes[[i]])
+}
+FOS.N.LOW <- unique(FOS.N.LOW)
+FOS.F.HIGH <- unique(FOS.F.HIGH)
+genes <- FOS.F.HIGH <- unique(FOS.F.HIGH)
+a2 <- data.frame(row.names = genes)
+for (j in c("DG","CA1","VIP")){
+  nm <- paste(j,"FOSphigh",sep ="." )
+  a2[SigGenes[[nm]],nm] <- 1
+  a2[is.na(a2[,nm]),nm] <- 0
+}
+a2$AllCells <- rowSums(a2)
+a2$Cell <- NA
+for (i in 1:nrow(a2)){
+  if(a2[i,"AllCells"] == 1){
+    a2[i,"Cell"] <- do.call("rbind",strsplit(colnames(a2)[which(a2[i,c(1:3)] == 1)],split = ".",fixed = TRUE))[,1]
+  }else{
+    "none"
+  }
+}
+
+
+FOS.N.HIGH <- vector()
+for (i in seq(4,length(SigGenes),4)){
+  FOS.N.HIGH <- c(FOS.N.HIGH, SigGenes[[i]])
+}
+FOS.N.HIGH <- unique(FOS.N.HIGH)
