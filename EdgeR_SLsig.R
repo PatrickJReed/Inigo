@@ -71,15 +71,15 @@ exact <- function(dat, group, Pair){
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 ###
 
-samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "VIP" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in"|
-                                metaProxC$Mouse_condition == "HC" & metaProxC$Subgroup2 == "VIP" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "VIP" & metaProxC$FOS == "F"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in"|
+                                metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "VIP" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$Mouse_condition == "EE"#  met$FOS == "F" #
+group <- scores$k == 1 #met$Mouse_condition == "EE"#  
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes

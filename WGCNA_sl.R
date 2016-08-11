@@ -5,7 +5,7 @@ library("WGCNA")
 library("DESeq2")
 library("Rsamtools")
 
-samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[ metaProxC$Subgroup2 == "DG" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
 dat <- tpmProxC[, samples]
 rownames(dat) <- toupper(rownames(dat))
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -17,7 +17,7 @@ vstMat2 <- vstMat2[-c(grep("(^GM)",rownames(vstMat2), perl = TRUE)),]
 #### Setup the WGCNA-Style Objects
 ##################################
 #Define data set dimensions
-datExpr <- as.data.frame(na.exclude(t(vstMat2)))
+datExpr <- as.data.frame(na.exclude((vstMat2)))
 datTraits <- met[rownames(datExpr),]
 
 ##################################
@@ -39,7 +39,7 @@ abline(h=0.90,col="red")
 POWER = 5
 #Calculate the network
 net = blockwiseModules(datExpr,maxBlockSize=500, power = POWER,
-                       TOMType = "unsigned", minModuleSize = 5,
+                       TOMType = "unsigned", minModuleSize = 2,
                        reassignThreshold = 0, #mergeCutHeight = 0.99,
                        numericLabels = TRUE, pamRespectsDendro = FALSE,
                        TOMDenom="min",
@@ -63,19 +63,20 @@ plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
 moduleColors = labels2colors(net$colors)
 MEsO = moduleEigengenes(datExpr, moduleColors)$eigengenes
 MEs <- data.frame(orderMEs(MEsO))
-MEs$Subgroup2 <- factor(datTraits$Subgroup2, levels = c("DG","CA1","CA1b","CA3","IN","VIP"))
-MEs$FOS <- as.factor(datTraits$FOS)
+MEs$Mouse_condition <- factor(datTraits$Mouse_condition,levels = c("HC","EE"))
+MEs$FOS <- factor(datTraits$FOS, levels = c("N","F"))
 df <- vector()
 for(i in 1:(ncol(MEs)-2)){
-  tmp <- data.frame(ME = MEs[,i], Subgroup2 = MEs$Subgroup2,FOS = MEs$FOS)
-  model <- summary(lm(ME ~ Subgroup2*FOS, tmp))$coefficients
+  tmp <- data.frame(ME = MEs[,i], Mouse_condition = MEs$Mouse_condition,FOS = MEs$FOS)
+  model <- summary(lm(ME ~ Mouse_condition*FOS, tmp))$coefficients
   df <- rbind(df, c(as.vector(as.matrix(model)), colnames(MEs)[i]))
 }
-colnames(df) <- c(paste(rep(c("Est","StdErr","t","p"), each = 12), rep(c("Int","CA1","CA1b","CA3","IN","VIP","FOSN","CA1FOSN","CA1bFOSN","CA3FOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
+colnames(df) <- c(paste(rep(c("Est","StdErr","t","p"), each = 3), rep(c("Int","Mouse_condition","FOS"),4),sep= "."), "ME")
 df <- data.frame(df)
-df2 <- as.data.frame(t(data.frame(apply(df[,c(1:48)], 1, as.numeric))))
+df2 <- as.data.frame(t(data.frame(apply(df[,c(1:12)], 1, as.numeric))))
 df2$ME <- as.vector(df$ME)
-colnames(df2) <- c(paste(rep(c("Est","StdErr","t","p"), each = 12), rep(c("Int","CA1","CA1b","CA3","IN","VIP","FOSN","CA1FOSN","CA1bFOSN","CA3FOSN","INFOSN","VIPFOSN"),4),sep= "."), "ME")
+colnames(df2) <- c(paste(rep(c("Est","StdErr","t","p"), each = 3), rep(c("Int","Mouse_condition","FOS"),4),sep= "."), "ME")
+
 rownames(df2) <- df2$ME
 #view this
 sizeGrWindow(10,6)
@@ -119,8 +120,8 @@ TOM = TOMsimilarityFromExpr((datExpr), power = POWER);
 # Read in the annotation file
 #annot = read.csv(file = "GeneAnnotation.csv");
 # Select modules
-head(moduleLabels[which(moduleColors == "cyan")])
-modules = c(14)#, "red");
+head(moduleLabels[which(moduleColors == "lightgreen")])
+modules = c(18)#, "red");
 # Select module probes
 probes = rownames(vstMat2)
 inModule = is.finite(match(moduleLabels, modules));

@@ -3,23 +3,17 @@
 
 nm <- table(c(rownames(RES[[1]]),
               rownames(RES[[2]]),
-              rownames(RES[[3]]),
-              rownames(RES[[4]]),
-              rownames(RES[[5]])
+              rownames(RES[[3]])
               ))
 
-nm <- names(nm[nm==5])
+nm <- names(nm[nm==3])
 
-ca1 <- RES[[1]]
-dg <- RES[[2]]
-ca3 <- RES[[3]]
-In <- RES[[4]]
-vip <- RES[[5]]
+dg <- RES[[1]]
+ca1 <- RES[[2]]
+vip <- RES[[3]]
 
 ca1 <- ca1[ca1$logFC < 0,]
 dg <- dg[dg$logFC < 0,]
-ca3 <- ca3[ca3$logFC < 0,]
-In <- In[In$logFC < 0,]
 vip <- vip[vip$logFC < 0,]
 
 a <- merge(x = ca1[,c(1,4)],y =  dg[,c(1,4)],by="row.names",all = TRUE)
@@ -27,21 +21,10 @@ rownames(a) <- a$Row.names
 a <- a[,-c(1)]
 colnames(a) <- paste(rep(c("logFC","padj"),times = 2), rep(c("ca1","dg"),each = 2),sep = ".")
 
-a <- merge(x = a, y = ca3[,c(1,4)],by="row.names",all = TRUE)
-rownames(a) <- a$Row.names
-a <- a[,-c(1)]
-colnames(a) <- paste(rep(c("logFC","padj"),times = 2), rep(c("ca1","dg","ca3"),each = 2),sep = ".")
-
-
-a <- merge(x = a, y = In[,c(1,4)],by="row.names",all = TRUE)
-rownames(a) <- a$Row.names
-a <- a[,-c(1)]
-colnames(a) <- paste(rep(c("logFC","padj"),times = 2), rep(c("ca1","dg","ca3","in"),each = 2),sep = ".")
-
 a <- merge(x = a, y = vip[,c(1,4)],by="row.names",all = TRUE)
 rownames(a) <- a$Row.names
 a <- a[,-c(1)]
-colnames(a) <- paste(rep(c("logFC","padj"),times = 2), rep(c("ca1","dg","ca3","in","vip"),each = 2),sep = ".")
+colnames(a) <- paste(rep(c("logFC","padj"),times = 2), rep(c("ca1","dg","vip"),each = 2),sep = ".")
 
 
 
@@ -59,10 +42,10 @@ a <- as.data.frame(a)
 for(i in 1:ncol(a)){
   a[,i] <- as.numeric(as.character(a[,i]))
 }
-a2 <- a[,seq(2,10,2)]
+a2 <- a[,seq(2,6,2)]
 a2$AllCellTypes <- as.numeric(unlist(apply(a2, 1,rawExp, 0.05)))
-a2$Excitatory <- as.numeric(unlist(apply(a2[,c(1,2,3)], 1,rawExp, 0.05)))
-a2$Inhibitory <- as.numeric(unlist(apply(a2[,c(4,5)], 1,rawExp, 0.05)))
+#a2$Excitatory <- as.numeric(unlist(apply(a2[,c(1,2,3)], 1,rawExp, 0.05)))
+#a2$Inhibitory <- as.numeric(unlist(apply(a2[,c(4,5)], 1,rawExp, 0.05)))
 a2 <- a2[order(a2$Excitatory,decreasing=TRUE),]
 
 a2$CellSpecific <- NA

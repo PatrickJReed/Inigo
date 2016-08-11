@@ -151,11 +151,11 @@ for (i in seq(3,length(SigGenes),4)){
   FOS.N.LOW <- c(FOS.N.LOW, SigGenes[[i]])
 }
 FOS.N.LOW <- unique(FOS.N.LOW)
-FOS.F.HIGH <- unique(FOS.F.HIGH)
-genes <- FOS.F.HIGH <- unique(FOS.F.HIGH)
+FOS.N.LOW <- unique(FOS.N.LOW)
+genes <- FOS.N.LOW <- unique(FOS.N.LOW)
 a2 <- data.frame(row.names = genes)
 for (j in c("DG","CA1","VIP")){
-  nm <- paste(j,"FOSphigh",sep ="." )
+  nm <- paste(j,"FOSllow",sep ="." )
   a2[SigGenes[[nm]],nm] <- 1
   a2[is.na(a2[,nm]),nm] <- 0
 }
@@ -174,4 +174,19 @@ FOS.N.HIGH <- vector()
 for (i in seq(4,length(SigGenes),4)){
   FOS.N.HIGH <- c(FOS.N.HIGH, SigGenes[[i]])
 }
-FOS.N.HIGH <- unique(FOS.N.HIGH)
+genes <- FOS.N.HIGH <- unique(FOS.N.HIGH)
+a2 <- data.frame(row.names = genes)
+for (j in c("DG","CA1","VIP")){
+  nm <- paste(j,"FOSlhigh",sep ="." )
+  a2[SigGenes[[nm]],nm] <- 1
+  a2[is.na(a2[,nm]),nm] <- 0
+}
+a2$AllCells <- rowSums(a2)
+a2$Cell <- NA
+for (i in 1:nrow(a2)){
+  if(a2[i,"AllCells"] == 1){
+    a2[i,"Cell"] <- do.call("rbind",strsplit(colnames(a2)[which(a2[i,c(1:3)] == 1)],split = ".",fixed = TRUE))[,1]
+  }else{
+    "none"
+  }
+}
