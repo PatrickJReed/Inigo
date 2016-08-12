@@ -3,7 +3,7 @@
 ####
 ## Reduced sample size difexp
 ####
-SubsampleEdgeR <- function(samples.2, conditon = "DG" , met){
+SubsampleEdgeR <- function(samples.2, condition = "DG" , met){
   genes <- vector()
   for (i in 1:20){
     a <- is.na(match(rownames(met), samples.2))
@@ -29,12 +29,11 @@ SubsampleEdgeR <- function(samples.2, conditon = "DG" , met){
   genes2 <- genes2[order(genes2$Freq,decreasing = TRUE),]
   return(genes2)
 }
-samples.2 <- metaProxC[metaProxC$Subgroup == "CA1" & metaProxC$Context1 == "none"& metaProxC$outlier == "in" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" &metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples.2 <- rownames(df[df$group == "close",])
 
 genes <- vector()
 for (i in 1:20){
-samples.1 <- metaProxC[metaProxC$Subgroup != "CA1" &  metaProxC$Context1 == "none" & metaProxC$outlier == "in" & metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" | 
-                         metaProxC$Subgroup == "CA1" & metaProxC$FOS == "N" &  metaProxC$Context1 == "none" & metaProxC$outlier == "in" & metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$alignable >  100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII" ,"Sample_ID"]
+samples.1 <- rownames(df[df$group == "far",])
 samples <- c(samples.2, sample(x = samples.1,size = length(samples.2),replace = FALSE))
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
@@ -42,7 +41,7 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$Subgroup == "CA1" & met$FOS == "F"# & as.numeric(log(dat["Gad2",])) > 4
+group <- rep(c("close","far"), each = length(samples.2))# & as.numeric(log(dat["Gad2",])) > 4
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
