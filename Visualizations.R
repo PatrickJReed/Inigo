@@ -558,7 +558,7 @@ Volcano <- function(difexp){
 #PCA 2D
 samples <- metaProxC[metaProxC$Subgroup2 == "DG" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2 != "CA2"  & metaProxC$outliers == "in" & metaProxC$Subgroup2 != "HDG" ,"Sample_ID"]
                                              
-dat <- na.exclude(tpmProxC[, samples])
+dat <- na.exclude(tpmProxC[genes, samples])
 met <- metaProxC[samples,]
 #gene <- "Meg3"
 #Calculate the components
@@ -566,14 +566,14 @@ p <- pca(t(dat[genes,samples]),nPcs = 10)
 scores <- as.data.frame(p@scores)
 scores <- cbind(scores,met)
 loading <- as.data.frame(p@loadings)
-loading <- loading[order(loading$PC1),]
+loading <- loading[order(loading$PC1,decreasing=TRUE),]
 Var <- p@R2
 met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG", "Brain_Region"] <- "VIP"
 met$group <- paste(met$FOS,  met$Mouse_condition, sep =".")
 met$Vip <- as.numeric(dat["Vip",] > 7)
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby = "FOS", shapeby = "Mouse_condition", gene = "Mia3")#,Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby = "FOS", shapeby = "Mouse_condition",gene = "Per3")#,Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -603,7 +603,7 @@ met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA","5hpAA","5hpAC"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/gene.tiff",width = 6,height = 3,units = 'in',res = 300)
-Indiv("Ezh1",dat, met)
+Indiv("Rtn4rl2",dat, met)
 #
 a <- "Sox9"#Bap1
 b <- "Rest"

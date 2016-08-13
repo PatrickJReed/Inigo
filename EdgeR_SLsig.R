@@ -79,7 +79,7 @@ met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- scores$k == 1 #met$Mouse_condition == "EE"#  
+group <- df2$State == 3  
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
