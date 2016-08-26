@@ -69,24 +69,46 @@ exact <- function(dat, group, Pair){
 ########################
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
+#NEWER (After CA3 tighter)
+#save(list = c("RES.celltype"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res",compress = TRUE)
+#load(file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res")
 ###
-
-samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "DG" & metaProxC$FOS == "F"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in"|
-                                metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == "DG" & metaProxC$FOS == "N"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
+for (g2 in c("DG","CA1","VIP","CA3","Neg")){
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "HC" &  metaProxC$FOS != "L" &   metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in" | 
+                                metaProxC$Mouse_condition == "HC" & metaProxC$FOS != "L" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in" ,])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 ###################
 #Assign groups
 ###################
-group <- met$FOS == "F"  
+group <-  met$Subgroup2 == g2
 Pair <- levels(as.factor(as.character(group)))
 ###################
 # Test genes
 ###################
+#RES <- list()
+res <- exact(dat, group, Pair)
+i <- i + 1
+RES[[i]] <- res
+names(RES)[i] <- g2
+}
+
+dg <- RES[["DG"]]
+ca1 <- RES[["CA1"]]
+ca3 <- RES[["CA3"]]
+vip <- RES[["VIP"]]
+neg <- RES[["Neg"]]
+
+genes <- unique(c(rownames(dg[dg$f < 0.01 & dg$a > 0.2, ]),
+                rownames(ca1[ca1$f < 0.01 & ca1$a > 0.2,]),
+                rownames(ca3[ca3$f < 0.01 & ca3$a > 0.2,]),
+                rownames(vip[vip$f < 0.01 & vip$a > 0.2,]),
+                rownames(neg[neg$f < 0.01 & neg$a > 0.2,])))
+
+
 
 #!!!Run exact test
-res <- exact(dat, group, Pair)
 Max <- apply(tpmProxC[rownames(res),colnames(dat)[group == FALSE]],1,max)
 res$propAGtMaxB <- unlist(lapply(X = 1:length(Max),maximum,g = TRUE))
 
