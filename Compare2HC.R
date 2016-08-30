@@ -123,10 +123,8 @@ FOS.N.LOW <- vector()
 for (i in seq(3,length(SigGenes),4)){
   FOS.N.LOW <- c(FOS.N.LOW, SigGenes[[i]])
 }
-FOS.N.LOW <- unique(FOS.N.LOW)
-FOS.N.LOW <- unique(FOS.N.LOW)
 genes <- FOS.N.LOW <- unique(FOS.N.LOW)
-a2 <- data.frame(row.names = genes)
+a2 <- data.frame (row.names = genes)
 for (j in c("DG","CA1","CA3","VIP","Neg")){
   nm <- paste(j,"FOSllow",sep ="." )
   a2[SigGenes[[nm]],nm] <- 1

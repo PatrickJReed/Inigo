@@ -9,6 +9,9 @@ library(randomForest)
 maximum <- function(i,g){
     return(sum(tpmProxC[names(Max[i]),colnames(dat)[group == g]] > Max[i]) / sum(group == g))
 }
+maximum2 <- function(x){
+  return(sum(x[1:Col] > x[length(x)]) / Col)
+}
 GLM <- function(dat, variable1, variable2 = NULL, prefit=FALSE){
   if(is.null(variable2)){
     design <- model.matrix(~variable1)
@@ -61,7 +64,15 @@ exact <- function(dat, group, Pair){
   b <- apply(tpmProxC[,colnames(dat)[group == FALSE]],1,rawExp,1)
   res$a <- a[rownames(res)] / sum(group == TRUE)
   res$b <- b[rownames(res)] / sum(group == FALSE)
-
+  Max_a <- apply(tpmProxC[rownames(res),colnames(dat)[group == TRUE]],1,max)
+  Max_b <- apply(tpmProxC[rownames(res),colnames(dat)[group == FALSE]],1,max)
+  tmp_a <- cbind(dat[rownames(res),colnames(dat)[group == TRUE]], Max_b[rownames(res)])
+  Col <- sum(group == TRUE)
+  res$max_a <- as.numeric(apply(tmp_a,1,maximum2))
+  tmp_b <- cbind(dat[rownames(res),colnames(dat)[group == FALSE]], Max_a[rownames(res)])
+  Col <- sum(group == FALSE)
+  res$max_b <- as.numeric(apply(tmp_b,1,maximum2))
+  
   return(res)
 }
 
