@@ -29,11 +29,11 @@ propExp <- function(x,i=1){
     sum(x > i)/length(x)
   }
 }
-rawExp <- function(x,i=2){
+rawExp <- function(x,i=1){
   #if(sum(is.na(x)) > i){
   #  sum(!is.na(x))
   #}else{
-  sum(na.exclude(x) < i)
+  sum(na.exclude(x) > i)
   #}
 }
 meanNoZero <- function(x,i=0){
@@ -550,7 +550,8 @@ heatMeAvg <- function(dat,met,genes,group = "Subgroup2", k1= NULL , k2 = NULL, s
     )+
     scale_fill_gradient2(high="red",mid = "white",low="blue")+
     #theme_bw(base_size=22)+
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))#+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+    theme(text = element_text(size = 25, colour = "black"))
     #facet_grid(~analysis,scales = "free")
   return(p1)
 }
@@ -628,7 +629,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[  metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,"Sample_ID"]#
+samples <- metaProxC[ metaProxC$Context1 == "none" & metaProxC$Subgroup2 != "Neg" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -638,9 +639,9 @@ met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA
 met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA1","CA3","VIP","Neg"))
-#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Slit2_hc.tiff",width = 8,height = 3.5,units = 'in',res = 300)#single gene = 6x3.5, hc and ne 8 x 5
-Indiv("Dsg2",dat, met)
-#dev.off()
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
+Indiv("Kcnq4",dat, met)
+dev.off()
 IndivProp("Tmem170",dat, met)
 
 
@@ -668,18 +669,21 @@ h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/celltypes_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
 heatMeRaw(dat,met,genes,k1 = 3,geneorder = c(1:length(genes)), samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 heatMe(dat,met,genes,k1 = 2, k2 = 2 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
-heatMeAvg(dat,met,genes,k1 =3,k2 = 4 )
+
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/Fig6_potassium_hc.tiff",width = 8,height = 15,units = 'in',res = 300)
+heatMeAvg(dat,met,genes,k2 = 8,sampleorder =c(2,3,4,1) ,cutoff = 1 )
+dev.off()
 
 
 ###########
 ## T-sne
 ###########
-samples <- metaProxC[ metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
+samples <- metaProxC[ metaProxC$Subgroup2 == "DG" & metaProxC$FOS == "N" &  metaProxC$outliers == "in" ,
                        "Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-i <- 30#17
+i <- 8#17
 TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=6,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")#,"T3")
@@ -698,8 +702,8 @@ t$Mouse_condition <- factor(t$Mouse_condition, c("HC","EE","5hpA","5hpAA","5hpAC
 #dev.off()
 #k <- kmeans(t[,c(1:2)],centers =4,nstart = 200)
 #t$k <- as.factor(k$cluster)
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/tsne_all_Fos.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
-ggplot(t, aes(T1,T2,  shape = Subgroup2, color = FOS))+
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/tsne_hc.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
+ggplot(t, aes(T1,T2,  color = Mouse_condition))+
   geom_point(alpha = 0.75, size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -709,14 +713,14 @@ ggplot(t, aes(T1,T2,  shape = Subgroup2, color = FOS))+
         axis.ticks = element_line(size=1.5),
         panel.grid.major = element_line(size = 1))+
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
-  scale_colour_manual(values = c("red","blue"))
+  #scale_colour_manual(values = c("red","blue"))
 #scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
-#scale_colour_manual(values = c("#00c7e4","black","#6ca425","#a800b3","darkgreen","#e19041","yellow"))
 #scale_colour_manual(values = c("#a800b3","#6ca425","#00c7e4","#e19041","darkgrey"))
+scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
 #dev.off()
 
 ########
-samples <- metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
+samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
                       "Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -729,8 +733,8 @@ Cor2$FOS <- met$FOS
 Cor2$group1 <- paste(met$Subgroup2, met$FOS,c(1:ncol(dat)), sep = ".")
 Cor2$group2 <- rep(paste(met$Subgroup2, met$FOS,c(1:ncol(dat)) ,sep = "."), each = ncol(dat))
 
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/FOS_heat.tiff",width = 10,height = 8,units = 'in',res = 300)
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/FOS_heat.tiff",width = 10,height = 8,units = 'in',res = 300)
 ggplot(Cor2, aes(group1, group2, fill = value))+
   geom_tile()+
   scale_fill_gradient2(low = "blue" , high = "red",mid = "white",midpoint = 0.5)
-dev.off()
+#dev.off()
