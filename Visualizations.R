@@ -16,7 +16,7 @@ library(Rtsne)
 #save(list = c("t.all"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne2.rda",compress = TRUE)
 #load(c("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne2.rda"))
 #08/10/2016 changes
-#save(list = c("t.hc.maingroups","t.fosN.maingroups","t.all"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda",compress = TRUE)
+#save(list = c("t.hc.maingroups","t.fosN.maingroups","t.all","t.EE"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda")
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
@@ -629,7 +629,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[ metaProxC$Context1 == "none" & metaProxC$Subgroup2 != "Neg" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" ,"Sample_ID"]#
+samples <- metaProxC[  metaProxC$Subgroup2 != "Neg" &  metaProxC$outliers == "in" ,"Sample_ID"]#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -639,9 +639,9 @@ met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA
 met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA1","CA3","VIP","Neg"))
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Kcnq4",dat, met)
-dev.off()
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
+Indiv("Klf9",dat, met)
+#dev.off()
 IndivProp("Tmem170",dat, met)
 
 
@@ -670,40 +670,49 @@ h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 heatMeRaw(dat,met,genes,k1 = 3,geneorder = c(1:length(genes)), samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 heatMe(dat,met,genes,k1 = 2, k2 = 2 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/Fig6_potassium_hc.tiff",width = 8,height = 15,units = 'in',res = 300)
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/Fig6_potassium_hc.tiff",width = 8,height = 15,units = 'in',res = 300)
 heatMeAvg(dat,met,genes,k2 = 8,sampleorder =c(2,3,4,1) ,cutoff = 1 )
-dev.off()
+#dev.off()
 
 
 ###########
 ## T-sne
 ###########
-samples <- metaProxC[ metaProxC$Subgroup2 == "DG" & metaProxC$FOS == "N" &  metaProxC$outliers == "in" ,
+samples <- metaProxC[ metaProxC$Brain_Region != "CA3_other_negs" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
                        "Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 
-i <- 8#17
+i <- 17#17
 TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=6,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")#,"T3")
 t <- cbind(t,met)
-t$group <- paste(met$Mouse_condition, met$Subgroup2, sep =".")
-t$Subgroup2 <- factor(t$Subgroup2,c("DG","CA3","CA1","VIP","Neg"))
+t$Subgroup2 <- as.character(t$Subgroup2)
+t[t$Subgroup2 == "CA3" | t$Subgroup2 == "Neg","Subgroup2"] <- "P-C-"
+t$Subgroup2 <- factor(t$Subgroup2,c("DG","CA1","VIP","P-C-"))
 t$Brain_Region <- as.character(t$Brain_Region)
 t[t$Brain_Region == "CA1", "Brain_Region"] <- "P-C+"
 t[t$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "P-C-"
 t[t$Brain_Region == "DG", "Brain_Region"] <- "P+C+"
 t[t$Brain_Region == "HDG", "Brain_Region"] <- "P+C-"
-t$gene <- as.numeric(tpmProxC["Rgs14",rownames(t)])
+t$Mouse3 <- 0
+for (i in unique(t$Brain_Region)){
+  a <- unique(t[t$Brain_Region == i, "Mouse2"])
+  for(j in 1:length(a)){
+    t[t$Brain_Region == i & t$Mouse2 == a[j], "Mouse3"] <- j
+  }
+}
+t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
+t$gene <- as.numeric(tpmProxC["Nhsl2",rownames(t)])
 t$Mouse_condition <- as.character(t$Mouse_condition)
 t$Mouse_condition <- factor(t$Mouse_condition, c("HC","EE","5hpA","5hpAA","5hpAC"))
 #Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
 #dev.off()
-#k <- kmeans(t[,c(1:2)],centers =4,nstart = 200)
+k <- kmeans(t[,c(1:2)],centers =3,nstart = 200)
 #t$k <- as.factor(k$cluster)
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/tsne_hc.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
-ggplot(t, aes(T1,T2,  color = Mouse_condition))+
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_EE_Inhba.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
+ggplot(t, aes(T1,T2, colour = gene, shape = Subgroup2))+
   geom_point(alpha = 0.75, size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -713,10 +722,10 @@ ggplot(t, aes(T1,T2,  color = Mouse_condition))+
         axis.ticks = element_line(size=1.5),
         panel.grid.major = element_line(size = 1))+
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
-  #scale_colour_manual(values = c("red","blue"))
-#scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
-#scale_colour_manual(values = c("#a800b3","#6ca425","#00c7e4","#e19041","darkgrey"))
-scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
+#  scale_colour_manual(values = c("red","blue"))
+scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
+#scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#60d6eb","#13aac5","#e9ae79","#d97923","#c05cc7","#e93af5","#83108b"))
+#scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
 #dev.off()
 
 ########
