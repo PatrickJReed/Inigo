@@ -94,7 +94,7 @@ tmp$CTIP2 <- met2$CTIP2
 tmp$element <- as.character(rep(sine_row_meta$V1,each = ncol(dat2)))
 tmp$tso <- met2$value 
 
-TE <- "L1MdA_IV"
+TE <- "B2_Rn2"
 ggplot(na.exclude(tmp[tmp$element == TE & tmp$value !=0 & tmp$value < 1000 & tmp$Subgroup2 != "Neg" & tmp$Mouse_condition != "HC", ]), aes(FOS,value))+
   geom_violin()+
   geom_point()+
@@ -128,12 +128,14 @@ rownames(sine.cor.est) <- rownames(dat.gene)
 ####### Plot some of the results
 a <- rownames(na.exclude(sine.cor.est[abs(sine.cor.est$B2_Mm1a) > 0.3,]))
 
-gene <- "Brap"
+gene <- "Dnajc1"
+arc <- "Arc"
 te <- "B2_Mm1a"
-tmp <- data.frame(gene = as.numeric(dat.gene[gene,]),
+tmp <- data.frame(arc = as.numeric(dat.gene[arc,]),
+                    gene = as.numeric(dat.gene[gene,]),
                   te = as.numeric(dat.sine[te,]),
                   sine_col_meta[samples,])
-ggplot(tmp[tmp$te != 0 & tmp$gene > 1 & tmp$Subgroup2 == "DG",], aes(gene, te, colour = FOS, group = "1"))+
+ggplot(tmp[tmp$te != 0 & tmp$gene > 1 & tmp$Subgroup2 == "DG",], aes(gene, te , colour = FOS, group = "1"))+
   geom_point()+
   geom_point(shape =1, colour = "black")+
   geom_smooth(method = "lm",colour = "black")+

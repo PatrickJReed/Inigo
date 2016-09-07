@@ -17,7 +17,7 @@ GLM <- function(dat, variable1, variable2 = NULL, prefit=FALSE){
     design <- model.matrix(~variable1)
     Coef = 2
   }else{
-    design <- model.matrix(~variable2+variable1)
+    design <- model.matrix(~variable2*variable1)
     Coef = 4
   }
   cds <- DGEList(dat)
@@ -67,10 +67,10 @@ exact <- function(dat, group, Pair){
   Max_a <- apply(tpmProxC[rownames(res),colnames(dat)[group == TRUE]],1,max)
   Max_b <- apply(tpmProxC[rownames(res),colnames(dat)[group == FALSE]],1,max)
   tmp_a <- cbind(dat[rownames(res),colnames(dat)[group == TRUE]], Max_b[rownames(res)])
-  Col <- sum(group == TRUE)
+  Col <<- sum(group == TRUE)
   res$max_a <- as.numeric(apply(tmp_a,1,maximum2))
   tmp_b <- cbind(dat[rownames(res),colnames(dat)[group == FALSE]], Max_a[rownames(res)])
-  Col <- sum(group == FALSE)
+  Col <<- sum(group == FALSE)
   res$max_b <- as.numeric(apply(tmp_b,1,maximum2))
   
   return(res)
@@ -86,25 +86,30 @@ exact <- function(dat, group, Pair){
 #load(file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res")
 ###
 for (g2 in c("DG","CA1","VIP","CA3","Neg")){
-  samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == g2 & metaProxC$FOS == "F" & metaProxC$Arc_2.5 != "greater" & metaProxC$outliers == "in"|
-                                  metaProxC$Mouse_condition == "EE" &  metaProxC$Subgroup2 == g2 & metaProxC$FOS == "N" & metaProxC$Arc_2.5 != "greater"  & metaProxC$outliers == "in",])
+  samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == g2 & metaProxC$FOS == "F" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"|
+                                   metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == g2 & metaProxC$FOS == "N" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in"  & metaProxC$outliers == "in",])
   dat <- na.exclude(countProxC[, samples])
   dat <- dat[rowSums(dat) > 0,]
-  met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+  met <- metaProxC[samples,]
   ###################
   #Assign groups
   ###################
   group <-  met$FOS == "F"
   Pair <- levels(as.factor(as.character(group)))
+  #variable1 <- met$FOS == "F"
+  #variable2 <- met$Mouse2
   ###################
   # Test genes
   ###################
   #RES <- list()
+  #i <- 0
   res <- exact(dat, group, Pair)
   i <- i + 1
   RES[[i]] <- res
   names(RES)[i] <- g2
 }
+
+RES.FosN.HCN <- RES
 
 dg <- RES[["DG"]]
 ca1 <- RES[["CA1"]]
@@ -115,9 +120,9 @@ neg <- RES[["Neg"]]
 #all genes
 genes <- unique(c(rownames(dg[dg$f < 0.05 & dg$a > 0.2 | dg$f < 0.05 & dg$b > 0.2, ]),
                 rownames(ca1[ca1$f < 0.05 & ca1$a > 0.2| ca1$f < 0.05 & ca1$b > 0.2,]),
-                rownames(ca3[ca3$f < 0.05 & ca3$a > 0.2| ca3$f < 0.05 & ca3$b > 0.2,]),
-                rownames(vip[vip$f < 0.05 & vip$a > 0.2| vip$f < 0.05 & vip$b > 0.2,]),
-                rownames(neg[neg$f < 0.05 & neg$a > 0.2| neg$f < 0.05 & neg$b > 0.2,])))
+                #rownames(ca3[ca3$f < 0.05 & ca3$a > 0.2| ca3$f < 0.05 & ca3$b > 0.2,]),
+                rownames(vip[vip$f < 0.05 & vip$a > 0.2| vip$f < 0.05 & vip$b > 0.2,])))#,
+                #rownames(neg[neg$f < 0.05 & neg$a > 0.2| neg$f < 0.05 & neg$b > 0.2,])))
 #all shared genes
 genes <- table(c(rownames(dg[dg$f < 0.01 & dg$a > 0.2 | dg$f < 0.01 & dg$b > 0.2, ]),
                   rownames(ca1[ca1$f < 0.01 & ca1$a > 0.2| ca1$f < 0.01 & ca1$b > 0.2,]),
