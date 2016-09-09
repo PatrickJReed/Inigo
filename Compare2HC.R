@@ -3,6 +3,8 @@
 
 #res2 is EE FOS P versus FOS N
 #res is EE FOS P versus HC FOS N
+SigGenes <- list()
+i <- 0
 for (g2 in c("DG","CA1","CA3","VIP","Neg")){
 res2 <- RES.activity[[g2]]
 res <- RES.FosF.HCN[[g2]]
@@ -13,14 +15,14 @@ a <- na.exclude(a)
 #1 Fos F low genes
 genes1 <- rownames(a[(a[,1] < 0  & #FOS F < FOS N
        a[,4] < 0.05 & a[,5] > 0.2 &
-       a[,7] < 0 &                  #FOS F < HC N 
-       a[,10] < 0.05
+       a[,9] < 0 &                  #FOS F < HC N 
+       a[,12] < 0.05
       ),])
 #2 Fos F high genes
 genes2 <- rownames(a[(a[,1] > 0  & #FOS F > FOS N
       a[,4] < 0.05 & a[,5] > 0.2 & #FOS F > HC N
-      a[,7] > 0 & 
-      a[,10] < 0.05
+      a[,9] > 0 & 
+      a[,12] < 0.05
 ),])
 
 #res2 is EE FOS P versus FOS N
@@ -34,14 +36,14 @@ a <- na.exclude(a)
 #3 FOS L low genes
 genes3 <- rownames(a[(a[,1] > 0  & #FOS N < FOS P
       a[,4] < 0.05 & a[,5] > 0.2 &
-      a[,7] < 0 &                   #FOS N < HC N 
-      a[,10] < 0.05
+      a[,9] < 0 &                   #FOS N < HC N 
+      a[,12] < 0.05
 ),])
 #4 FOS L high genes
 genes4 <- rownames(a[(a[,1] < 0  & #FOS N > FOS P
       a[,4] < 0.05 & a[,5] > 0.2 &
-      a[,7] > 0 &                   #FOS N > HC N 
-      a[,10] < 0.05
+      a[,9] > 0 &                   #FOS N > HC N 
+      a[,12] < 0.05
 ),])
 
 

@@ -94,7 +94,7 @@ tmp$CTIP2 <- met2$CTIP2
 tmp$element <- as.character(rep(sine_row_meta$V1,each = ncol(dat2)))
 tmp$tso <- met2$value 
 
-TE <- "B2_Rn2"
+TE <- "B2_Mm1a"
 ggplot(na.exclude(tmp[tmp$element == TE & tmp$value !=0 & tmp$value < 1000 & tmp$Subgroup2 != "Neg" & tmp$Mouse_condition != "HC", ]), aes(FOS,value))+
   geom_violin()+
   geom_point()+
