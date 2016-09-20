@@ -48,7 +48,7 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$Context1 != "A" & metaProxC$Subgroup2 == "DG"  & metaProxC$outliers == "in","Sample_ID"]
+samples <- metaProxC[metaProxC$Subgroup2 == "DG"  & metaProxC$outliers == "in","Sample_ID"]
 exprs <- dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
 

@@ -629,10 +629,10 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- metaProxC[  metaProxC$Subgroup2 != "Neg" &  metaProxC$outliers == "in" ,"Sample_ID"]#
+samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$Arc_2.5 != "higher" & metaProxC$Subgroup2 != "Neg" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+met <- metaProxC[samples,]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "NE"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","NE","5hpA","5hpAA","5hpAC"))
@@ -640,16 +640,16 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA1","CA3","VIP","Neg"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Klf9",dat, met)
+Indiv("Kcnq4",dat, met)
 #dev.off()
 IndivProp("Tmem170",dat, met)
 
 
 
 #
-a <- "Vip"#Bap1
-b <- "Sncg"
-group <- "FOS"
+a <- "Bdnf"#Bap1
+b <- "Arc"
+group <- "Subgroup2"
 Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
 Volcano(res)

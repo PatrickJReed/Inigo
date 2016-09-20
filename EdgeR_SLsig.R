@@ -97,7 +97,7 @@ for (g2 in c("DG","CA1","VIP","CA3","Neg")){
   #group <-  met$FOS == "F"
   #Pair <- levels(as.factor(as.character(group)))
   variable1 <- met$FOS == "F"
-  variable2 <- factor(met$Subgroup2, c("")
+  variable2 <- met$Subgroup2
   ###################
   # Test genes
   ###################

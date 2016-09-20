@@ -96,7 +96,9 @@ for (i in 1:nrow(a2)){
     "none"
   }
 }
-
+for (j in c("DG","CA1","VIP")){
+  a2[,j] <- -1 * RES.activity[[j]][rownames(a2),"logFC"] 
+}
 #####
 FOS.F.HIGH <- vector()
 for (i in seq(2,length(SigGenes),4)){
@@ -119,6 +121,10 @@ for (i in 1:nrow(a2)){
     "none"
   }
 }
+for (j in c("DG","CA1","VIP")){
+  a2[,j] <- RES.activity[[j]][rownames(a2),"logFC"] 
+}
+
 
 
 FOS.N.LOW <- vector()
