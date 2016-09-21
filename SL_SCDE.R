@@ -10,10 +10,10 @@ library(scde)
 ##############################################
 ## Step 1: Load in Count Table
 ##############################################
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "VIP" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$Subgroup2 == "DG" & metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L"  & metaProxC$Arc_2.5 != "greater" & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" &  metaProxC$outliers == "in",])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+met <- metaProxC[samples,]
 countTable2 <- t(apply(round(dat[rowSums(dat) > 0,],0),1, as.integer))
 colnames(countTable2) <- colnames(dat)
 
@@ -70,7 +70,7 @@ tail(ediff2)
 
 # Plot posterior for a single gene
 
-gene <- "Ppp2r2cos"
+gene <- "Arc"
 scde.test.gene.expression.difference(gene,
                                        models=o.ifm,
                                        counts=countTable2,
