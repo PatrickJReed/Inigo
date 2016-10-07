@@ -517,7 +517,8 @@ heatMeRaw <- function(dat,met,genes,k1= NULL , k2 = NULL, sampleorder = NULL,gen
     )+
     scale_fill_gradient2(high="red",mid = "white",low="blue")+
     #theme_bw(base_size=22)+
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), 
+          text = element_text(size = 20))
   return(p1)
 }
 heatMeAvg <- function(dat,met,genes,group = "Subgroup2", k1= NULL , k2 = NULL, sampleorder = NULL,geneorder = NULL,  cutoff = NULL,samplenames=NULL){
@@ -656,7 +657,7 @@ a[2]
 
 # Plot Single Gene --------------------------------------------------------
 samples <- rownames(metaProxC[# metaProxC$Mouse_condition == "EE"  & metaProxC$Subgroup2 == "DG" & metaProxC$FOS == "F" & metaProxC$outliers == "in" |
-                                 metaProxC$Mouse_condition == "EE"   & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" ,])#
+                               metaProxC$Brain_Region == "DG" &  metaProxC$Mouse_condition != "Sara"   & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[-which(rownames(tpmProxC) == "Slc6a17"), samples])
 met <- metaProxC[samples,]
@@ -670,7 +671,7 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA1","CA3","VIP","Neg"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Mlip",dat, met)
+Indiv("Sirt1",dat, met)
 Indiv2("Drd4",dat, met)
 
 #dev.off()
@@ -688,8 +689,8 @@ Volcano(res)
 
 
 ###########
-samples <- metaProxC[  metaProxC$Subgroup2 == "Neg" & metaProxC$FOS != "L"  &  metaProxC$EE_ArcGroup != "Unk" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
-                       "Sample_ID"]#
+samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$Brain_Region != "CA3_other_negs" & metaProxC$FOS != "L"  &  metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$Context1 == "none" & metaProxC$outliers == "in" ,
+                       ])#
 
 tmp <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[match(samples,metaProxC$Sample_ID),]
@@ -698,8 +699,9 @@ tmp2 <- tmp[genes,]
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
 h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 #dev.off()
-#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/celltypes_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
-heatMeRaw(dat,met,genes,k1 = 3,geneorder = c(1:length(genes)), samplenames = paste(met$Subgroup2,met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/K_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
+heatMeRaw(dat,met,genes2,k1 = 10,k2 = 5, samplenames = paste(met$Brain_Region,1:ncol(dat),sep="."))
+dev.off()
 heatMe(dat,met,genes,k1 = 2, k2 = 2 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/Fig6_potassium_hc.tiff",width = 8,height = 15,units = 'in',res = 300)
