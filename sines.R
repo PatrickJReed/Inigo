@@ -33,13 +33,37 @@ exact.sml <- function(dat, variable, Pair, Lib){
   res$f <- p.adjust(res$PValue, method = "fdr")
   return(res)
 }
-
+GLM <- function(dat, variable1, variable2 = NULL, prefit=FALSE){
+  if(is.null(variable2)){
+    design <- model.matrix(~variable1)
+    Coef = 2
+  }else{
+    design <- model.matrix(~variable2*variable1)
+    Coef = 4
+  }
+  cds <- DGEList(dat)
+  if (prefit == FALSE){
+    cds <- calcNormFactors(cds)
+    cds <- estimateGLMCommonDisp( cds )
+    cds <- estimateGLMTrendedDisp(cds)
+    fit <- glmQLFit(y=cds,design)
+  }
+  #fit <- glmQLFit(y=cds,design)
+  lrt <- glmLRT(fit, coef=Coef)#interaction term = 4
+  edg <- data.frame(lrt$table)
+  edg <- edg[order(edg$PValue),]
+  f <- p.adjust(edg$PValue)
+  edg$f <- f
+  a <- apply(tpmProxC[,colnames(dat)], 1, propExp)
+  edg$propExp <- as.vector(a[rownames(edg)])
+  return(edg)
+}
 ##########
 ## Run EdgeR
 ##########
 
 #####
-condition <- which(sine_col_meta$Subgroup2 == "DG" & sine_col_meta$value == "tso_elements" & sine_col_meta$Mouse_condition == "EE" & sine_col_meta$FOS != "L" )
+condition <- which(sine_col_meta$Subgroup2 == "CA1" & sine_col_meta$value == "tso_elements" & sine_col_meta$Mouse_condition == "EE" & sine_col_meta$FOS != "L" )
 dat <- sine_count[,condition] 
 met1 <- sine_col_meta[condition,]
 dat <- dat[rowSums((dat)) > 0,]
@@ -94,7 +118,7 @@ tmp$CTIP2 <- met2$CTIP2
 tmp$element <- as.character(rep(sine_row_meta$V1,each = ncol(dat2)))
 tmp$tso <- met2$value 
 
-TE <- "B2_Mm1a"
+TE <- "L1MdA_IV"
 ggplot(na.exclude(tmp[tmp$element == TE & tmp$value !=0 & tmp$value < 1000 & tmp$Subgroup2 != "Neg" & tmp$Mouse_condition != "HC", ]), aes(FOS,value))+
   geom_violin()+
   geom_point()+
@@ -128,14 +152,14 @@ rownames(sine.cor.est) <- rownames(dat.gene)
 ####### Plot some of the results
 a <- rownames(na.exclude(sine.cor.est[abs(sine.cor.est$B2_Mm1a) > 0.3,]))
 
-gene <- "Dnajc1"
+gene <- "Sirt6"
 arc <- "Arc"
 te <- "B2_Mm1a"
 tmp <- data.frame(arc = as.numeric(dat.gene[arc,]),
                     gene = as.numeric(dat.gene[gene,]),
                   te = as.numeric(dat.sine[te,]),
                   sine_col_meta[samples,])
-ggplot(tmp[tmp$te != 0 & tmp$gene > 1 & tmp$Subgroup2 == "DG",], aes(gene, te , colour = FOS, group = "1"))+
+ggplot(tmp[ tmp$Subgroup2 == "DG",], aes(gene, te , colour = FOS, group = "1"))+
   geom_point()+
   geom_point(shape =1, colour = "black")+
   geom_smooth(method = "lm",colour = "black")+
@@ -147,4 +171,19 @@ ggplot(tmp[tmp$te != 0 & tmp$gene > 1 & tmp$Subgroup2 == "DG",], aes(gene, te , 
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5))+
   scale_colour_manual(values = c("red","orange","blue"))
+
+model <- lm(te ~ gene + arc, tmp)
+###
+condition <- which(sine_col_meta$Subgroup2 == "DG" & sine_col_meta$value == "tso_elements" & sine_col_meta$Mouse_condition == "EE" & sine_col_meta$FOS != "L" )
+dat.gene <- na.exclude(countProxC[,samples])
+met1 <- sine_col_meta[condition,]
+dat <- dat[rowSums((dat)) > 0,]
+Lib <- sine_col_meta[condition,"alignable"]
+group <- met1$FOS
+Pair <- levels(as.factor(as.character(group)))
+g <- as.numeric(dat.gene["Arc",])
+b2 <- as.numeric(dat.sine["B2_Mm1a",])
+
+
+res.glm <- GLM(dat,variable1  = b2 )
 
