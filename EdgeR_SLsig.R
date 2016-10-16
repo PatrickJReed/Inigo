@@ -87,27 +87,27 @@ exact <- function(dat, group, Pair){
 ###
 for (g2 in c("DG","CA1","VIP","CA3","Neg")){
   samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == g2 & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"|
-                                   metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 != g2 & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in"  & metaProxC$outliers == "in",])
+                                   metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == g2 & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in"  & metaProxC$outliers == "in",])
   dat <- na.exclude(countProxC[, samples])
   dat <- dat[rowSums(dat) > 0,]
   met <- metaProxC[samples,]
   ###################
   #Assign groups
   ###################
-  #group <-  met$FOS == "F"
-  #Pair <- levels(as.factor(as.character(group)))
-  variable1 <- met$FOS == "F"
-  variable2 <- met$Subgroup2
+  group <-  met$Vip == 4
+  Pair <- levels(as.factor(as.character(group)))
+  #variable1 <- met$Activations == "1"
+  #variable2 <- met$Subgroup2
   ###################
   # Test genes
   ###################
   #RES <- list()
   #i <- 0
-  #res <- exact(dat, group, Pair)
-  res <- GLM(dat = dat, variable1, variable2)
-  i <- i + 1
-  RES[[i]] <- res
-  names(RES)[i] <- g2
+  res <- exact(dat, group, Pair)
+  #res <- GLM(dat = dat, variable1, variable2)
+  #i <- i + 1
+  #RES[[i]] <- res
+  #names(RES)[i] <- g2
 }
 
 RES.FosN.HCN <- RES
