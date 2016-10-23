@@ -5,14 +5,12 @@ library("WGCNA")
 library("DESeq2")
 library("Rsamtools")
 
-samples <- rownames(metaProxC[ metaProxC$Subgroup2 == "DG" & metaProxC$FOS != "L"  & metaProxC$Context1 == "none" & metaProxC$Subgroup2!= "HDG" & metaProxC$EE_ArcGroup != "Unk" & metaProxC$outliers == "in",])
-dat <- tpmProxC[, samples]
+samples <- rownames(t[t$glut_gaba == "GABA",])
+dat <- tpmProxC[rownames(res[res$logFC < 0 & res$f < 0.05,]), samples]
 rownames(dat) <- toupper(rownames(dat))
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+met <- metaProxC[samples,]
 
-m <- apply(X = dat,1,meanNoZero)
-vstMat2 <- dat[m > 3,]
-vstMat2 <- vstMat2[-c(grep("(^GM)",rownames(vstMat2), perl = TRUE)),]
+vstMat2 <- dat
 ##################################
 #### Setup the WGCNA-Style Objects
 ##################################

@@ -18,6 +18,9 @@ library(Rtsne)
 #08/10/2016 changes
 #save(list = c("t.hc.maingroups","t.fosN.maingroups","t.all","t.EE"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda")
+#10/23/2016: same as above, but removed outliers, both from alignment depth and cluster outliers
+#save(list = c("t.all2"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda",compress = TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda")
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
 ###############################################
@@ -622,11 +625,11 @@ Volcano <- function(difexp){
 #PCA 2D
 samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Brain_Region == "HDG" & metaProxC$FOS != "L"  &  metaProxC$Arc_2.5 != "greater" & metaProxC$Context1 == "none"   & metaProxC$outliers == "in"  ,])
                                              
-dat <- na.exclude(tpmProxC[-which(rownames(tpmProxC) == "Slc6a17"), samples])
+dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 #gene <- "Meg3"
 #Calculate the components
-p <- pca(t(dat[,samples]),nPcs = 50)
+p <- pca(t(dat[,samples]),nPcs = 2)
 scores <- as.data.frame(p@scores)
 scores <- cbind(scores,met)
 loading <- as.data.frame(p@loadings)
@@ -711,16 +714,14 @@ heatMeAvg(dat,met,genes,k2 = 8,sampleorder =c(2,3,4,1) ,cutoff = 1 )
 ###########
 ## T-sne
 ###########
-vip <- as.numeric(dat["Vip",])
-samples <- rownames(metaProxC[metaProxC$Vip == 4 & metaProxC$Mouse_condition == "EE" & metaProxC$Brain_Region == "HDG" & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
-                               # metaProxC$Mouse_condition == "HC" & metaProxC$Brain_Region == "DG" & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$Context1 == "none"  & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
 i <- 2#17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=2,perplexity=i,theta=0,check_duplicates=FALSE,dims = 20,max_iter = 1000)
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=20,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 1000)
 t <- as.data.frame(TSNE$Y)
-colnames(t) <- c("T1","T2","T3","T4","T5","T6","T7")#,"T3")
+colnames(t) <- c("T1","T2")
 t <- cbind(t,met)
 t$Subgroup2 <- as.character(t$Subgroup2)
 t[t$Subgroup2 == "CA3" | t$Subgroup2 == "Neg","Subgroup2"] <- "P-C-"
@@ -749,10 +750,10 @@ t$gene <- as.numeric(tpmProxC["Vip",rownames(t)])
 #t$Mouse_condition <- factor(t$Mouse_condition, c("HC","EE","5hpA","5hpAA","5hpAC"))
 #Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
 #dev.off()
-#k <- kmeans(t[,c(1:2)],centers =4,nstart = 2000)
+#k <- kmeans(t[,c(1:2)],centers =10,nstart = 2000)
 #t$k <- as.factor(k$cluster)
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_EE_Inhba.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
-ggplot(t, aes(T1,T2, color = FOS, shape = Brain_Region))+
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_all_Gad2.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
+ggplot(t, aes(T1,T2, color = as.factor(k) , shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -760,13 +761,13 @@ ggplot(t, aes(T1,T2, color = FOS, shape = Brain_Region))+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5),
-        panel.grid.major = element_line(size = 1))+
-  scale_colour_manual(values = c("blue","red"))
+        panel.grid.major = element_line(size = 1))#+
+  #scale_colour_manual(values = c("blue","red"))
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
 #  scale_colour_manual(values = c("darkblue","orange","black"))+
    # scale_alpha_continuous(range  = c(0.6,1))+
-#scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
-#scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#60d6eb","#13aac5","#e9ae79","#d97923","#c05cc7","#e93af5","#83108b"))
+scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
+#scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#345510","#60d6eb","#13aac5","#e9ae79","#d29258","#d97923","#7e5530","#c05cc7","#e93af5","#83108b"))
 #scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
 #dev.off()
 
