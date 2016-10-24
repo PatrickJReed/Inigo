@@ -673,7 +673,7 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA1","CA3","VIP","Neg"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Foxred1",dat, met)
+Indiv("Cdh13",dat, met)
 Indiv2("Fos",dat, met)
 
 #dev.off()
@@ -702,9 +702,9 @@ tmp2 <- tmp[genes,]
 h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 #dev.off()
 tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/K_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
-heatMeRaw(dat,met,genes2,k1 = 10,k2 = 5, samplenames = paste(met$Brain_Region,1:ncol(dat),sep="."))
+heatMeRaw(dat,met,genes,k1 = 10,k2 = 5, samplenames = paste(met$Brain_Region,1:ncol(dat),sep="."))
 dev.off()
-heatMe(dat,met,genes,k1 = 2, k2 = 2 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
+heatMe(dat,met,genes,k1 = 10, k2 = 10 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/Fig6_potassium_hc.tiff",width = 8,height = 15,units = 'in',res = 300)
 heatMeAvg(dat,met,genes,k2 = 8,sampleorder =c(2,3,4,1) ,cutoff = 1 )
@@ -718,42 +718,27 @@ samples <- rownames(metaProxC[metaProxC$Context1 == "none"  & metaProxC$FOS != "
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
-i <- 2#17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=20,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 1000)
+
+i <- 4#17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=5,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 500)
+df <- rbind(df, TSNE$Y[,1], TSNE$Y[,2])
+
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")
 t <- cbind(t,met)
-t$Subgroup2 <- as.character(t$Subgroup2)
-t[t$Subgroup2 == "CA3" | t$Subgroup2 == "Neg","Subgroup2"] <- "P-C-"
-t$Subgroup2 <- factor(t$Subgroup2,c("DG","CA1","VIP","P-C-"))
-t$Brain_Region <- as.character(t$Brain_Region)
-t[t$Brain_Region == "CA1", "Brain_Region"] <- "P-C+"
-t[t$Brain_Region == "CA3_other_negs", "Brain_Region"] <- "P-C-"
-t[t$Brain_Region == "DG", "Brain_Region"] <- "P+C+"
-t[t$Brain_Region == "HDG", "Brain_Region"] <- "P+C-"
-t$Mouse_condition <- as.character(t$Mouse_condition)
-t[t$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
-t[t$Mouse_condition == "5hpA","Mouse_condition"] <- "5hr"
-t[t$Mouse_condition == "5hpAC","Mouse_condition"] <- "A>C"
-t[t$Mouse_condition == "5hpAA","Mouse_condition"] <- "A>A"
-t$Mouse_condition <- factor(t$Mouse_condition, c("HC","1hr","5hr","A>A","A>C"))
-t$Mouse3 <- 0
-for (i in unique(t$Brain_Region)){
+#metaProxC$Mouse3 <- 0
+#for (i in unique(t$Brain_Region)){
   a <- unique(t[t$Brain_Region == i, "Mouse2"])
   for(j in 1:length(a)){
     t[t$Brain_Region == i & t$Mouse2 == a[j], "Mouse3"] <- j
   }
 }
-t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-t$gene <- as.numeric(tpmProxC["Vip",rownames(t)])
-#t$Mouse_condition <- as.character(t$Mouse_condition)
-#t$Mouse_condition <- factor(t$Mouse_condition, c("HC","EE","5hpA","5hpAA","5hpAC"))
-#Plot3D.TSNE(t,group = "Brain_Region")#,group = "pickMe",COLORS = c("black","red"))
-#dev.off()
+#t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
+t$gene <- as.numeric(tpmProxC["Dcn",rownames(t)])
 #k <- kmeans(t[,c(1:2)],centers =10,nstart = 2000)
 #t$k <- as.factor(k$cluster)
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_all_Gad2.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
-ggplot(t, aes(T1,T2, color = as.factor(k) , shape = FOS))+
+tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_all_Dcn.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
+ggplot(t, aes(T1,T2, color = gene , shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -761,7 +746,7 @@ ggplot(t, aes(T1,T2, color = as.factor(k) , shape = FOS))+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5),
-        panel.grid.major = element_line(size = 1))#+
+        panel.grid.major = element_line(size = 1))+
   #scale_colour_manual(values = c("blue","red"))
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
 #  scale_colour_manual(values = c("darkblue","orange","black"))+
@@ -769,7 +754,7 @@ ggplot(t, aes(T1,T2, color = as.factor(k) , shape = FOS))+
 scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
 #scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#345510","#60d6eb","#13aac5","#e9ae79","#d29258","#d97923","#7e5530","#c05cc7","#e93af5","#83108b"))
 #scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
-#dev.off()
+dev.off()
 
 ########
 samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
