@@ -719,8 +719,8 @@ dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
 
-i <- 4#17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=5,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 500)
+i <- 25#17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=20,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 500)
 df <- rbind(df, TSNE$Y[,1], TSNE$Y[,2])
 
 t <- as.data.frame(TSNE$Y)
@@ -732,13 +732,13 @@ t <- cbind(t,met)
   for(j in 1:length(a)){
     t[t$Brain_Region == i & t$Mouse2 == a[j], "Mouse3"] <- j
   }
-}
+#}
 #t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-t$gene <- as.numeric(tpmProxC["Dcn",rownames(t)])
-#k <- kmeans(t[,c(1:2)],centers =10,nstart = 2000)
-#t$k <- as.factor(k$cluster)
-tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_all_Dcn.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
-ggplot(t, aes(T1,T2, color = gene , shape = FOS))+
+t$gene <- as.numeric(tpmProxC["Esrrg",rownames(t)])
+#k <- kmeans(t[,c(1:2)],centers =20,nstart = 2000)
+#t$k2 <- as.factor(k$cluster)
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_all_k2.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
+ggplot(t, aes(T1,T2, color = k2 , shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -746,15 +746,15 @@ ggplot(t, aes(T1,T2, color = gene , shape = FOS))+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5),
-        panel.grid.major = element_line(size = 1))+
+        panel.grid.major = element_line(size = 1))#+
   #scale_colour_manual(values = c("blue","red"))
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
 #  scale_colour_manual(values = c("darkblue","orange","black"))+
    # scale_alpha_continuous(range  = c(0.6,1))+
-scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
+#scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
 #scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#345510","#60d6eb","#13aac5","#e9ae79","#d29258","#d97923","#7e5530","#c05cc7","#e93af5","#83108b"))
 #scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
-dev.off()
+#dev.off()
 
 ########
 samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
