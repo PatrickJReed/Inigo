@@ -19,7 +19,7 @@ library(Rtsne)
 #save(list = c("t.hc.maingroups","t.fosN.maingroups","t.all","t.EE"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda")
 #10/23/2016: same as above, but removed outliers, both from alignment depth and cluster outliers
-#save(list = c("t.all2"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda",compress = TRUE)
+#save(list = c("t.all2","t.gaba"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda")
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
@@ -249,9 +249,9 @@ Indiv <- function(gene,dat,met){
   tmp$FOS <- factor(tmp$FOS, levels = c("N","L","F"))
   tmp$Brain_Region <- factor(tmp$Brain_Region, c("DG","CA1","VIP","IN"))
   #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
-  p <- ggplot(tmp, aes(FOS,exp))+
+  p <- ggplot(tmp, aes(FOS,exp, fill = Subgroup2, alpha = 0.3))+
     geom_violin()+#outlier.shape=NA)+
-    geom_point(position=position_jitter(width=0.01,height=0))+
+    geom_point(position=position_jitter(width=0.01,height=0),  shape = 1, size = 0.5)+
     theme_bw(base_size=20)+
     ylab("TPM")+
     #scale_colour_gradient(high="red", low="blue")+
@@ -659,9 +659,9 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" ,])#
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
-dat <- na.exclude(tpmProxC[-which(rownames(tpmProxC) == "Slc6a17"), samples])
+dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
@@ -671,9 +671,9 @@ met[met$Mouse_condition == "5hpAC","Mouse_condition"] <- "A>C"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","1hr","5hr","A>A","A>C"))
 met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
-met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA1","CA3","VIP","Neg"))
+met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Neg","VIP","MGE","Mossy"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Cdh13",dat, met)
+Indiv("Calb2",dat, met)
 Indiv2("Fos",dat, met)
 
 #dev.off()
@@ -719,26 +719,27 @@ dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
 
-i <- 25#17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=20,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 500)
-df <- rbind(df, TSNE$Y[,1], TSNE$Y[,2])
+i <- 5#17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=3,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 500)
+#df <- rbind(df, TSNE$Y[,1], TSNE$Y[,2])
 
 t <- as.data.frame(TSNE$Y)
 colnames(t) <- c("T1","T2")
 t <- cbind(t,met)
 #metaProxC$Mouse3 <- 0
 #for (i in unique(t$Brain_Region)){
-  a <- unique(t[t$Brain_Region == i, "Mouse2"])
-  for(j in 1:length(a)){
-    t[t$Brain_Region == i & t$Mouse2 == a[j], "Mouse3"] <- j
-  }
+#  a <- unique(t[t$Brain_Region == i, "Mouse2"])
+#  for(j in 1:length(a)){
+#    t[t$Brain_Region == i & t$Mouse2 == a[j], "Mouse3"] <- j
+#  }
 #}
 #t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-t$gene <- as.numeric(tpmProxC["Esrrg",rownames(t)])
-#k <- kmeans(t[,c(1:2)],centers =20,nstart = 2000)
-#t$k2 <- as.factor(k$cluster)
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_all_k2.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
-ggplot(t, aes(T1,T2, color = k2 , shape = FOS))+
+t$gene <- as.numeric(tpmProxC["Sox6",rownames(t)])
+#k <- kmeans(t[,c(1:2)],centers =3,nstart = 2000)
+#t$k <- as.factor(k$cluster)
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_gaba_a.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
+t$a <- a
+ggplot(t, aes(T1,T2, color = gene  , shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -746,12 +747,12 @@ ggplot(t, aes(T1,T2, color = k2 , shape = FOS))+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5),
-        panel.grid.major = element_line(size = 1))#+
+        panel.grid.major = element_line(size = 1))+
   #scale_colour_manual(values = c("blue","red"))
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
 #  scale_colour_manual(values = c("darkblue","orange","black"))+
    # scale_alpha_continuous(range  = c(0.6,1))+
-#scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
+scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
 #scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#345510","#60d6eb","#13aac5","#e9ae79","#d29258","#d97923","#7e5530","#c05cc7","#e93af5","#83108b"))
 #scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
 #dev.off()
