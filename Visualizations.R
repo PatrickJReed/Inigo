@@ -19,7 +19,7 @@ library(Rtsne)
 #save(list = c("t.hc.maingroups","t.fosN.maingroups","t.all","t.EE"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne3.rda")
 #10/23/2016: same as above, but removed outliers, both from alignment depth and cluster outliers
-#save(list = c("t.all2","t.gaba"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda",compress = TRUE)
+#save(list = c("t.all2","t.gaba","t.cge"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/tsne4.rda")
 ###############################################
 ## FUNCTIONS THAT WILL PLOT FOR YOU
@@ -249,12 +249,13 @@ Indiv <- function(gene,dat,met){
   tmp$FOS <- factor(tmp$FOS, levels = c("N","L","F"))
   tmp$Brain_Region <- factor(tmp$Brain_Region, c("DG","CA1","VIP","IN"))
   #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
-  p <- ggplot(tmp, aes(FOS,exp, fill = Subgroup2, alpha = 0.3))+
+  p <- ggplot(tmp, aes(FOS,exp,fill = FOS, alpha = 0.3))+
     geom_violin()+#outlier.shape=NA)+
     geom_point(position=position_jitter(width=0.01,height=0),  shape = 1, size = 0.5)+
     theme_bw(base_size=20)+
     ylab("TPM")+
-    #scale_colour_gradient(high="red", low="blue")+
+    scale_fill_manual(values = c("blue","red"))+
+    scale_colour_gradient(high="red", low="blue")+
     ylim(c(0,max(tmp$exp) + 0.2*(max(tmp$exp))))+
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
@@ -659,7 +660,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" ,])#
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -671,9 +672,10 @@ met[met$Mouse_condition == "5hpAC","Mouse_condition"] <- "A>C"
 met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","1hr","5hr","A>A","A>C"))
 met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
-met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Neg","VIP","MGE","Mossy"))
-#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/violin/Kcnq4.tiff",width = 8,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Calb2",dat, met)
+met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
+Indiv("Dpysl5",dat, met)
+#dev.off()
 Indiv2("Fos",dat, met)
 
 #dev.off()
@@ -682,7 +684,7 @@ IndivProp("Tmem170",dat, met)
 
 
 #
-a <- "Sirt6"#Bap1
+a <- "Mfsd2a"#Bap1
 b <- "Fos"
 group <- "FOS"
 Plot2Genes(a,b, dat,met,group)
@@ -734,12 +736,12 @@ t <- cbind(t,met)
 #  }
 #}
 #t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-t$gene <- as.numeric(tpmProxC["Sox6",rownames(t)])
-#k <- kmeans(t[,c(1:2)],centers =3,nstart = 2000)
+t$gene <- as.numeric(tpmProxC["Plekhg1",rownames(t)])
+#k <- kmeans(t[,c(1:2)],centers =2,nstart = 2000)
 #t$k <- as.factor(k$cluster)
-#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_gaba_a.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
-t$a <- a
-ggplot(t, aes(T1,T2, color = gene  , shape = FOS))+
+#tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_plekhg1.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
+#t$a <- a
+ggplot(t, aes(T1,T2, color = gene, shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
