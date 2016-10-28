@@ -10,13 +10,18 @@ library(parallel)
 ##### Below is newer data as of 7/20/2016
 #save(list=c("allnuclei","inhib","vip","IN"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle2.rda",compress=TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle2.rda")
+#save(list=c("my.data5_ca3"),file="~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle3.rda",compress=TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/sl_monocle3.rda")
 ###########################
 ## Functions
 ###########################
-pseudoPlot <- function(gene,color_by = "FOS", shape_by = NULL , COLORS = NULL){
+pseudoPlot <- function(gene,color_by = "FOS", shape_by = NULL , COLORS = NULL, reverse = FALSE, Max = NULL){
   tmp <- pData(my.data5)
   tmp[,"TPM"] <- as.numeric(dat[gene,])
   tmp[,"color_by"] <- tmp[,color_by]
+  if(reverse == TRUE){
+    tmp$Pseudotime <- -tmp$Pseudotime
+  }
   if(!is.null(shape_by)){
     tmp[,"shape_by"] <- tmp[,shape_by]
     plt <- ggplot(tmp, aes(Pseudotime, TPM,colour = color_by, shape= shape_by))+
@@ -34,6 +39,9 @@ pseudoPlot <- function(gene,color_by = "FOS", shape_by = NULL , COLORS = NULL){
      if(!is.null(COLORS)){
        plt <- plt + scale_colour_manual(values = COLORS)
      }
+   if(!is.null(Max)){
+     plt <- plt + ylim(c((min(tmp$TPM) - sd(tmp[tmp$TPM <=0,"Pseudotime"])), Max))
+   }
 
   return(plt)
 }
@@ -48,9 +56,9 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- metaProxC[metaProxC$Subgroup2 == "DG"  & metaProxC$outliers == "in","Sample_ID"]
+samples <- rownames(metaProxC[metaProxC$Context1 == "none" & metaProxC$Subgroup2 == "Lamp5"  & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
 exprs <- dat <- na.exclude(tpmProxC[, samples])
-met <- metaProxC[match(samples,metaProxC$Sample_ID),]
+met <- metaProxC[samples,]
 
 colnames(exprs) <- nm2 <- paste(met$Subgroup2, c(1:nrow(met)),sep = "_")
 df <- data.frame(cells = nm2,labels = as.character(met$FOS))
@@ -69,17 +77,7 @@ my.data <- newCellDataSet(exprs,
 ## Step2) Identify gene set
 ###########################
 my.data2 <- detectGenes(my.data,min_expr=1)
-expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=10))
-##
-genes <- vector()
-for(i in 1:length(RES.F)){
-  a <- RES.F[[i]]
-  genes <- c(genes,rownames(a[a$f < 0.01 & a$a > 0.2,]))
-}
-genes <- unique(genes)
-#a <- table(c(genes, genes,rownames(cell.Fspecific[["DG"]])))
-#genes <- names(a[a==2])
-
+#expressed_genes <- row.names(subset(fData(my.data2),num_cells_expressed >=2))
 
 marker_genes <- row.names(subset(fData(my.data2),gene_short_name %in% genes))
 my.data3 <- setOrderingFilter(my.data2, marker_genes)
@@ -88,7 +86,7 @@ my.data3 <- setOrderingFilter(my.data2, marker_genes)
 ## Step3) Dimernsionality reduction
 ###########################
 my.data4 <- reduceDimension(my.data3, use_irlba=FALSE)
-my.data5 <- orderCells(my.data4,num_paths=4)
+my.data5 <- orderCells(my.data4,num_paths=1)
 pheno <- pData(my.data5)
 pheno$FOS <- paste(as.character(met$FOS), as.character(met$Mouse_condition),sep = ".")
 samples.1 <- as.character(pheno[ ,"cells"])
@@ -102,15 +100,17 @@ pData(my.data5)$FOS <- paste(as.character(met$FOS),as.character(met$Mouse_condit
 pData(my.data5)$Subgroup2 <- factor(met$Subgroup2,levels = c("CA1","CA1b","CA3","DG","VIP","IN","CA2"))
 pData(my.data5)$samples <- colnames(exprs)
 pData(my.data5)$Mouse_condition <- paste(as.character(met$Mouse_condition),sep = ".")
-pData(my.data5)$pickMe <- met$Mouse_condition == "EE" & met$Subgroup2 == "CA1" & met$FOS == "N"
+pData(my.data5)$gene <- as.numeric(dat["Arc",])
+
 plot_spanning_tree2(my.data5,
-                    color_by = "FOS",tit = "DG" ,
-                    COLORS = c("red","#f98e04","#e1ba04","blue","skyblue"))#,
+                    color_by = "FOS", tit = "CA3" )#,
+                    #COLORS = c("red","#f98e04","#e1ba04","blue","skyblue"))#,
                     #SHAPES = c(15,17))#"#f98e04","#e1ba04","blue","skyblue"))#, Subset = "EE", Subset_col = "Mouse_condition")
 
 ###
-pseudoPlot("Lrrtm3",color_by = "Subgroup2",COLORS = c("red","blue","skyblue"))
-
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vE/pseudotime/pseudo_DG_Atm.tiff",width = 10,height = 4,units = 'in',res = 500)
+pseudoPlot("Kcnq4",color_by = "FOS",COLORS = c("red","blue","grey"),reverse = TRUE)
+#dev.off()
 ###########################
 ## Extract samples of interest
 ###########################
