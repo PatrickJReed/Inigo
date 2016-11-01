@@ -4,6 +4,14 @@
 #save(list = c("sine_tpm","sine_count","sine_row_meta","sine_col_meta","metaProxC", "tpmProxC", "countProxC"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda")
 
+
+metaProxC$Mouse_condition <- as.character(metaProxC$Mouse_condition)
+metaProxC[metaProxC$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
+metaProxC[metaProxC$Mouse_condition == "5hpA","Mouse_condition"] <- "5hr"
+metaProxC[metaProxC$Mouse_condition == "5hpAC","Mouse_condition"] <- "A>C"
+metaProxC[metaProxC$Mouse_condition == "5hpAA","Mouse_condition"] <- "A>A"
+metaProxC$Mouse_condition <- factor(metaProxC$Mouse_condition, c("HC","1hr","5hr","A>A","A>C"))
+
 #names
 Names <- function(x){
   if (!is.vector(x)){
@@ -61,11 +69,7 @@ propExp <- function(x,i=1){
   }
 }
 rawExp <- function(x,i=2){
-  #if(sum(is.na(x)) > i){
-  #  sum(!is.na(x))
-  #}else{
     sum(na.exclude(x) > i)
-  #}
 }
 meanNoZero <- function(x,i=0){
   a <- mean(x[x>i])
@@ -87,6 +91,13 @@ countExp <- function(x){
 }
 scaleME <- function(x){
   return(scale(x)[,1])
+}
+elbow <- function(x){
+  x <- as.vector(scale(x[order(x)]))
+  x.1 <- c(0,diff(x))
+  elbow <- max(x.1)
+  cutoff <- mean(c(x[which(x.1 == elbow)], x[which(x.1 == elbow) -1]))
+  return(cutoff)
 }
 #################
 ## Processed rdas
@@ -280,7 +291,7 @@ colnames(countProxC) <- make.names(colnames(countProxC))
 metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile.txt",header=TRUE)
 metaProxC$Sample_ID <- make.names(metaProxC$Sample_ID)
 rownames(metaProxC) <- metaProxC$Sample_ID
-metaProxC$outliers <- ifelse(test = metaProxC$alignable < 100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",yes = "in",no = "out")
+metaProxC$outliers <- ifelse(test = metaProxC$alignable > 100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",yes = "in",no = "out")
 #########
 # outliers
 samples <- metaProxC[ metaProxC$alignable <  100000 ,"Sample_ID"]#

@@ -7,7 +7,7 @@ group <-  group#as.factor(ifelse(as.numeric(tpmProxC["Vip",samples])  >7, yes = 
 
 
 #####
-g <- "Htr3a"
+g <- "Htr2c"
 tmp <- data.frame(tpm = as.numeric(dat[g,]),
                   group = group)
 

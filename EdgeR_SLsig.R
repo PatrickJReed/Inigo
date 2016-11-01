@@ -82,32 +82,32 @@ exact <- function(dat, group, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 #NEWER (After CA3 tighter)
-#save(list = c("RES.celltype","RES.activity","RES.FosF.HCN","RES.FosN.HCN","SigGenes"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res",compress = TRUE)
+#save(list = c("RES.all_activity","RES.all.celltype","RES.celltype","RES.activity","RES.FosF.HCN","RES.FosN.HCN","SigGenes"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res",compress = TRUE)
 #load(file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res")
 ###
-for (g2 in c("DG","CA1","VIP","CA3","Neg")){
-  samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == g2 & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"|
-                                   metaProxC$Mouse_condition == "EE" & metaProxC$Subgroup2 == g2 & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in"  & metaProxC$outliers == "in",])
+for (g2 in c("DG","CA1","VIP")){
+  samples <- rownames(metaProxC[metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
+                                  metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
   dat <- na.exclude(countProxC[, samples])
   dat <- dat[rowSums(dat) > 0,]
   met <- metaProxC[samples,]
   ###################
   #Assign groups
   ###################
-  group <-  met$Vip == 4
+  group <-  met$Mouse_condition == "EE" 
   Pair <- levels(as.factor(as.character(group)))
   #variable1 <- met$Activations == "1"
   #variable2 <- met$Subgroup2
   ###################
   # Test genes
   ###################
-  #RES <- list()
+  #RES.FOSNHC <- list()
   #i <- 0
   res <- exact(dat, group, Pair)
   #res <- GLM(dat = dat, variable1, variable2)
-  #i <- i + 1
-  #RES[[i]] <- res
-  #names(RES)[i] <- g2
+  i <- i + 1
+  RES.FOSNHC[[i]] <- res
+  names(RES.FOSNHC)[i] <- g2
 }
 
 RES.FosN.HCN <- RES

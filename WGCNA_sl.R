@@ -5,13 +5,14 @@ library("WGCNA")
 library("DESeq2")
 library("Rsamtools")
 
-samples <- rownames(t)
-#dat <- tpmProxC[rownames(res[res$logFC > 0 & res$f < 0.05,]), samples]
-rownames(dat) <- toupper(rownames(dat))
+samples <- rownames(t[t$k == 3,])
+dat <- tpmProxC[, samples]
 met <- metaProxC[samples,]
 
 v <- apply(dat, 1, var)
-vstMat2 <- dat[names(na.exclude(v[v > 20])),]
+m <- apply(dat, 1, mean)
+m <- rowSums(dat)
+vstMat2 <- dat[names(na.exclude(v[v > 7 & m > 5])),]
 ##################################
 #### Setup the WGCNA-Style Objects
 ##################################
@@ -26,7 +27,7 @@ datTraits <- met[rownames(datExpr),]
 options(stringsAsFactors = FALSE);
 disableWGCNAThreads()
 # Choose a set of soft-thresholding powers
-powers = c(c(1:10), seq(from = 1, to=15, by=2))
+powers = c(c(1:10), seq(from = 1, to=25, by=2))
 # Call the network topology analysis function
 sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)
 #plot the different power levels
@@ -35,17 +36,20 @@ plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
      main = paste("Scale independence"));
 abline(h=0.90,col="red")
 #choose the power for the experiment
-POWER = 3
+POWER = 5
 #Calculate the network
-net = blockwiseModules(datExpr,maxBlockSize=5000, power = POWER,
-                       TOMType = "unsigned", minModuleSize = 7,
+l <- vector()
+for(x in seq(2,200,5)){
+net = blockwiseModules(datExpr, power = POWER,maxBlockSize=5000,
+                       TOMType = "unsigned", minModuleSize = 22,
                        reassignThreshold = 0, #mergeCutHeight = 0.99,
                        numericLabels = TRUE, pamRespectsDendro = FALSE,
                        TOMDenom="min",
                        #saveTOMs = TRUE,
                        #saveTOMFileBase = "hnp",
                        verbose = 3)
-
+l <- c(l, length(unique(labels2colors(net$colors))))
+}
 #plot the network
 sizeGrWindow(12, 9)
 # Convert labels to colors for plotting
@@ -67,13 +71,12 @@ heatmap(as.matrix(MEs))
 
 colors <- c()
 for (i in 1:nrow(MEs)){
-  j <- as.numeric(MEs[i,(-c(7))])
+  j <- as.numeric(MEs[i,(-c(which(colnames(MEs) == "MEgrey")))])
   j.max <- max(j)
   colors <- c(colors, colnames(MEs)[which(j == j.max)])
 }
 
 sample.colors <- data.frame(samples = colnames(t(datExpr)), colors = colors,row.names = colnames(t(datExpr)))
-samples <- rownames(sample.colors[sample.colors$color == "MEred",])
 
 
 #identify labels/colors

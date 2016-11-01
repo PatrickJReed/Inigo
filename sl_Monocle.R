@@ -56,7 +56,7 @@ modelMe <- function(g){
 ###########################
 
 ###Monocle requires normalized counts
-samples <- rownames(metaProxC[metaProxC$Context1 == "none" & metaProxC$Subgroup2 == "Lamp5"  & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$Context1 == "none" & metaProxC$Subgroup2 == "CA3"  & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
 exprs <- dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
@@ -108,9 +108,9 @@ plot_spanning_tree2(my.data5,
                     #SHAPES = c(15,17))#"#f98e04","#e1ba04","blue","skyblue"))#, Subset = "EE", Subset_col = "Mouse_condition")
 
 ###
-#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vE/pseudotime/pseudo_DG_Atm.tiff",width = 10,height = 4,units = 'in',res = 500)
-pseudoPlot("Kcnq4",color_by = "FOS",COLORS = c("red","blue","grey"),reverse = TRUE)
-#dev.off()
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vE/pseudotime/pseudo_CA3_Neat1.tiff",width = 10,height = 4,units = 'in',res = 500)
+pseudoPlot("Neat1",Max = 12,color_by = "FOS",COLORS = c("red","blue","grey"),reverse = TRUE)
+dev.off()
 ###########################
 ## Extract samples of interest
 ###########################
