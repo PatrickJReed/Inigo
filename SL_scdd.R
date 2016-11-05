@@ -4,9 +4,15 @@ library(scDD)
 library(Biobase)
 
 #construct starting object
-samples <- rownames(t[t$k == 5  | t$k == 8,])
-cts <- as.matrix(countProxC[,samples])
-pheno <- data.frame(condition = as.factor(ifelse(as.numeric(tpmProxC["Vip",samples])  >7, yes = "high","low")),row.names = samples)
+samples <- rownames(metaProxC[metaProxC$FOS != "L"  & metaProxC$Arc_2.5 != "greater" & metaProxC$Context1 == "none" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
+dat <- na.exclude(countProxC[, samples])
+dat <- dat[rowSums(dat) > 0,]
+met <- metaProxC[samples,]
+countTable2 <- t(apply(round(dat[rowSums(dat) > 0,],0),1, as.integer))
+colnames(countTable2) <- colnames(dat)
+
+cts <- as.matrix(countTable2[,samples])
+pheno <- data.frame(condition = as.factor(met$FOS == "F"),row.names = samples)
 
 eset.scdd <- ExpressionSet(assayData = cts,  
                            phenoData = as(pheno, "AnnotatedDataFrame"))

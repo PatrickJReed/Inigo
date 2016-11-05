@@ -10,9 +10,7 @@ library(scde)
 ##############################################
 ## Step 1: Load in Count Table
 ##############################################
-samples <- rownames(t[t$T1 < 0 & t$T2 > -10,])
-t.1 <- t[t$T1 < 0 & t$T2 > -10,]
-#samples <- rownames(metaProxC[metaProxC$FOS != "L"  & metaProxC$Arc_2.5 != "greater" & metaProxC$Context1 == "none" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$FOS != "L"  & metaProxC$Arc_2.5 != "greater" & metaProxC$Context1 == "none" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
 dat <- na.exclude(countProxC[, samples])
 dat <- dat[rowSums(dat) > 0,]
 met <- metaProxC[samples,]
@@ -22,7 +20,7 @@ colnames(countTable2) <- colnames(dat)
 ###################
 #Assign groups
 ###################
-labels <- ifelse(t[samples,"a"] == 2 ,yes = "F",no = "N")
+labels <- met$FOS == "F"
 
 ##############################################
 ## Step 2: Fit error model
@@ -63,11 +61,8 @@ ediff <- scde.expression.difference(o.ifm,
                                     n.cores=n.cores,
                                     verbose=1)
 ediff2 <- ediff[order(ediff$Z,decreasing=T),]
-ediff2$rank_high <- c(1:nrow(ediff2))
-ediff2 <- ediff[order(ediff$Z,decreasing=F),]
-ediff2$rank_low <- c(1:nrow(ediff2))
 
-tail(ediff2)
+head(ediff2)
 # Plot posterior for a single gene
 
 gene <- "Arc"
