@@ -624,7 +624,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Brain_Region == "HDG" & metaProxC$FOS != "L"  &  metaProxC$Arc_2.5 != "greater" & metaProxC$Context1 == "none"   & metaProxC$outliers == "in"  ,])
+samples <- rownames(metaProxC[ metaProxC$FOS != "L"   & metaProxC$Context1 != "none"   & metaProxC$outliers == "in"  ,])
                                              
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -640,7 +640,7 @@ met[met$Brain_Region == "HDG", "Brain_Region"] <- "VIP"
 met$group <- paste(met$FOS,  met$Mouse_condition, sep =".")
 met$Vip <- as.numeric(dat["Vip",] > 7)
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby = "FOS", shapeby = "Mouse_condition")#,Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby = "alignable", shapeby = "Mouse_condition")#,Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
