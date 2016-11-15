@@ -659,7 +659,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[ metaProxC$Context1 != "none" & metaProxC$outliers == "in"   ,])#
+samples <- rownames(metaProxC[metaProxC$FOS != "L" & metaProxC$Context1 == "none" & metaProxC$outliers == "in"   ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -673,7 +673,7 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Bcl11b",dat, met)
+Indiv("Nr4a2",dat, met)
 #dev.off()
 Indiv2("Fos",dat, met)
 
@@ -715,13 +715,16 @@ heatMeAvg(dat,met,genes,k2 = 8,k1 = 4 ,cutoff = 1 )
 ###########
 ## T-sne
 ###########
-samples <- rownames(metaProxC[metaProxC$Context1 == "none"  & metaProxC$FOS != "L" & metaProxC$Arc_2.5 != "greater" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in",])
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Brain_Region == "DG"  & metaProxC$FOS == "F"  & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"|
+                                metaProxC$Mouse_condition == "HC" & metaProxC$Brain_Region == "DG"  & metaProxC$FOS == "N"  & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"|
+                                metaProxC$Mouse_condition == "5hpA" & metaProxC$Brain_Region == "DG"  & metaProxC$FOS == "N"  & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"
+                                ,])
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
 
-i <- 5#17
-TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=3,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2,max_iter = 500)
+i <- 30#17
+TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=2,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 #df <- rbind(df, TSNE$Y[,1], TSNE$Y[,2])
 
 t <- as.data.frame(TSNE$Y)
@@ -740,7 +743,13 @@ t$gene <- as.numeric(tpmProxC["Slc4a5",rownames(t)])
 #t$k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_bcl11b.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
 #t$a <- a
-ggplot(t, aes(T1,T2, color = gene, shape = FOS))+
+t$Mouse_condition <- as.character(t$Mouse_condition)
+t[t$Mouse_condition == "5hpA","Mouse_condition"] <- "5hr"
+t[t$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
+t$Mouse_condition <- factor(t$Mouse_condition,c("HC","1hr","5hr"))
+
+tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/Figs/5hr_EE.tiff",width = 10,height = 7,units = 'in',res = 500,compression = "lzw")
+ggplot(t, aes(T1,T2, color = Mouse_condition, shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -749,14 +758,14 @@ ggplot(t, aes(T1,T2, color = gene, shape = FOS))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5),
         panel.grid.major = element_line(size = 1))+
-  #scale_colour_manual(values = c("blue","red"))
+  scale_colour_manual(values = c("black","red","blue"))
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
 #  scale_colour_manual(values = c("darkblue","orange","black"))+
    # scale_alpha_continuous(range  = c(0.6,1))+
-scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
+#scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
 #scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#345510","#60d6eb","#13aac5","#e9ae79","#d29258","#d97923","#7e5530","#c05cc7","#e93af5","#83108b"))
 #scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
-#dev.off()
+dev.off()
 
 ########
 samples <- metaProxC[ metaProxC$Mouse_condition == "HC" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,
