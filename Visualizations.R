@@ -659,7 +659,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[metaProxC$FOS != "L" & metaProxC$Context1 == "none" & metaProxC$outliers == "in"   ,])#
+samples <- rownames(metaProxC[metaProxC$Subgroup2 == "CA1" & metaProxC$Context1 == "none"  &  metaProxC$FOS != "L" &  metaProxC$outliers == "in"  & metaProxC$Arc_2.5 != "greater" ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -673,7 +673,7 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Nr4a2",dat, met)
+Indiv("Glb1l2",dat, met)
 #dev.off()
 Indiv2("Fos",dat, met)
 
@@ -683,9 +683,9 @@ IndivProp("Tmem170",dat, met)
 
 
 #
-a <- "Mfsd2a"#Bap1
-b <- "Fos"
-group <- "FOS"
+a <- "Sox11"#Bap1
+b <- "Dgat2l6"
+group <- "Activations"
 Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
 Volcano(res)

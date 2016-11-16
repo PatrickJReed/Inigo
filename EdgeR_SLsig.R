@@ -82,7 +82,7 @@ exact <- function(dat, group, Pair){
 #save(list = c("celltypeorder.dg", "celltypeorder.pin", "celltypeorder.ca1", "celltypeorder.neg","celltypeorder","activitygenes","celltypegenes","celltypegenes.hdg", "celltypegenes.dg", "celltypegenes.ca1", "celltypegenes.neg","celltypegenes.ca23","celltypegenes.in","activitygenes.ca1","activitygenes.dg","activitygenes.hdg","activitygenes.neg","RES","RES2"),file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda",compress = TRUE)
 #load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/edgeR_slsig.rda")
 #NEWER (After CA3 tighter)
-#save(list = c("RES.all_activity","RES.all.celltype","RES.celltype","RES.activity","RES.FosF.HCN","RES.FosN.HCN","SigGenes"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res",compress = TRUE)
+#save(list = c("RES.all_F_HC","RES.all_activity","RES.all.celltype","RES.celltype","RES.activity","RES.FosF.HCN","RES.FosN.HCN","SigGenes"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res",compress = TRUE)
 #load(file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res")
 ###
 for (g2 in c("DG","CA1","VIP")){
@@ -101,13 +101,13 @@ for (g2 in c("DG","CA1","VIP")){
   ###################
   # Test genes
   ###################
-  #RES.FOSNHC <- list()
+  #RES.all_FOSNHC <- list()
   #i <- 0
   res <- exact(dat, group, Pair)
   #res <- GLM(dat = dat, variable1, variable2)
   i <- i + 1
-  RES.FOSNHC[[i]] <- res
-  names(RES.FOSNHC)[i] <- g2
+  RES.all_FOSNHC[[i]] <- res
+  names(RES.all_FOSNHC)[i] <- g2
 }
 
 RES.FosN.HCN <- RES
