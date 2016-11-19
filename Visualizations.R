@@ -263,7 +263,7 @@ Indiv <- function(gene,dat,met){
     facet_grid( Mouse_condition   ~  Subgroup2 ) 
 return(p)
 }
-Indiv2 <- function(gene,dat,met){
+Indiv2 <- function(gene,dat,met,group){
   
   tmp <- data.frame(exp = as.numeric(dat[gene,]),
                     Arc = as.numeric(dat["Arc",]))
@@ -274,6 +274,8 @@ Indiv2 <- function(gene,dat,met){
   tmp[tmp$fos == "N","FOS"] <- "None"
   tmp$FOS <- factor(tmp$FOS, levels = c("N","L","F"))
   tmp$Brain_Region <- factor(tmp$Brain_Region, c("DG","CA1","VIP","IN"))
+  tmp[,group] <- met[,group]
+  colnames(tmp)[colnames(tmp) == group]  <- "group"
   #pdf("~/Documents/SalkProjects/BenLacar/ManuscriptFigures/Camk4.pdf",width=6,height=5)
   p <- ggplot(tmp, aes(FOS,exp))+
     geom_violin()+#outlier.shape=NA)+
@@ -285,7 +287,7 @@ Indiv2 <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( Mouse_condition   ~   Activations ) 
+    facet_grid( Mouse_condition   ~  group  ) 
   return(p)
 }
 
@@ -659,7 +661,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "CA1" & metaProxC$Context1 == "none"  &  metaProxC$FOS != "L" &  metaProxC$outliers == "in"  & metaProxC$Arc_2.5 != "greater" ,])#
+samples <- rownames(metaProxC[ metaProxC$Context2 == "none" & metaProxC$Brain_Region == "DG"  &  metaProxC$FOS != "L" &  metaProxC$outliers == "in"  & metaProxC$Arc_2.5 != "greater" ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -673,11 +675,10 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Glb1l2",dat, met)
+Indiv("Smad7",dat, met)
 #dev.off()
-Indiv2("Fos",dat, met)
-
-#dev.off()
+group <- "Mouse"
+Indiv2("Dynlt3",dat, met,group )
 IndivProp("Tmem170",dat, met)
 
 
