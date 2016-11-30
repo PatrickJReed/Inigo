@@ -626,7 +626,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- rownames(metaProxC[ metaProxC$Brain_Region== "DG" & metaProxC$FOS != "L"   & metaProxC$Mouse_condition != "5hpAC"  & metaProxC$Mouse_condition != "HC"   & metaProxC$outliers == "in"  ,])
+samples <- rownames(metaProxC[  metaProxC$FOS != "L"   & metaProxC$Context2 == "none"    & metaProxC$outliers == "in"  ,])
                                              
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -662,7 +662,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[ metaProxC$Brain_Region == "DG"  &  metaProxC$FOS != "L" &  metaProxC$outliers == "in"   ,])#
+samples <- rownames(metaProxC[ metaProxC$Context1 == "none" &  metaProxC$FOS != "L" &  metaProxC$outliers == "in"   ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -704,10 +704,11 @@ tmp2 <- tmp[genes,]
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/test.tiff",width = 12,height = 12,units = 'in',res = 300)
 h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 #dev.off()
-tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/K_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
+#tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/K_heat.tiff",width = 8,height = 12,units = 'in',res = 300)
 heatMeRaw(dat,met,genes,k1 = 10,k2 = 5, samplenames = paste(met$Brain_Region,1:ncol(dat),sep="."))
-dev.off()
-heatMe(dat,met,genes,k1 = 10, k2 = 10 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
+#dev.off()
+genes <- c("Bok","Prox1","Wsf1","Gad2","Cacng5","Amigo2")
+heatMe(dat,met,genes,k1 = 2, k2 = 2 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/Fig6_potassium_hc.tiff",width = 8,height = 15,units = 'in',res = 300)
 heatMeAvg(dat,met,genes,k2 = 8,k1 = 4 ,cutoff = 1 )
@@ -740,7 +741,7 @@ t <- cbind(t,met)
 #  }
 #}
 #t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-t$gene <- as.numeric(tpmProxC["Slc4a5",rownames(t)])
+t$gene <- as.numeric(tpmProxC["Amigo2",rownames(t)])
 #k <- kmeans(t[,c(1:2)],centers =2,nstart = 2000)
 #t$k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_bcl11b.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
@@ -751,7 +752,7 @@ t[t$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
 t$Mouse_condition <- factor(t$Mouse_condition,c("HC","1hr","5hr"))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/Figs/5hr_EE.tiff",width = 10,height = 7,units = 'in',res = 500,compression = "lzw")
-ggplot(t, aes(T1,T2, color = Mouse_condition, shape = FOS))+
+ggplot(t, aes(T1,T2, color = gene, shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -759,7 +760,7 @@ ggplot(t, aes(T1,T2, color = Mouse_condition, shape = FOS))+
   theme(text=element_text(size=20))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5),
-        panel.grid.major = element_line(size = 1))+
+        panel.grid.major = element_line(size = 1))#+
   scale_colour_manual(values = c("black","red","blue"))
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
 #  scale_colour_manual(values = c("darkblue","orange","black"))+
