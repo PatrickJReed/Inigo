@@ -626,7 +626,7 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- rownames(metaProxC[  metaProxC$FOS != "L"   & metaProxC$Context2 == "none"    & metaProxC$outliers == "in"  ,])
+samples <- rownames(metaProxC[  metaProxC$FOS != "L"   & metaProxC$Context2 == "none"    ,])
                                              
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -662,7 +662,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[ metaProxC$Context1 == "none" &  metaProxC$FOS != "L" &  metaProxC$outliers == "in"   ,])#
+samples <- rownames(metaProxC[metaProxC$Brain_Region == "CA1" & metaProxC$Subgroup2 == "CA1" & metaProxC$Context1 == "none" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" & metaProxC$Arc_2.5 != "greater",])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -676,10 +676,10 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Drd4",dat, met)
+Indiv("Grin3a",dat, met)
 #dev.off()
 group <- "Mouse"
-Indiv2("Dynlt3",dat, met,group )
+Indiv2("Grin3a",dat, met,group )
 IndivProp("Tmem170",dat, met)
 
 
@@ -741,7 +741,7 @@ t <- cbind(t,met)
 #  }
 #}
 #t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-t$gene <- as.numeric(tpmProxC["Amigo2",rownames(t)])
+t$gene <- as.numeric(tpmProxC["Rxfp1",rownames(t)])
 #k <- kmeans(t[,c(1:2)],centers =2,nstart = 2000)
 #t$k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_bcl11b.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
@@ -752,7 +752,7 @@ t[t$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
 t$Mouse_condition <- factor(t$Mouse_condition,c("HC","1hr","5hr"))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/Figs/5hr_EE.tiff",width = 10,height = 7,units = 'in',res = 500,compression = "lzw")
-ggplot(t, aes(T1,T2, color = gene, shape = FOS))+
+ggplot(t, aes(T1,T2, color = Subgroup2, shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
