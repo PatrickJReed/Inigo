@@ -57,13 +57,45 @@
             "evaluator": "IPython",
             "input": {
                 "body": [
-                    ""
+                    "#Reformat homer RNA-seq file to make it user-friendly in R",
+                    "file = \"~/Documents/SalkProjects/Inigo/inigo_jup/raw/INIGO_CvsH_RNAseq_genes_rpkm.txt\""
                 ]
             },
             "output": {
                 "state": {}
             },
-            "evaluatorReader": true
+            "evaluatorReader": true,
+            "lineCount": 2
+        },
+        {
+            "id": "codelYtYMi",
+            "type": "code",
+            "evaluator": "R",
+            "input": {
+                "body": [
+                    "homer.gene <- read.table(\"~/Documents/SalkProjects/Inigo/inigo_jup/raw/INIGO_CvsH_RNAseq_genes_rpkm.txt\",header=TRUE,stringsAsFactors=FALSE)"
+                ]
+            },
+            "output": {
+                "state": {},
+                "result": {
+                    "type": "BeakerDisplay",
+                    "innertype": "Error",
+                    "object": [
+                        "Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  : ",
+                        "  line 1 did not have 82 elements",
+                        ""
+                    ]
+                },
+                "selectedType": "BeakerDisplay",
+                "pluginName": "R",
+                "shellId": "58779e45-1ce6-4d4f-a337-cd5b83aea75e",
+                "elapsedTime": 682,
+                "height": 97
+            },
+            "evaluatorReader": true,
+            "lineCount": 1,
+            "isError": true
         }
     ],
     "namespace": {}
