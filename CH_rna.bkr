@@ -57,15 +57,47 @@
             "evaluator": "IPython",
             "input": {
                 "body": [
-                    "#Reformat homer RNA-seq file to make it user-friendly in R",
-                    "file = \"~/Documents/SalkProjects/Inigo/inigo_jup/raw/INIGO_CvsH_RNAseq_genes_rpkm.txt\""
+                    "######################",
+                    "# Purpose: Reformat homer RNA-seq file to make it user-friendly for RNA-seq analysis in R",
+                    "# Input: FPKM output from homer",
+                    "# Output: FPKM tables where the rownames are genes the column names are samples and only the FPKM values are in the matrix",
+                    "######################",
+                    "import re",
+                    "infile = \"/Users/saralinker/Documents/SalkProjects/Inigo/inigo_jup/raw/INIGO_CvsH_RNAseq_genes_rpkm_v2.txt\"",
+                    "file_edit = \"/Users/saralinker/Documents/SalkProjects/Inigo/inigo_jup/raw/INIGO_CvsH_RNAseq_genes_rpkm_forR.txt\"",
+                    "",
+                    "with open(file_edit, \"w\") as OUT:",
+                    "    with open(infile, \"r\") as IN:",
+                    "        for line in IN:",
+                    "                line = line.split(\"\\t\")",
+                    "                if re.match(\"|\",line[8]):",
+                    "                    gene = line[8].split(\"|\")[0]",
+                    "                else:",
+                    "                    gene = line[8]",
+                    "                fpkm = \"\\t\".join((line[9:41]))",
+                    "                if re.match(\"NA\",fpkm.split(\"\\t\")[4]):",
+                    "                    next",
+                    "                else:",
+                    "                    OUT.write(gene + fpkm + \"\\n\")",
+                    "            "
                 ]
             },
             "output": {
-                "state": {}
+                "state": {},
+                "result": {
+                    "type": "BeakerDisplay",
+                    "innertype": "Text",
+                    "object": "pending"
+                },
+                "selectedType": "BeakerDisplay",
+                "pluginName": "IPython",
+                "shellId": "F12B4D37C14E4CD8A0A21BE42CE3A1DF",
+                "elapsedTime": 990,
+                "height": 56
             },
             "evaluatorReader": true,
-            "lineCount": 2
+            "lineCount": 23,
+            "isError": false
         },
         {
             "id": "codelYtYMi",
@@ -73,7 +105,7 @@
             "evaluator": "R",
             "input": {
                 "body": [
-                    "homer.gene <- read.table(\"~/Documents/SalkProjects/Inigo/inigo_jup/raw/INIGO_CvsH_RNAseq_genes_rpkm.txt\",header=TRUE,stringsAsFactors=FALSE)"
+                    "homer.gene <- read.table(\"/Users/saralinker/Documents/SalkProjects/Inigo/inigo_jup/raw/INIGO_CvsH_RNAseq_genes_rpkm_forR.txt\",header=TRUE,stringsAsFactors=FALSE)"
                 ]
             },
             "output": {
@@ -81,21 +113,18 @@
                 "result": {
                     "type": "BeakerDisplay",
                     "innertype": "Error",
-                    "object": [
-                        "Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  : ",
-                        "  line 1 did not have 82 elements",
-                        ""
-                    ]
+                    "object": "Interrupted, saved while running.",
+                    "status": "RUNNING"
                 },
                 "selectedType": "BeakerDisplay",
                 "pluginName": "R",
                 "shellId": "58779e45-1ce6-4d4f-a337-cd5b83aea75e",
-                "elapsedTime": 682,
-                "height": 97
+                "elapsedTime": 1142,
+                "height": 57
             },
             "evaluatorReader": true,
             "lineCount": 1,
-            "isError": true
+            "isError": false
         }
     ],
     "namespace": {}
