@@ -299,10 +299,18 @@ g <- apply(tpmProxC,2,rawExp,1)
 samples <- unique(c(samples,names(g[g < 4000])))
 samples <- unique(c(samples,metaProxC[ metaProxC$Smartseq2_RT_enzyme_used != "ProtoscriptII" ,"Sample_ID"]))#
 samples <- samples[!is.na(samples)]
-metaProxC$outliers <- "in"
-metaProxC[samples,"outliers"] <- "out"
+metaProxC$outliers2 <- "in"
+metaProxC[samples,"outliers2"] <- "out"
 
+samples <- rownames(metaProxC[ metaProxC$alignable <  100000 ,])
+g <- apply(tpmProxC,2,rawExp,1)
+samples <- unique(c(samples,names(g[g < 3500])))
+samples <- unique(c(samples,rownames(metaProxC[ metaProxC$Smartseq2_RT_enzyme_used != "ProtoscriptII" ,])))
+samples <- samples[!is.na(samples)]
+metaProxC$outliers2 <- "in"
+metaProxC[samples,"outliers2"] <- "out"
 
+table(metaProxC$outliers, metaProxC$outliers2)
 #########
 # Load SINE data
 #########

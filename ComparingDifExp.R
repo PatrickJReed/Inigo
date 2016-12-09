@@ -131,7 +131,7 @@ SCDD <- function(dat, group, samples){
   
   #Detect and classify differentially distributed genes
   set.seed(6767) # set random seed for reprodicbility
-  dd.results <- scDD(eset.scdd, prior_param=prior_param, permutations=0, testZeroes=FALSE)
+  dd.results <- scDD(eset.scdd, prior_param=prior_param, permutations=0, testZeroes=TRUE)
   
   res <- dd.results$Genes
   res <- res[order(res$nonzero.pvalue.adj),]
@@ -144,6 +144,13 @@ SCDD <- function(dat, group, samples){
   return(res)
   
 }
+maximum <- function(i,g){
+  return(sum(tpmProxC[names(Max[i]),colnames(dat)[group == g]] > Max[i]) / sum(group == g))
+}
+maximum2 <- function(x){
+  return(sum(x[1:Col] > x[length(x)]) / Col)
+}
+
 ###############
 ## get samples
 ###############
@@ -162,7 +169,7 @@ res.exact <- exact(dat, group, Pair)
 ###############
 ## EDGER GLM
 ###############
-res.glm <- GLM(dat, variable1 = group)
+#res.glm <- GLM(dat, variable1 = group)
 ###############
 ## SCDE
 ###############

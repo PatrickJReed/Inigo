@@ -662,7 +662,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[metaProxC$Brain_Region == "CA1" & metaProxC$Subgroup2 == "CA1" & metaProxC$Context1 == "none" &  metaProxC$FOS == "N" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" & metaProxC$Arc_2.5 != "greater",])#
+samples <- rownames(metaProxC[metaProxC$Subgroup2 == "DG" & metaProxC$Mouse_condition == "EE" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" & metaProxC$Arc_2.5 != "greater",])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -676,7 +676,7 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Chd1",dat, met)
+Indiv("Zfp292",dat, met)
 #dev.off()
 group <- "Mouse"
 Indiv2("Grin3a",dat, met,group )

@@ -86,15 +86,14 @@ exact <- function(dat, group, Pair){
 #load(file = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/edger.res")
 ###
 for (g2 in c("DG","CA1","VIP")){
-  samples <- rownames(metaProxC[metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
-                                  metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "HC" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
+  samples <- rownames(metaProxC[metaProxC$Mouse_condition == "EE" & metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater",])
   dat <- na.exclude(countProxC[, samples])
   dat <- dat[rowSums(dat) > 0,]
   met <- metaProxC[samples,]
   ###################
   #Assign groups
   ###################
-  group <-  met$Mouse_condition == "EE" 
+  group <-  met$Mouse_condition == "FOS" 
   Pair <- levels(as.factor(as.character(group)))
   #variable1 <- met$Activations == "1"
   #variable2 <- met$Subgroup2
@@ -148,3 +147,41 @@ rf.model <- randomForest(Subgroup ~ . , dat2)
 gini <- rf.model$importance
 gini <- gini[order(gini,decreasing=TRUE),]
 
+##################
+# General Linear model
+##################
+
+for (g2 in c("DG","CA1","VIP")){
+  samples <- rownames(metaProxC[metaProxC$Subgroup2 == g2 &  metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater",])
+  dat <- na.exclude(countProxC[, samples])
+  dat <- dat[rowSums(dat) > 0,]
+  met <- metaProxC[samples,]
+  ###################
+  #Assign groups
+  ###################
+  variable1 <-  factor(met$Mouse_condition, c("HC","EE"))
+  variable2 <- factor(met$FOS, c("N","F"))
+  variable3 <- apply(dat, 2, propExp)
+  ###################
+  # Test genes
+  ###################
+  #RES.all_FOSNHC <- list()
+  #i <- 0
+  design <- model.matrix(~variable1+variable2)
+  cds <- DGEList(dat)
+  cds <- calcNormFactors(cds)
+  cds <- estimateGLMCommonDisp( cds )
+  cds <- estimateGLMTrendedDisp(cds)
+  fit <- glmQLFit(y=cds,design)
+  lrt <- glmLRT(fit, coef=Coef)
+  edg <- data.frame(lrt$table)
+  edg <- edg[order(edg$PValue),]
+  f <- p.adjust(edg$PValue)
+  edg$f <- f
+  
+  
+  #res <- GLM(dat = dat, variable1, variable2)
+  i <- i + 1
+  RES.all_FOSNHC[[i]] <- res
+  names(RES.all_FOSNHC)[i] <- g2
+}
