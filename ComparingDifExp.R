@@ -93,7 +93,8 @@ SCDE <- function(dat, group){
   o.prior <- scde.expression.prior(models=o.ifm,
                                    counts=countTable2,
                                    length.out=400,
-                                   show.plot=F)
+                                   show.plot=F
+                                   )
   
   ##############################################
   ## Step 3: Test Differential Expression
@@ -201,7 +202,17 @@ res.scdd["Egr1","nonzero.pvalue.adj"] < 0.05 #FALSE
 #################
 ## Number of genes
 #################
-sum(res.exact$f < 0.05 & res.exact$logFC > 0 & res.exact$a > 0.2)
-sum(res.glm$f < 0.05 & res.glm$logFC > 0 & res.glm$propExp > 0.2)
-sum(res.scde$f < 0.05 & res.scde$Z > 0 & res.scde$a > 0.2)
-sum(na.exclude(res.scdd$nonzero.pvalue.adj < 0.05 & res.scdd$a > 0.2))
+
+A <- c(rownames(res.exact[(res.exact$f < 0.05 & res.exact$logFC > 0 & res.exact$a > 0.2),]) ,  rownames(res.exact[(res.exact$f < 0.05 & res.exact$logFC < 0 & res.exact$b > 0.2),]))
+B <- rownames(res.scde[(res.scde$f < 0.05),])
+C <- c(rownames(res.scdd[(res.scdd[!is.na(res.scdd$nonzero.pvalue),"nonzero.pvalue.adj"] < 0.05 ),]), rownames(res.scdd[(res.scdd[!is.na(res.scdd$zero.pvalue),"zero.pvalue.adj"] < 0.05 ) ,]))
+
+nm <- table(c(A,A,A,A,B,B,C))
+table(nm)
+names(nm[nm == 6])
+#4 = exact only
+#5 = exact and scdd
+#6 = exact and scde
+#3 = scdd and scde
+#2 = scde only
+#1 = scdd only
