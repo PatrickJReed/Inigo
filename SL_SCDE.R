@@ -65,13 +65,13 @@ ediff2 <- ediff[order(ediff$Z,decreasing=T),]
 head(ediff2)
 # Plot posterior for a single gene
 
-gene <- "Arc"
+gene <- "Sox8"
 scde.test.gene.expression.difference(gene,
                                        models=o.ifm,
                                        counts=countTable2,
                                      n.randomizations=100
                                        ,prior=o.prior,
-                                     groups=groups)
+                                     groups=group)
 
 #dev.off()
 

@@ -41,7 +41,7 @@ i <- 0
 
 
 ### Plot per gene
-g <- "Baiap2"
+g <- "Wwp1"
 sideViolin(exprs(eset.scdd)[rownames(eset.scdd) ==  g,], phenoData(eset.scdd)$condition,
            title.gene=g)
 
