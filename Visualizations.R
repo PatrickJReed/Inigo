@@ -676,7 +676,7 @@ met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Drc1",dat, met)
+Indiv("Tymp",dat, met)
 #dev.off()
 group <- "Mouse"
 Indiv2("Grin3a",dat, met,group )

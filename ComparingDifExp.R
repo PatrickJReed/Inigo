@@ -2,6 +2,13 @@ library(scde)
 library(scDD)
 library(Biobase)
 library(edgeR)
+library(SummarizedExperiment)
+require(biomaRt)
+require(plyr)
+
+#only need mart if ranges = TRUE, and it's not functional right now as such
+#mart <- useEnsembl(dataset = "mmusculus_gene_ensembl", biomart = "ensembl", version = 83)
+
 GLM <- function(dat, variable1, variable2 = NULL, prefit=FALSE){
   if(is.null(variable2)){
     design <- model.matrix(~variable1)
@@ -118,14 +125,33 @@ SCDE <- function(dat, group){
   ediff2$b <- b[rownames(ediff2)] / sum(group == FALSE)
  return(ediff2)
 }
-SCDD <- function(dat, group, samples){
+SCDD <- function(dat, group, samples, ranged = FALSE){
   countTable2 <- t(apply(round(dat[rowSums(dat) > 0,],0),1, as.integer))
   colnames(countTable2) <- colnames(dat)
   cts <- as.matrix(countTable2[,samples])
   pheno <- data.frame(condition = group,row.names = samples)
-  
-  eset.scdd <- ExpressionSet(assayData = cts,  
-                             phenoData = as(pheno, "AnnotatedDataFrame"))
+  if (ranged == TRUE){# Add row meta data into the eset object
+    genes <- as.character(rownames(countTable2))
+    convert <- getBM(
+      filters = "external_gene_name",
+      attributes = c("external_gene_name","chromosome_name","start_position","end_position","strand"),#,"external_gene_name"),
+      values = c(genes),
+      mart = mart,
+      verbose = FALSE
+    )
+    
+    convert2 <- convert[match(genes, convert$external_gene_name),]
+    rowRanges <- GRanges(convert2$chromosome_name,
+                        IRanges(convert2$start_position, width=(convert2$end_position - convert2$start_position)),
+                        strand=convert2$strand,
+                        feature_id=convert2$external_gene_name)
+    eset.scdd <- SummarizedExperiment(assays = list(cts = cts), 
+                                      rowRanges = rowRanges,
+                               colData = DataFrame(pheno))
+  }else{
+    eset.scdd <- SummarizedExperiment(assays = list(cts = cts), 
+                                      colData = DataFrame(pheno))
+  }
   
   #Create list of prior parameters for model fitting, why are these the defaults? Should play around with this
   prior_param=list(alpha=0.01, mu0=0, s0=0.01, a0=0.01, b0=0.01)
@@ -134,9 +160,9 @@ SCDD <- function(dat, group, samples){
   set.seed(6767) # set random seed for reprodicbility
   dd.results <- scDD(eset.scdd, prior_param=prior_param, permutations=0, testZeroes=TRUE)
   
-  res <- dd.results$Genes
-  res <- res[order(res$nonzero.pvalue.adj),]
-  rownames(res) <- res$gene
+  res <- as.data.frame(dd.results@metadata)[,c(1:9)]
+  res <- res[order(res$Genes.nonzero.pvalue.adj),]
+  rownames(res) <- res$Genes.gene
   a <- apply(tpmProxC[,colnames(dat)[group == TRUE]],1,rawExp,1)
   b <- apply(tpmProxC[,colnames(dat)[group == FALSE]],1,rawExp,1)
   res$a <- a[rownames(res)] / sum(group == TRUE)
@@ -151,63 +177,67 @@ maximum <- function(i,g){
 maximum2 <- function(x){
   return(sum(x[1:Col] > x[length(x)]) / Col)
 }
+fisher.meta <- function(Ps){
+  Ps <- Ps[!is.na(Ps)]
+  pchisq(-2 * sum(log(Ps)), df = 2 * length(Ps),lower.tail = FALSE)
+}
+rawExp <- function(x,i=2){
+  sum(na.exclude(x) > i)
+}
+###############
+## Run loop over celltypes
+###############
+RES.activity_meta <- list()
+i <- 0
+for (g2 in c("DG","CA1","VIP")){
+  i <- i  + 1
+  samples <- rownames(metaProxC[metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
+                                  metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
+  dat <- na.exclude(countProxC[, samples])
+  dat <- dat[rowSums(dat) > 0,]
+  met <- metaProxC[samples,]
+  group = as.factor(met$FOS == "F")
+  Pair = levels(group)
+  ###############
+  ## EDGER EXACT
+  ###############
+  res.exact <- exact(dat, group, Pair)
+  ###############
+  ## SCDD
+  ###############
+  res.scdd <- SCDD(dat, group, samples)
+  ###############
+  ## SCDE
+  ###############
+  res.scde <- SCDE(dat, group)
+  ###############
+  # Meta analysis
+  ###############
+ 
+  df2 <- data.frame(p1 = res.exact$f, 
+               p2 = res.scdd[rownames(res.exact), "Genes.nonzero.pvalue.adj"],
+               p3 = res.scdd[rownames(res.exact), "Genes.zero.pvalue.adj"],
+               p4 = res.scde[rownames(res.exact),"f"],
+               row.names = rownames(res.exact)
+               )
+  
+  
+  all  <- apply(X = df2, MARGIN = 1, FUN = fisher.meta)
+  res.comb <- data.frame(res.exact, res.scdd[rownames(res.exact),], res.scde[rownames(res.exact),],meta_padj = all)
+  RES.activity_meta[[i]] <- res.comb
+  names(RES.activity_meta)[i] <- g2
+}
 
-###############
-## get samples
-###############
-g2 <- "CA1"
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
-                                metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[samples,]
-group = as.factor(met$FOS == "F")
-Pair = levels(group)
-###############
-## EDGER EXACT
-###############
-res.exact <- exact(dat, group, Pair)
-###############
-## EDGER GLM
-###############
-#res.glm <- GLM(dat, variable1 = group)
-###############
-## SCDE
-###############
-res.scde <- SCDE(dat, group)
-###############
-## SCDD
-###############
-res.scdd <- SCDD(dat, group, samples)
-##########################################
-# Comparing Results
-##########################################
-###############
-# ARC, FOS, EGR1 Significance
-###############
-res.exact["Arc","f"] < 0.05
-res.glm["Arc","f"] < 0.05
-res.scde["Arc","f"] < 0.05 #FALSE
-res.scdd["Arc","nonzero.pvalue.adj"] < 0.05
-#FOS
-res.exact["Fos","f"] < 0.05
-res.glm["Fos","f"] < 0.05
-res.scde["Fos","f"] < 0.05 #FALSE
-res.scdd["Fos","nonzero.pvalue.adj"] < 0.05 #FALSE
-#Egr1
-res.exact["Egr1","f"] < 0.05
-res.glm["Egr1","f"] < 0.05
-res.scde["Egr1","f"] < 0.05 #FALSE
-res.scdd["Egr1","nonzero.pvalue.adj"] < 0.05 #FALSE
+
 #################
 ## Number of genes
 #################
 
 A <- unique(c(rownames(res.exact[(res.exact$f < 0.05 & res.exact$logFC > 0 & res.exact$a > 0.2),]) ,  rownames(res.exact[(res.exact$f < 0.05 & res.exact$logFC < 0 & res.exact$b > 0.2),])))
 B <- rownames(res.scde[(res.scde$f < 0.05),])
-C.1 <- res.scdd[!is.na(res.scdd$nonzero.pvalue.adj),]
-C.2 <- res.scdd[!is.na(res.scdd$zero.pvalue.adj),]
-C <- unique(c(rownames(C.1[C.1$nonzero.pvalue.adj < 0.05 ,]), rownames(C.2[C.2$zero.pvalue.adj < 0.05 ,])))
+C.1 <- res.scdd[!is.na(res.scdd$Genes.nonzero.pvalue.adj),]
+C.2 <- res.scdd[!is.na(res.scdd$Genes.zero.pvalue.adj),]
+C <- unique(c(rownames(C.1[C.1$Genes.nonzero.pvalue.adj < 0.05 ,]), rownames(C.2[C.2$Genes.zero.pvalue.adj < 0.05 ,])))
 
 nm <- table(c(A,A,A,A,B,B,C))
 table(nm)
@@ -221,59 +251,3 @@ tail(a)
 #3 = scdd and scde
 #2 = scde only
 #1 = scdd only
-
-###############
-# Meta analysis
-###############
-fisher.meta <- function(Ps){
-  Ps <- Ps[!is.na(Ps)]
-  pchisq(-2 * sum(log(Ps)), df = 2 * length(Ps),lower.tail = FALSE)
-}
-
-###############
-## get samples
-###############
-RES.activity_meta <- list()
-i <- 0
-for (g2 in c("DG","CA1","VIP")){
-i <- i  + 1
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
-                                metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
-dat <- na.exclude(countProxC[, samples])
-dat <- dat[rowSums(dat) > 0,]
-met <- metaProxC[samples,]
-group = as.factor(met$FOS == "F")
-Pair = levels(group)
-###############
-## EDGER EXACT
-###############
-res.exact <- exact(dat, group, Pair)
-###############
-## EDGER GLM
-###############
-#res.glm <- GLM(dat, variable1 = group)
-###############
-## SCDE
-###############
-res.scde <- SCDE(dat, group)
-###############
-## SCDD
-###############
-res.scdd <- SCDD(dat, group, samples)
-##########################################
-# Comparing Results
-##########################################
-#
-df2 <- data.frame(p1 = res.exact$f, 
-             p2 = res.scdd[rownames(res.exact), "nonzero.pvalue.adj"],
-             p3 = res.scdd[rownames(res.exact), "zero.pvalue.adj"],
-             p4 = res.scde[rownames(res.exact),"f"],
-             row.names = rownames(res.exact)
-             )
-
-
-all  <- apply(X = df2, MARGIN = 1, FUN = fisher.meta)
-res.comb <- data.frame(res.exact, res.scdd[rownames(res.exact),], res.scde[rownames(res.exact),],meta_padj = all)
-RES.activity_meta[[i]] <- res.comb
-names(RES.activity_meta)[i] <- g2
-}
