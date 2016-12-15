@@ -273,34 +273,46 @@ tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/ra
 tpmProx160707 <- log(tpm.1+1,2)
 colnames(tpmProx160707) <- colnames(countProx160707)
 
+##########
+#161121
+#counts
+count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_161121_gene_count.txt"),header=TRUE,row.names=1)
+b <- do.call("rbind",strsplit(colnames(count.1),"_",fixed=TRUE))
+colnames(count.1) <- paste(b[,1],b[,2],sep="_")
+countProx161121 <- round(count.1)
+
+#tpm
+tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_161121_gene_tpm.txt"),header=TRUE,row.names=1)
+tpmProx161121 <- log(tpm.1+1,2)
+colnames(tpmProx161121) <- colnames(countProx161121)
 
 
 ################################
 
 #combine
-runs <- 11
-a <- table(c(rownames(tpmProx),rownames(tpmQC),rownames(tpmProx150803),rownames(tpmProx150810),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324),rownames(tpmProx160523),rownames(tpmProx160617),rownames(tpmProx160707)))
-tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmQC[names(a[a==runs]),],tpmProx150803[names(a[a==runs]),],tpmProx150810[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160523[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),],tpmProx160617[names(a[a==runs]),],tpmProx160707[names(a[a==runs]),])
+runs <- 12
+a <- table(c(rownames(tpmProx),rownames(tpmQC),rownames(tpmProx150803),rownames(tpmProx150810),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324),rownames(tpmProx160523),rownames(tpmProx160617),rownames(tpmProx160707),rownames(tpmProx161121)))
+tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmQC[names(a[a==runs]),],tpmProx150803[names(a[a==runs]),],tpmProx150810[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160523[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),],tpmProx160617[names(a[a==runs]),],tpmProx160707[names(a[a==runs]),],tpmProx161121[names(a[a==runs]),])
 colnames(tpmProxC) <- make.names(colnames(tpmProxC))
-a <- table(c(rownames(countProx),rownames(countQC),rownames(countProx150803),rownames(countProx150810),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324),rownames(countProx160523),rownames(countProx160617),rownames(countProx160707)))
-countProxC <- cbind(countProx[names(a[a==runs]),],countQC[names(a[a==runs]),],countProx150803[names(a[a==runs]),],countProx150810[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),], countProx160523[names(a[a==runs]),], countProx160617[names(a[a==runs]),], countProx160707[names(a[a==runs]),])
+a <- table(c(rownames(countProx),rownames(countQC),rownames(countProx150803),rownames(countProx150810),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324),rownames(countProx160523),rownames(countProx160617),rownames(countProx160707),rownames(countProx161121)))
+countProxC <- cbind(countProx[names(a[a==runs]),],countQC[names(a[a==runs]),],countProx150803[names(a[a==runs]),],countProx150810[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),], countProx160523[names(a[a==runs]),], countProx160617[names(a[a==runs]),], countProx160707[names(a[a==runs]),],countProx161121[names(a[a==runs]),])
 colnames(countProxC) <- make.names(colnames(countProxC))
 
 
 #Hold off on this until metaProxC is updated on the original file
-metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile.txt",header=TRUE)
-metaProxC$Sample_ID <- make.names(metaProxC$Sample_ID)
-rownames(metaProxC) <- metaProxC$Sample_ID
+metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile2.txt",header=TRUE)
+#metaProxC$Sample_ID <- make.names(metaProxC$Sample_ID)
+#rownames(metaProxC) <- metaProxC$Sample_ID
 metaProxC$outliers <- ifelse(test = metaProxC$alignable > 100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",yes = "in",no = "out")
 #########
 # outliers
-samples <- metaProxC[ metaProxC$alignable <  100000 ,"Sample_ID"]#
+samples <- rownames(metaProxC[ metaProxC$alignable <  100000 ,])#
 g <- apply(tpmProxC,2,rawExp,1)
 samples <- unique(c(samples,names(g[g < 4000])))
 samples <- unique(c(samples,metaProxC[ metaProxC$Smartseq2_RT_enzyme_used != "ProtoscriptII" ,"Sample_ID"]))#
 samples <- samples[!is.na(samples)]
-metaProxC$outliers2 <- "in"
-metaProxC[samples,"outliers2"] <- "out"
+metaProxC$outliers <- "in"
+metaProxC[samples,"outliers"] <- "out"
 
 samples <- rownames(metaProxC[ metaProxC$alignable <  100000 ,])
 g <- apply(tpmProxC,2,rawExp,1)
