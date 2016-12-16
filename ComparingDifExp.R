@@ -6,6 +6,8 @@ library(SummarizedExperiment)
 require(biomaRt)
 require(plyr)
 
+#save(list = c('RES.activity_meta'),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta.rda",compress = TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta.rda")
 #only need mart if ranges = TRUE, and it's not functional right now as such
 #mart <- useEnsembl(dataset = "mmusculus_gene_ensembl", biomart = "ensembl", version = 83)
 

@@ -160,12 +160,14 @@ count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/
 countProx150803 <- round(count.1)
 add1 <- FALSE
 colnames(countProx150803) <- Names(countProx150803)
+colnames(countProx150803) <- do.call("rbind",strsplit(colnames(countProx150803),".",fixed = TRUE))[,1]
+
 
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150803_gene_tpm.txt"),header=TRUE,row.names=1)
 tpmProx150803 <- log(tpm.1+1,2)
 add1 <- FALSE
-colnames(tpmProx150803) <- Names(tpmProx150803)
+colnames(tpmProx150803) <- colnames(countProx150803)
 
 ####### 08/10/2015 Homecage Prox1+ Fos Low/Neg, sorted by Baptiste and Jerika, processed by Jerika
 #counts
@@ -173,12 +175,13 @@ count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/
 countProx150810 <- round(count.1)
 add1 <- FALSE
 colnames(countProx150810) <- Names(countProx150810)
+colnames(countProx150810) <- do.call("rbind",strsplit(colnames(countProx150810),".",fixed = TRUE))[,1]
 
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_150810_gene_tpm.txt"),header=TRUE,row.names=1)
 tpmProx150810 <- log(tpm.1+1,2)
 add1 <- FALSE
-colnames(tpmProx150810) <- Names(tpmProx150810)
+colnames(tpmProx150810) <- colnames(countProx150810)
 
 
 #151207 CA1 Samples
@@ -188,12 +191,13 @@ colnames(count.1)[which(colnames(count.1) == "X151207_A8_N_C_N_EE_2.708.6.CAGAGA
 countProx1512 <- round(count.1)
 add1 <- TRUE
 colnames(countProx1512) <- make.names(Names(countProx1512))
+colnames(countProx1512) <- do.call("rbind",strsplit(colnames(countProx1512),".",fixed = TRUE))[,1]
 #tpm
 tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_151207_gene_tpm_genename.txt"),header=TRUE,row.names=1)
 colnames(tpm.1)[which(colnames(tpm.1) == "X151207_A8_N_C_N_EE_2.708.6.CAGAGAG.AGAGTAG_CAGAGAG.AGAGTAG_L006_R1_001_se")] <- "X151207_D8_N_C_N_EE_2.708.6.CAGAGAG.AGAGTAG_CAGAGAG.AGAGTAG_L006_R1_001_se"
 tpmProx1512 <- log(tpm.1+1,2)
 add1 <- TRUE
-colnames(tpmProx1512) <- Names(tpmProx1512)
+colnames(tpmProx1512) <- colnames(countProx1512)
 
 #151214 
 #counts

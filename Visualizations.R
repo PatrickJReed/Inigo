@@ -643,7 +643,7 @@ met$group <- paste(met$FOS,  met$Mouse_condition, sep =".")
 met$Vip <- as.numeric(dat["Vip",] > 7)
 met$Activations <- as.factor(met$Activations)
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby = "Activations", shapeby = "Mouse_condition")#,Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby = "Mouse_condition", shapeby = "FOS")#,Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -669,14 +669,17 @@ met <- metaProxC[samples,]
 met$Mouse_condition <- as.character(met$Mouse_condition)
 met[met$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
 met[met$Mouse_condition == "5hpA","Mouse_condition"] <- "5hr"
+met[met$Mouse_condition == "4hpA","Mouse_condition"] <- "4hr"
 met[met$Mouse_condition == "5hpAA","Mouse_condition"] <- "A>A"
 met[met$Mouse_condition == "5hpAC","Mouse_condition"] <- "A>C"
-met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","1hr","5hr","A>A","A>C"))
+met$Mouse_condition <- factor(x = met$Mouse_condition,levels = c("HC","1hr","4hr","5hr","A>A","A>C"))
 met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG","Brain_Region"] <- "VIP"
 met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pvalb","Lamp5"))
+
+
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Tymp",dat, met)
+Indiv("Tcf7l2",dat, met)
 #dev.off()
 group <- "Mouse"
 Indiv2("Grin3a",dat, met,group )
@@ -718,15 +721,13 @@ heatMeAvg(dat,met,genes,k2 = 8,k1 = 4 ,cutoff = 1 )
 ###########
 ## T-sne
 ###########
-samples <- rownames(metaProxC[metaProxC$Mouse_condition == "HC" & metaProxC$Brain_Region == "DG"  & metaProxC$FOS == "N"  & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"|
-                                metaProxC$Mouse_condition == "EE" & metaProxC$Brain_Region == "DG"  & metaProxC$FOS != "L"  & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"|
-                                metaProxC$Mouse_condition == "5hpA" & metaProxC$Brain_Region == "DG"  & metaProxC$FOS == "N"  & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in"
+samples <- rownames(metaProxC[metaProxC$Brain_Region == "DG" & metaProxC$FOS != "L"  & metaProxC$outliers == "in"
                                 ,])
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
 
-i <- 8#17
+i <- 20#17
 TSNE <- Rtsne(as.matrix(t(na.exclude(dat))),initial_dims=2,perplexity=i,theta=0,check_duplicates=FALSE,dims = 2)
 #df <- rbind(df, TSNE$Y[,1], TSNE$Y[,2])
 
@@ -741,18 +742,18 @@ t <- cbind(t,met)
 #  }
 #}
 #t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-t$gene <- as.numeric(tpmProxC["Rxfp1",rownames(t)])
+#t$gene <- as.numeric(tpmProxC["Rxfp1",rownames(t)])
 #k <- kmeans(t[,c(1:2)],centers =2,nstart = 2000)
 #t$k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_bcl11b.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
 #t$a <- a
-t$Mouse_condition <- as.character(t$Mouse_condition)
-t[t$Mouse_condition == "5hpA","Mouse_condition"] <- "5hr"
-t[t$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
-t$Mouse_condition <- factor(t$Mouse_condition,c("HC","1hr","5hr"))
+#t$Mouse_condition <- as.character(t$Mouse_condition)
+#t[t$Mouse_condition == "5hpA","Mouse_condition"] <- "5hr"
+#t[t$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
+#t$Mouse_condition <- factor(t$Mouse_condition,c("HC","1hr","5hr"))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/Figs/5hr_EE.tiff",width = 10,height = 7,units = 'in',res = 500,compression = "lzw")
-ggplot(t, aes(T1,T2, color = Subgroup2, shape = FOS))+
+ggplot(t, aes(T1,T2, color = Mouse_condition, shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
