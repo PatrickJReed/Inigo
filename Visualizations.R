@@ -260,7 +260,7 @@ Indiv <- function(gene,dat,met){
     theme(panel.border = element_rect(colour=c("black"),size=2),
           axis.ticks = element_line(size=1.5))+
     labs(title=paste(gene,"\n"))+
-    facet_grid( Mouse_condition   ~  Subgroup2 ) 
+    facet_grid( Mouse_condition   ~  predicted ) 
 return(p)
 }
 Indiv2 <- function(gene,dat,met,group){
@@ -662,7 +662,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[metaProxC$Subgroup2 == "DG" & metaProxC$Mouse_condition == "EE" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" & metaProxC$Arc_2.5 != "greater",])#
+samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" & metaProxC$Arc_2.5 != "greater",])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -679,7 +679,7 @@ met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pval
 
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Tcf7l2",dat, met)
+Indiv("Mpped1",dat, met)
 #dev.off()
 group <- "Mouse"
 Indiv2("Grin3a",dat, met,group )
@@ -753,7 +753,7 @@ t <- cbind(t,met)
 #t$Mouse_condition <- factor(t$Mouse_condition,c("HC","1hr","5hr"))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/Figs/5hr_EE.tiff",width = 10,height = 7,units = 'in',res = 500,compression = "lzw")
-ggplot(t, aes(T1,T2, color = Mouse_condition, shape = FOS))+
+ggplot(t, aes(T1,T2, color = predicted, shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
