@@ -73,6 +73,88 @@ The following object is masked from ‘package:S4Vectors’:
 
     rename
 
+Error in if (mean.lib.size == 0) { : 
+  missing value where TRUE/FALSE needed
+Calls: exact ... aveLogCPM.DGEList -> aveLogCPM -> aveLogCPM.default
+In addition: Warning message:
+In estimateCommonDisp(cds) :
+  There is no replication, setting dispersion to NA.
+Execution halted
+Loading required package: flexmix
+Loading required package: lattice
+Warning messages:
+1: no function found corresponding to methods exports from ‘XVector’ for: ‘compare’, ‘elementLengths’ 
+2: multiple methods tables found for ‘as.vector’ 
+3: multiple methods tables found for ‘relistToClass’ 
+4: multiple methods tables found for ‘relistToClass’ 
+Loading required package: BiocGenerics
+Loading required package: methods
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from ‘package:flexmix’:
+
+    unique
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, cbind, colMeans, colnames,
+    colSums, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, lengths, Map, mapply, match,
+    mget, order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rowMeans, rownames, rowSums, sapply, setdiff, sort,
+    table, tapply, union, unique, unsplit, which, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: limma
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:base’:
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: biomaRt
+Loading required package: plyr
+
+Attaching package: ‘plyr’
+
+The following object is masked from ‘package:IRanges’:
+
+    desc
+
+The following object is masked from ‘package:S4Vectors’:
+
+    rename
+
 renaming the first element in assays(SCdat) to 'NormCounts'
 Notice: There exist genes that are all (or almost all) zero. 
               For genes with 0 or 1 nonzero measurements per condition, 
@@ -91,557 +173,3 @@ number of pairs:  325
 total number of pairs:  578 
 cross-fitting 578 pairs:
 building individual error models.
-adjusting library size based on 2000 entries
-fitting FALSE models:
-1 : X160324_01
-2 : X160324_02
-Classification: weighted 
-Classification: weighted 
-   1 Log-likelihood :  -40617.9820 
-   2 Log-likelihood :  -40337.4590 
-   1 Log-likelihood :  -40585.0158 
-   3 Log-likelihood :  -40237.8846 
-   4 Log-likelihood :  -40185.2936 
-   5 Log-likelihood :  -40158.8288 
-   2 Log-likelihood :  -40178.0839 
-   6 Log-likelihood :  -40147.1466 
-   7 Log-likelihood :  -40142.3051 
-   8 Log-likelihood :  -40140.3873 
-   3 Log-likelihood :  -39998.2765 
-   9 Log-likelihood :  -40139.7147 
-  10 Log-likelihood :  -40139.6109 
-  11 Log-likelihood :  -40139.7819 
-  12 Log-likelihood :  -40140.0959 
-   4 Log-likelihood :  -39893.5733 
-  13 Log-likelihood :  -40140.4811 
-  14 Log-likelihood :  -40140.8979 
-   5 Log-likelihood :  -39837.7522 
-  15 Log-likelihood :  -40141.3213 
-  16 Log-likelihood :  -40141.7363 
-  17 Log-likelihood :  -40142.1280 
-   6 Log-likelihood :  -39811.8954 
-  18 Log-likelihood :  -40142.4991 
-  19 Log-likelihood :  -40142.8399 
-  20 Log-likelihood :  -40143.1496 
-   7 Log-likelihood :  -39800.4009 
-  21 Log-likelihood :  -40143.4315 
-  22 Log-likelihood :  -40143.6851 
-   8 Log-likelihood :  -39795.2347 
-  23 Log-likelihood :  -40143.9108 
-  24 Log-likelihood :  -40144.1118 
-   9 Log-likelihood :  -39792.9080 
-  25 Log-likelihood :  -40144.2906 
-  26 Log-likelihood :  -40144.4474 
-  10 Log-likelihood :  -39791.8704 
-  27 Log-likelihood :  -40144.5861 
-  28 Log-likelihood :  -40144.7082 
-  29 Log-likelihood :  -40144.8144 
-  11 Log-likelihood :  -39791.4199 
-  30 Log-likelihood :  -40144.9078 
-  31 Log-likelihood :  -40144.9886 
-  12 Log-likelihood :  -39791.2375 
-  32 Log-likelihood :  -40145.0611 
-  33 Log-likelihood :  -40145.1233 
-  34 Log-likelihood :  -40145.1778 
-  13 Log-likelihood :  -39791.1802 
-  35 Log-likelihood :  -40145.2251 
-  36 Log-likelihood :  -40145.2662 
-  37 Log-likelihood :  -40145.3031 
-converged
-  14 Log-likelihood :  -39791.1663 
-converged
-3 : X160324_03
-4 : X160324_08
-Classification: weighted 
-Classification: weighted 
-   1 Log-likelihood :  -36324.6954 
-   2 Log-likelihood :  -35879.3438 
-   3 Log-likelihood :  -35577.3330 
-   4 Log-likelihood :  -35394.7945 
-   1 Log-likelihood :  -32614.5121 
-   5 Log-likelihood :  -35303.5102 
-   6 Log-likelihood :  -35263.3681 
-   7 Log-likelihood :  -35246.0188 
-   8 Log-likelihood :  -35238.1162 
-   2 Log-likelihood :  -32070.4576 
-   9 Log-likelihood :  -35234.2478 
-  10 Log-likelihood :  -35232.2147 
-  11 Log-likelihood :  -35231.0709 
-   3 Log-likelihood :  -31772.0297 
-  12 Log-likelihood :  -35230.3771 
-  13 Log-likelihood :  -35229.9222 
-   4 Log-likelihood :  -31639.8415 
-  14 Log-likelihood :  -35229.6004 
-   5 Log-likelihood :  -31583.7485 
-  15 Log-likelihood :  -35229.3608 
-   6 Log-likelihood :  -31554.3820 
-  16 Log-likelihood :  -35229.1738 
-  17 Log-likelihood :  -35229.0186 
-   7 Log-likelihood :  -31540.0428 
-  18 Log-likelihood :  -35228.8923 
-   8 Log-likelihood :  -31533.0153 
-  19 Log-likelihood :  -35228.7857 
-   9 Log-likelihood :  -31529.2436 
-  20 Log-likelihood :  -35228.6956 
-  21 Log-likelihood :  -35228.6189 
-  10 Log-likelihood :  -31527.0794 
-  22 Log-likelihood :  -35228.5538 
-  11 Log-likelihood :  -31525.7453 
-  23 Log-likelihood :  -35228.4981 
-  24 Log-likelihood :  -35228.4491 
-  12 Log-likelihood :  -31524.8956 
-  25 Log-likelihood :  -35228.4097 
-  13 Log-likelihood :  -31524.3063 
-  26 Log-likelihood :  -35228.3748 
-converged
-  14 Log-likelihood :  -31523.9098 
-6 : X160324_10
-Classification: weighted 
-  15 Log-likelihood :  -31523.6171 
-  16 Log-likelihood :  -31523.4183 
-  17 Log-likelihood :  -31523.2684 
-   1 Log-likelihood :  -37552.0516 
-  18 Log-likelihood :  -31523.1609 
-  19 Log-likelihood :  -31523.0814 
-  20 Log-likelihood :  -31523.0145 
-  21 Log-likelihood :  -31522.9666 
-   2 Log-likelihood :  -37239.3017 
-  22 Log-likelihood :  -31522.9314 
-  23 Log-likelihood :  -31522.9059 
-converged
-5 : X160324_09
-   3 Log-likelihood :  -37048.2677 
-Classification: weighted 
-   1 Log-likelihood :  -42386.9875 
-   2 Log-likelihood :  -41899.9309 
-   3 Log-likelihood :  -41695.2632 
-   4 Log-likelihood :  -36919.9513 
-   4 Log-likelihood :  -41598.4999 
-   5 Log-likelihood :  -41562.9973 
-   6 Log-likelihood :  -41552.8562 
-   5 Log-likelihood :  -36847.3694 
-   7 Log-likelihood :  -41550.2523 
-   8 Log-likelihood :  -41549.6040 
-   9 Log-likelihood :  -41549.5036 
-  10 Log-likelihood :  -41549.4825 
-converged
-   6 Log-likelihood :  -36809.6136 
-7 : X160324_11
-Classification: weighted 
-   1 Log-likelihood :  -37835.7141 
-   2 Log-likelihood :  -37570.7608 
-   3 Log-likelihood :  -37454.5412 
-   7 Log-likelihood :  -36791.4608 
-   4 Log-likelihood :  -37382.5169 
-   5 Log-likelihood :  -37339.4986 
-   6 Log-likelihood :  -37318.0173 
-   8 Log-likelihood :  -36783.5733 
-   7 Log-likelihood :  -37308.7001 
-   8 Log-likelihood :  -37305.1244 
-   9 Log-likelihood :  -37304.0044 
-  10 Log-likelihood :  -37303.8745 
-   9 Log-likelihood :  -36779.0288 
-  11 Log-likelihood :  -37304.1108 
-  12 Log-likelihood :  -37304.4607 
-  13 Log-likelihood :  -37306.0903 
-  14 Log-likelihood :  -37304.2840 
-  10 Log-likelihood :  -36777.4463 
-  15 Log-likelihood :  -37304.1491 
-  16 Log-likelihood :  -37304.4491 
-  17 Log-likelihood :  -37306.0684 
-  18 Log-likelihood :  -37304.2752 
-  11 Log-likelihood :  -36776.0291 
-  19 Log-likelihood :  -37304.1471 
-  20 Log-likelihood :  -37304.4489 
-  21 Log-likelihood :  -37306.0713 
-  22 Log-likelihood :  -37304.2759 
-  12 Log-likelihood :  -36775.4960 
-  23 Log-likelihood :  -37304.1481 
-  24 Log-likelihood :  -37304.4495 
-  25 Log-likelihood :  -37306.0708 
-  26 Log-likelihood :  -37304.2758 
-  13 Log-likelihood :  -36775.8300 
-  27 Log-likelihood :  -37304.1477 
-  28 Log-likelihood :  -37304.4504 
-  29 Log-likelihood :  -37306.0710 
-  30 Log-likelihood :  -37304.2762 
-  14 Log-likelihood :  -36775.6482 
-  31 Log-likelihood :  -37304.1478 
-  32 Log-likelihood :  -37304.4508 
-  33 Log-likelihood :  -37306.0711 
-  34 Log-likelihood :  -37304.2764 
-  15 Log-likelihood :  -36774.6540 
-  35 Log-likelihood :  -37304.1474 
-  36 Log-likelihood :  -37304.4502 
-  37 Log-likelihood :  -37306.0710 
-  38 Log-likelihood :  -37304.2752 
-  16 Log-likelihood :  -36775.0875 
-  39 Log-likelihood :  -37304.1468 
-  40 Log-likelihood :  -37304.4503 
-  41 Log-likelihood :  -37306.0719 
-  17 Log-likelihood :  -36774.7399 
-  42 Log-likelihood :  -37304.2756 
-  43 Log-likelihood :  -37304.1475 
-  44 Log-likelihood :  -37304.4503 
-  45 Log-likelihood :  -37306.0729 
-  18 Log-likelihood :  -36774.4937 
-  46 Log-likelihood :  -37304.2764 
-  47 Log-likelihood :  -37304.1474 
-  48 Log-likelihood :  -37304.4502 
-  49 Log-likelihood :  -37306.0714 
-  19 Log-likelihood :  -36775.7754 
-  50 Log-likelihood :  -37304.2763 
-9 : X160324_16
-Classification: weighted 
-  20 Log-likelihood :  -36775.5629 
-   1 Log-likelihood :  -34185.9135 
-   2 Log-likelihood :  -33963.7816 
-   3 Log-likelihood :  -33823.9098 
-  21 Log-likelihood :  -36774.8225 
-   4 Log-likelihood :  -33722.9515 
-   5 Log-likelihood :  -33658.6596 
-   6 Log-likelihood :  -33625.1190 
-   7 Log-likelihood :  -33609.3854 
-  22 Log-likelihood :  -36775.5150 
-   8 Log-likelihood :  -33602.3223 
-   9 Log-likelihood :  -33599.1652 
-  10 Log-likelihood :  -33597.7525 
-  23 Log-likelihood :  -36775.3101 
-  11 Log-likelihood :  -33597.1311 
-  12 Log-likelihood :  -33596.8855 
-  13 Log-likelihood :  -33596.8228 
-  24 Log-likelihood :  -36775.7984 
-  14 Log-likelihood :  -33596.8439 
-converged
-11 : X160324_18
-Classification: weighted 
-   1 Log-likelihood :  -38828.7692 
-  25 Log-likelihood :  -36775.4011 
-   2 Log-likelihood :  -38511.8369 
-   3 Log-likelihood :  -38383.8921 
-   4 Log-likelihood :  -38311.7773 
-   5 Log-likelihood :  -38276.1618 
-  26 Log-likelihood :  -36774.9268 
-   6 Log-likelihood :  -38261.5173 
-   7 Log-likelihood :  -38256.4034 
-   8 Log-likelihood :  -38255.0181 
-   9 Log-likelihood :  -38254.9445 
-  27 Log-likelihood :  -36775.3166 
-  10 Log-likelihood :  -38255.2936 
-  11 Log-likelihood :  -38255.7519 
-  12 Log-likelihood :  -38256.2089 
-  28 Log-likelihood :  -36775.4477 
-  13 Log-likelihood :  -38256.6246 
-  14 Log-likelihood :  -38256.9884 
-  15 Log-likelihood :  -38257.3003 
-  16 Log-likelihood :  -38257.5627 
-  29 Log-likelihood :  -36775.1329 
-  17 Log-likelihood :  -38257.7821 
-  18 Log-likelihood :  -38257.9642 
-  19 Log-likelihood :  -38258.1146 
-  20 Log-likelihood :  -38258.2380 
-  30 Log-likelihood :  -36775.5698 
-  21 Log-likelihood :  -38258.3390 
-  22 Log-likelihood :  -38258.4221 
-  23 Log-likelihood :  -38258.4894 
-  31 Log-likelihood :  -36775.0002 
-  24 Log-likelihood :  -38258.5436 
-  25 Log-likelihood :  -38258.5880 
-  26 Log-likelihood :  -38258.6238 
-converged
-13 : X160324_22
-Classification: weighted 
-  32 Log-likelihood :  -36775.4409 
-   1 Log-likelihood :  -31879.9143 
-  33 Log-likelihood :  -36774.9877 
-   2 Log-likelihood :  -31722.5510 
-  34 Log-likelihood :  -36775.6422 
-   3 Log-likelihood :  -31646.5328 
-   4 Log-likelihood :  -31598.9453 
-  35 Log-likelihood :  -36775.5665 
-   5 Log-likelihood :  -31566.1166 
-   6 Log-likelihood :  -31545.3288 
-   7 Log-likelihood :  -31533.6716 
-  36 Log-likelihood :  -36775.6633 
-   8 Log-likelihood :  -31527.8264 
-   9 Log-likelihood :  -31525.2864 
-  10 Log-likelihood :  -31524.4440 
-  37 Log-likelihood :  -36775.1775 
-  11 Log-likelihood :  -31524.4168 
-converged
-15 : X160324_24
-Classification: weighted 
-   1 Log-likelihood :  -37637.1307 
-  38 Log-likelihood :  -36774.6721 
-   2 Log-likelihood :  -37487.4374 
-   3 Log-likelihood :  -37428.8996 
-   4 Log-likelihood :  -37389.1395 
-   5 Log-likelihood :  -37360.3916 
-  39 Log-likelihood :  -36775.2669 
-   6 Log-likelihood :  -37342.4865 
-   7 Log-likelihood :  -37331.9174 
-   8 Log-likelihood :  -37325.6660 
-   9 Log-likelihood :  -37321.8054 
-  40 Log-likelihood :  -36775.0714 
-  10 Log-likelihood :  -37319.2846 
-  11 Log-likelihood :  -37317.5274 
-  12 Log-likelihood :  -37316.2235 
-  41 Log-likelihood :  -36774.9919 
-  13 Log-likelihood :  -37315.2017 
-  14 Log-likelihood :  -37314.3617 
-  15 Log-likelihood :  -37313.6463 
-  16 Log-likelihood :  -37313.0196 
-  17 Log-likelihood :  -37312.4591 
-  42 Log-likelihood :  -36775.2847 
-  18 Log-likelihood :  -37311.9487 
-  19 Log-likelihood :  -37311.4802 
-  20 Log-likelihood :  -37311.0462 
-  43 Log-likelihood :  -36775.4885 
-  21 Log-likelihood :  -37310.6420 
-  22 Log-likelihood :  -37310.2633 
-  23 Log-likelihood :  -37309.9095 
-  24 Log-likelihood :  -37309.5765 
-  44 Log-likelihood :  -36774.2194 
-  25 Log-likelihood :  -37309.2625 
-  26 Log-likelihood :  -37308.9688 
-  27 Log-likelihood :  -37308.6906 
-  45 Log-likelihood :  -36775.5884 
-  28 Log-likelihood :  -37308.4284 
-  29 Log-likelihood :  -37308.1813 
-  30 Log-likelihood :  -37307.9479 
-  31 Log-likelihood :  -37307.7277 
-  46 Log-likelihood :  -36775.9040 
-  32 Log-likelihood :  -37307.5198 
-  33 Log-likelihood :  -37307.3235 
-  34 Log-likelihood :  -37307.1381 
-  35 Log-likelihood :  -37306.9630 
-  47 Log-likelihood :  -36775.2414 
-  36 Log-likelihood :  -37306.7978 
-  37 Log-likelihood :  -37306.6411 
-  38 Log-likelihood :  -37306.4937 
-  48 Log-likelihood :  -36775.2912 
-  39 Log-likelihood :  -37306.3543 
-  40 Log-likelihood :  -37306.2222 
-  41 Log-likelihood :  -37306.0976 
-  42 Log-likelihood :  -37305.9801 
-  49 Log-likelihood :  -36775.5074 
-  43 Log-likelihood :  -37305.8687 
-  44 Log-likelihood :  -37305.7630 
-  45 Log-likelihood :  -37305.6635 
-  46 Log-likelihood :  -37305.5693 
-  50 Log-likelihood :  -36774.6758 
-  47 Log-likelihood :  -37305.4807 
-  48 Log-likelihood :  -37305.3963 
-8 : X160324_15
-Classification: weighted 
-  49 Log-likelihood :  -37305.3164 
-   1 Log-likelihood :  -46073.2363 
-  50 Log-likelihood :  -37305.2412 
-   2 Log-likelihood :  -45687.5868 
-   3 Log-likelihood :  -45571.7040 
-17 : X160324_30
-Classification: weighted 
-   4 Log-likelihood :  -45521.6087 
-   1 Log-likelihood :  -42557.8805 
-   5 Log-likelihood :  -45501.6267 
-   2 Log-likelihood :  -42154.0706 
-   3 Log-likelihood :  -41937.0411 
-   6 Log-likelihood :  -45494.1267 
-   4 Log-likelihood :  -41829.5934 
-   7 Log-likelihood :  -45491.2268 
-   5 Log-likelihood :  -41788.3890 
-   8 Log-likelihood :  -45490.1056 
-   6 Log-likelihood :  -41775.2488 
-   9 Log-likelihood :  -45489.7837 
-  10 Log-likelihood :  -45489.8880 
-   7 Log-likelihood :  -41771.4160 
-  11 Log-likelihood :  -45490.2449 
-   8 Log-likelihood :  -41770.4447 
-   9 Log-likelihood :  -41770.3681 
-  12 Log-likelihood :  -45490.7537 
-  10 Log-likelihood :  -41770.5709 
-  13 Log-likelihood :  -45491.3479 
-  11 Log-likelihood :  -41770.8434 
-  14 Log-likelihood :  -45491.9804 
-  12 Log-likelihood :  -41771.1071 
-  15 Log-likelihood :  -45492.6184 
-  13 Log-likelihood :  -41771.3391 
-  16 Log-likelihood :  -45493.2413 
-  14 Log-likelihood :  -41771.5328 
-  17 Log-likelihood :  -45493.8321 
-  15 Log-likelihood :  -41771.6919 
-  18 Log-likelihood :  -45494.3815 
-  16 Log-likelihood :  -41771.8192 
-  19 Log-likelihood :  -45494.8863 
-  17 Log-likelihood :  -41771.9236 
-  20 Log-likelihood :  -45495.3460 
-  18 Log-likelihood :  -41772.0045 
-  21 Log-likelihood :  -45495.7542 
-  19 Log-likelihood :  -41772.0698 
-  22 Log-likelihood :  -45496.1212 
-  20 Log-likelihood :  -41772.1193 
-  23 Log-likelihood :  -45496.4458 
-  21 Log-likelihood :  -41772.1621 
-  24 Log-likelihood :  -45496.7317 
-  22 Log-likelihood :  -41772.1945 
-converged
-  25 Log-likelihood :  -45496.9832 
-  26 Log-likelihood :  -45497.2030 
-19 : X160324_36
-Classification: weighted 
-  27 Log-likelihood :  -45497.3948 
-   1 Log-likelihood :  -44493.7920 
-  28 Log-likelihood :  -45497.5610 
-   2 Log-likelihood :  -44217.9065 
-  29 Log-likelihood :  -45497.7060 
-  30 Log-likelihood :  -45497.8316 
-   3 Log-likelihood :  -44138.3948 
-   4 Log-likelihood :  -44097.6528 
-  31 Log-likelihood :  -45497.9409 
-   5 Log-likelihood :  -44076.8268 
-  32 Log-likelihood :  -45498.0341 
-  33 Log-likelihood :  -45498.1158 
-   6 Log-likelihood :  -44067.5214 
-  34 Log-likelihood :  -45498.1850 
-   7 Log-likelihood :  -44063.5433 
-  35 Log-likelihood :  -45498.2449 
-   8 Log-likelihood :  -44061.8659 
-  36 Log-likelihood :  -45498.2971 
-   9 Log-likelihood :  -44061.1784 
-  37 Log-likelihood :  -45498.3418 
-converged
-  10 Log-likelihood :  -44060.9336 
-  11 Log-likelihood :  -44060.8978 
-converged
-10 : X160324_17
-Classification: weighted 
-   1 Log-likelihood :  -41241.0529 
-21 : X160324_38
-Classification: weighted 
-   2 Log-likelihood :  -40914.9466 
-   3 Log-likelihood :  -40789.6989 
-   4 Log-likelihood :  -40723.3349 
-   5 Log-likelihood :  -40686.8118 
-   1 Log-likelihood :  -27766.9289 
-   6 Log-likelihood :  -40669.9539 
-   7 Log-likelihood :  -40663.1872 
-   8 Log-likelihood :  -40660.6566 
-   2 Log-likelihood :  -27564.3595 
-   9 Log-likelihood :  -40659.7561 
-  10 Log-likelihood :  -40659.4891 
-   3 Log-likelihood :  -27439.8151 
-  11 Log-likelihood :  -40659.4785 
-converged
-   4 Log-likelihood :  -27346.0337 
-   5 Log-likelihood :  -27280.6121 
-12 : X160324_21
-Classification: weighted 
-   6 Log-likelihood :  -27236.7572 
-   7 Log-likelihood :  -27210.5851 
-   8 Log-likelihood :  -27195.5674 
-   9 Log-likelihood :  -27187.3205 
-   1 Log-likelihood :  -30461.9520 
-  10 Log-likelihood :  -27182.7643 
-  11 Log-likelihood :  -27180.1870 
-  12 Log-likelihood :  -27178.6973 
-   2 Log-likelihood :  -30254.0769 
-  13 Log-likelihood :  -27177.8108 
-  14 Log-likelihood :  -27177.2650 
-  15 Log-likelihood :  -27176.9249 
-   3 Log-likelihood :  -30132.4899 
-  16 Log-likelihood :  -27176.7115 
-  17 Log-likelihood :  -27176.5734 
-   4 Log-likelihood :  -30050.9965 
-  18 Log-likelihood :  -27176.4857 
-   5 Log-likelihood :  -29996.6185 
-  19 Log-likelihood :  -27176.4292 
-   6 Log-likelihood :  -29972.7106 
-  20 Log-likelihood :  -27176.3930 
-   7 Log-likelihood :  -29957.6504 
-  21 Log-likelihood :  -27176.3691 
-converged
-   8 Log-likelihood :  -29949.0515 
-23 : X160324_40
-Classification: weighted 
-   9 Log-likelihood :  -29944.4742 
-  10 Log-likelihood :  -29942.0672 
-   1 Log-likelihood :  -36585.6683 
-  11 Log-likelihood :  -29940.7927 
-  12 Log-likelihood :  -29940.1047 
-   2 Log-likelihood :  -36246.9603 
-  13 Log-likelihood :  -29939.7248 
-  14 Log-likelihood :  -29939.5117 
-  15 Log-likelihood :  -29939.3935 
-   3 Log-likelihood :  -36113.1451 
-  16 Log-likelihood :  -29939.3278 
-  17 Log-likelihood :  -29939.2936 
-   4 Log-likelihood :  -36029.5219 
-  18 Log-likelihood :  -29939.2786 
-converged
-   5 Log-likelihood :  -35972.1654 
-14 : X160324_23
-Classification: weighted 
-   6 Log-likelihood :  -35936.5213 
-   7 Log-likelihood :  -35917.4597 
-   1 Log-likelihood :  -38736.4721 
-   8 Log-likelihood :  -35909.1766 
-   9 Log-likelihood :  -35906.0080 
-   2 Log-likelihood :  -38393.3218 
-  10 Log-likelihood :  -35905.2240 
-  11 Log-likelihood :  -35905.4305 
-   3 Log-likelihood :  -38206.7353 
-  12 Log-likelihood :  -35906.0085 
-  13 Log-likelihood :  -35906.7046 
-   4 Log-likelihood :  -38084.8145 
-  14 Log-likelihood :  -35907.3763 
-  15 Log-likelihood :  -35907.9861 
-   5 Log-likelihood :  -38014.8476 
-  16 Log-likelihood :  -35908.5242 
-  17 Log-likelihood :  -35908.9825 
-   6 Log-likelihood :  -37981.1777 
-  18 Log-likelihood :  -35909.3719 
-   7 Log-likelihood :  -37966.2162 
-  19 Log-likelihood :  -35909.6849 
-  20 Log-likelihood :  -35909.9572 
-   8 Log-likelihood :  -37959.7137 
-  21 Log-likelihood :  -35910.1781 
-  22 Log-likelihood :  -35910.3609 
-   9 Log-likelihood :  -37956.9248 
-  23 Log-likelihood :  -35910.5095 
-  10 Log-likelihood :  -37955.7777 
-  24 Log-likelihood :  -35910.6314 
-  25 Log-likelihood :  -35910.7320 
-  11 Log-likelihood :  -37955.3623 
-  26 Log-likelihood :  -35910.8092 
-  12 Log-likelihood :  -37955.2640 
-  27 Log-likelihood :  -35910.8764 
-  28 Log-likelihood :  -35910.9345 
-  13 Log-likelihood :  -37955.2936 
-converged
-  29 Log-likelihood :  -35910.9821 
-16 : X160324_29
-Classification: weighted 
-  30 Log-likelihood :  -35911.0185 
-   1 Log-likelihood :  -41894.8027 
-   2 Log-likelihood :  -41478.2218 
-  31 Log-likelihood :  -35911.0477 
-converged
-   3 Log-likelihood :  -41274.0651 
-   4 Log-likelihood :  -41167.3303 
-   5 Log-likelihood :  -41123.0585 
-   6 Log-likelihood :  -41107.4079 
-   7 Log-likelihood :  -41102.1574 
-   8 Log-likelihood :  -41100.5016 
-   9 Log-likelihood :  -41100.1409 
-  10 Log-likelihood :  -41100.2653 
-  11 Log-likelihood :  -41100.5590 
-  12 Log-likelihood :  -41100.8992 
-  13 Log-likelihood :  -41101.2269 
-  14 Log-likelihood :  -41101.5298 
-  15 Log-likelihood :  -41101.7953 
-  16 Log-likelihood :  -41102.0256 
-  17 Log-likelihood :  -41102.2228 
-  18 Log-likelihood :  -41102.3898 
-  19 Log-likelihood :  -41102.5331 
-  20 Log-likelihood :  -41102.6532 
-  21 Log-likelihood :  -41102.7548 
