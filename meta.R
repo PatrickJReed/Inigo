@@ -173,7 +173,9 @@ for (g2 in c("DG","CA1","VIP")){
   i <- i  + 1
   samples <- rownames(metaProxC[metaProxC$predicted == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == fos & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
                                   metaProxC$predicted == g2 & metaProxC$Mouse_condition == "HC" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
-  samples <- samples[-grep("NA",samples)]
+  if(length(grep("NA",samples)) > 0){
+    samples <- samples[-grep("NA",samples)]
+  }
   dat <- na.exclude(countProxC[, samples])
   dat <- dat[rowSums(dat) > 0,]
   met <- metaProxC[samples,]
@@ -209,6 +211,8 @@ for (g2 in c("DG","CA1","VIP")){
   names(RES)[i] <- g2
   }
 }
+save(list = c("RES"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)
+
 #########
 # Fos Positive between cell types
 combin <- data.frame(a = c("DG","DG","CA1"), b = c("CA1","VIP","VIP"))
@@ -216,13 +220,15 @@ RES2 <- list()
 i <- 0
 for (g2 in 1:nrow(combin)){
     i <- i  + 1
-    samples <- rownames(metaProxC[metaProxC$predicted == combin[g2,"a"] & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
-                                    metaProxC$predicted == combin[g2,"b"] & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
-    samples <- samples[-grep("NA",samples)]
+    samples <- rownames(metaProxC[metaProxC$predicted == as.character(combin[g2,"a"]) & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
+                                    metaProxC$predicted == as.character(combin[g2,"b"]) & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
+    if(length(grep("NA", samples) > 0)){
+      samples <- samples[-grep("NA",samples)]
+    }
     dat <- na.exclude(countProxC[, samples])
     dat <- dat[rowSums(dat) > 0,]
     met <- metaProxC[samples,]
-    group = as.factor(met$predicted == combin[g2,"a"])
+    group = as.factor(met$predicted == as.character(combin[g2,"a"]))
     Pair = levels(group)
     ###############
     ## EDGER EXACT
@@ -256,4 +262,4 @@ for (g2 in 1:nrow(combin)){
 }
 #########
 # Save results
-save(c("RES","RES2"), "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)
+save(list = c("RES","RES2"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)

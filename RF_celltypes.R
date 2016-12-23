@@ -1,4 +1,6 @@
 library(randomForest)
+#save(list = c("RF.gini", "RF.gini2", "RF3", "error","genes2"), file = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/rf_celltypes_data.rda",compress = TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/rf_celltypes_data.rda")
 
 samples <- rownames(metaProxC[ metaProxC$Context1 == "none" & metaProxC$FOS != "L" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater",])
 dat <- na.exclude(tpmProxC[, samples])
@@ -37,5 +39,28 @@ tmp <- na.exclude(dat[genes2,])
 
 met$predicted <- as.vector(RF3$predicted)
 
-RF4 <- randomForest(predicted ~., cbind(dat2[,genes2], predicted = as.vector(RF3$predicted)))
+####
+tmp <- na.exclude(tpmProxC[, samples])
+tmp <- tmp[rowSums(tmp) > 0,]
+met <- metaProxC[samples,]
+tmp <- data.frame(t(na.exclude(tmp[genes2,])))
+tmp$predicted <- factor(as.vector(met$predicted))
 
+error <- vector()
+for (i in 1:100){
+  RF4 <- randomForest(predicted ~., tmp)
+  error <- rbind(error, as.vector(RF4$confusion[,9]))
+}
+colnames(error) <- colnames(RF4$confusion)[-9]
+error2 <- melt(t(error))
+ggplot(error2, aes(X1, value))+
+  geom_jitter()
+
+mean.error <- unlist(apply(error, 2, mean))
+sd.error <- unlist(apply(error, 2, sd))
+##
+samples <- rownames(metaProxC)
+tmp <- na.exclude(tpmProxC[, samples])
+tmp <- t(tmp[rowSums(tmp) > 0,])
+
+a <- predict(RF4, tmp)

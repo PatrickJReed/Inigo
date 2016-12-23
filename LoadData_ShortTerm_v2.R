@@ -310,7 +310,8 @@ metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRN
 metaProxC$outliers <- ifelse(test = metaProxC$alignable > 100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",yes = "in",no = "out")
 #########
 # outliers
-samples <- rownames(metaProxC[ metaProxC$alignable <  100000 ,])#
+samples <- rownames(metaProxC[ metaProxC$alignable <  100000 ,])
+samples <- samples[-grep("NA",samples)]
 g <- apply(tpmProxC,2,rawExp,1)
 samples <- unique(c(samples,names(g[g < 4000])))
 samples <- unique(c(samples,rownames(metaProxC[ metaProxC$Smartseq2_RT_enzyme_used != "ProtoscriptII" ,])))

@@ -626,8 +626,10 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- rownames(metaProxC[  metaProxC$FOS != "L"   & metaProxC$Context2 == "none"    ,])
-                                             
+samples <- rownames(metaProxC[metaProxC$Context1 == "none" & metaProxC$Brain_Region == "DG" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" |
+                                metaProxC$Context1 == "none" &  metaProxC$Brain_Region == "HDG" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" |
+                                metaProxC$Context1 == "none" &  metaProxC$Brain_Region == "CA1" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" ,])#
+samples <- samples[-grep("NA",samples)]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
@@ -640,10 +642,13 @@ Var <- p@R2
 met$Brain_Region <- as.character(met$Brain_Region)
 met[met$Brain_Region == "HDG", "Brain_Region"] <- "VIP"
 met$group <- paste(met$FOS,  met$Mouse_condition, sep =".")
-met$Vip <- as.numeric(dat["Vip",] > 7)
 met$Activations <- as.factor(met$Activations)
+met$logalign <- log(met$alignable)
+met$loggcount <- log(met$genecount)
+met$cutoff.a <- met$alignable < cutoff
+met$cutoff.g <- met$genecount < cutoff2
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby = "Mouse_condition", shapeby = "FOS")#,Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby = "FOS", shapeby = "predicted",Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
@@ -662,7 +667,7 @@ a[1]
 a[2]
 
 # Plot Single Gene --------------------------------------------------------
-samples <- rownames(metaProxC[ metaProxC$Mouse_condition == "EE" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" & metaProxC$Arc_2.5 != "greater",])#
+samples <- rownames(metaProxC[metaProxC$Context1 == "none" &  metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" ,])#
 #metaProxC$CTIP2 == "N" & metaProxC$PROX1 == "N" & metaProxC$FOS == "N" & metaProxC$Mouse_condition == "HC" & metaProxC$alignable >  500000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII"  ,"Sample_ID"]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
@@ -679,7 +684,7 @@ met$Subgroup2 <- factor(met$Subgroup2, c("DG","CA3","CA1","Sub","GC","VIP","Pval
 
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/Gla.tiff",width = 25,height = 5,units = 'in',res = 300)#single gene = 8 x 3.5, hc and ne 8 x 5
-Indiv("Mpped1",dat, met)
+Indiv("Nr4a2",dat, met)
 #dev.off()
 group <- "Mouse"
 Indiv2("Grin3a",dat, met,group )
@@ -688,8 +693,8 @@ IndivProp("Tmem170",dat, met)
 
 
 #
-a <- "Sox11"#Bap1
-b <- "Dgat2l6"
+a <- "Reln"#Bap1
+b <- "Sema5a"
 group <- "Activations"
 Plot2Genes(a,b, dat,met,group)
 res <- res.HC_N_P_1
@@ -711,7 +716,7 @@ h <- heatmap(as.matrix(na.exclude(tmp2)),scale = "col")
 heatMeRaw(dat,met,genes,k1 = 10,k2 = 5, samplenames = paste(met$Brain_Region,1:ncol(dat),sep="."))
 #dev.off()
 genes <- c("Bok","Prox1","Wsf1","Gad2","Cacng5","Amigo2")
-heatMe(dat,met,genes,k1 = 2, k2 = 2 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
+heatMe(dat,met,genes2,k1 = 2, k2 = 2 , cutoff = 3,samplenames = paste(met$FOS,met$Mouse_condition,1:ncol(dat),sep="."))
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vC/Fig6_potassium_hc.tiff",width = 8,height = 15,units = 'in',res = 300)
 heatMeAvg(dat,met,genes,k2 = 8,k1 = 4 ,cutoff = 1 )
@@ -742,7 +747,6 @@ t <- cbind(t,met)
 #  }
 #}
 #t$group <- paste(t$Brain_Region, t$Mouse3, sep =".")
-#t$gene <- as.numeric(tpmProxC["Rxfp1",rownames(t)])
 #k <- kmeans(t[,c(1:2)],centers =2,nstart = 2000)
 #t$k <- as.factor(k$cluster)
 #tiff("~/Documents/SalkProjects/ME/ShortLongSingature/MolecDissec_Figs_Tables/Figures_vD/tsne_bcl11b.tiff",width = 9,height = 6.5,units = 'in',res = 600,compression = 'lzw')
@@ -751,9 +755,10 @@ t <- cbind(t,met)
 #t[t$Mouse_condition == "5hpA","Mouse_condition"] <- "5hr"
 #t[t$Mouse_condition == "EE","Mouse_condition"] <- "1hr"
 #t$Mouse_condition <- factor(t$Mouse_condition,c("HC","1hr","5hr"))
+t$gene <- as.numeric(tpmProxC["Ascl1",rownames(t)])
 
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/Figs/5hr_EE.tiff",width = 10,height = 7,units = 'in',res = 500,compression = "lzw")
-ggplot(t, aes(T1,T2, color = predicted, shape = FOS))+
+ggplot(t, aes(T1,T2, color = gene, shape = FOS))+
   geom_point(size = 5)+
   theme_bw()+
   xlab("TSNE1")+
@@ -762,11 +767,11 @@ ggplot(t, aes(T1,T2, color = predicted, shape = FOS))+
   theme(panel.border = element_rect(colour=c("black"),size=2),
         axis.ticks = element_line(size=1.5),
         panel.grid.major = element_line(size = 1))#+
-  scale_colour_manual(values = c("black","red","blue"))
+  #scale_colour_manual(values = c("black","red","blue"))
   #scale_shape_manual(values=c(8, 14, 16, 15, 17))+
 #  scale_colour_manual(values = c("darkblue","orange","black"))+
    # scale_alpha_continuous(range  = c(0.6,1))+
-#scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
+scale_colour_gradient2(high = "red",low = "black",mid = "grey", midpoint = 1)#+
 #scale_colour_manual(values = c("#94bc68","#4b7023","#30510b","#345510","#60d6eb","#13aac5","#e9ae79","#d29258","#d97923","#7e5530","#c05cc7","#e93af5","#83108b"))
 #scale_colour_manual(values = c("#6ca425","#00c7e4","#e19041","#a800b3"))
 #dev.off()

@@ -192,10 +192,10 @@ rawExp <- function(x,i=2){
 RES.activity_meta <- list()
 i <- 0
 #for (g2 in c("DG","CA1","VIP")){
-for (g2 in c("CA1","VIP")){
+for (g2 in c("DG","CA1","VIP")){
   i <- i  + 1
-  samples <- rownames(metaProxC[metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
-                                  metaProxC$Subgroup2 == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
+  samples <- rownames(metaProxC[metaProxC$predicted == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "N" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
+                                  metaProxC$predicted == g2 & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
   dat <- na.exclude(countProxC[, samples])
   dat <- dat[rowSums(dat) > 0,]
   met <- metaProxC[samples,]
