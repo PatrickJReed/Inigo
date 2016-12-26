@@ -693,7 +693,7 @@ IndivProp("Tmem170",dat, met)
 
 
 #
-a <- "Reln"#Bap1
+a <- "Vip"#Bap1
 b <- "Sema5a"
 group <- "Activations"
 Plot2Genes(a,b, dat,met,group)
