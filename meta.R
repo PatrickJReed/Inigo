@@ -165,6 +165,63 @@ load("~/Documents/SalkProjects/ME/ShortLongSingature/raw/combineddata.rda")
 ## Run loop over celltypes
 ###############
 ########
+# Fos+/Fos-
+RES <- list()
+i <- 0
+sSize <- 17
+for (k in 1:10){
+  for (g2 in c("DG","CA1","VIP")){
+      i <- i  + 1
+      samples <- rownames(metaProxC[metaProxC$predicted == g2 & metaProxC$FOS != "L" & metaProxC$Mouse_condition == "EE" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater",])#
+      if(length(grep("NA",samples)) > 0){
+        samples <- samples[-grep("NA",samples)]
+      }
+      dat <- na.exclude(countProxC[, samples])
+      dat <- dat[rowSums(dat) > 0,]
+      met <- metaProxC[samples,]
+      #Subsample
+      samples.f <- sample(x = rownames(met[met$FOS == "F",]),size = sSize,replace = FALSE)
+      samples.n <- sample(x = rownames(met[met$FOS == "N",]),size = sSize,replace = FALSE)
+      samples <- c(samples.f, samples.n)
+      dat <- na.exclude(countProxC[, samples])
+      dat <- dat[rowSums(dat) > 0,]
+      met <- metaProxC[samples,]
+      group = as.factor(met$FOS == "F")
+      Pair = levels(group)
+      ###############
+      ## EDGER EXACT
+      ###############
+      res.exact <- exact(dat, group, Pair)
+      ###############
+      ## SCDD
+      ###############
+      res.scdd <- SCDD(dat, group, samples)
+      ###############
+      ## SCDE
+      ###############
+      res.scde <- SCDE(dat, group)
+      ###############
+      # Meta analysis
+      ###############
+      
+      df2 <- data.frame(p1 = res.exact[rownames(dat),"f"],
+                        p2 = res.scdd[rownames(dat), "Genes.nonzero.pvalue.adj"],
+                        p3 = res.scdd[rownames(dat), "Genes.zero.pvalue.adj"],
+                        p4 = res.scde[rownames(dat),"f"],
+                        row.names = rownames(dat)
+      )
+      
+      all  <- apply(X = df2, MARGIN = 1, FUN = fisher.meta)
+      res.comb <- data.frame(res.exact[rownames(dat),], res.scdd[rownames(dat),], res.scde[rownames(dat),],meta_padj = all)
+      res.comb <- res.comb[order(res.comb$meta_padj),]
+      RES[[i]] <- res.comb
+      names(RES)[i] <- paste(g2,k,sep = ".")
+  }
+}
+#save(list = c("RES"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)
+save(list = c("RES"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis_subsample.rda",compress = TRUE)
+
+########
 # Fos versus homecage
 RES <- list()
 i <- 0
@@ -211,55 +268,57 @@ for (g2 in c("DG","CA1","VIP")){
   names(RES)[i] <- g2
   }
 }
-save(list = c("RES"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)
+#save(list = c("RES"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)
+
 
 #########
 # Fos Positive between cell types
-combin <- data.frame(a = c("DG","DG","CA1"), b = c("CA1","VIP","VIP"))
-RES2 <- list()
-i <- 0
-for (g2 in 1:nrow(combin)){
-    i <- i  + 1
-    samples <- rownames(metaProxC[metaProxC$predicted == as.character(combin[g2,"a"]) & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
-                                    metaProxC$predicted == as.character(combin[g2,"b"]) & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
-    if(length(grep("NA", samples) > 0)){
-      samples <- samples[-grep("NA",samples)]
-    }
-    dat <- na.exclude(countProxC[, samples])
-    dat <- dat[rowSums(dat) > 0,]
-    met <- metaProxC[samples,]
-    group = as.factor(met$predicted == as.character(combin[g2,"a"]))
-    Pair = levels(group)
-    ###############
-    ## EDGER EXACT
-    ###############
-    res.exact <- exact(dat, group, Pair)
-    ###############
-    ## SCDD
-    ###############
-    res.scdd <- SCDD(dat, group, samples)
-    ###############
-    ## SCDE
-    ###############
-    res.scde <- SCDE(dat, group)
-    ###############
-    # Meta analysis
-    ###############
-    
-    df2 <- data.frame(p1 = res.exact[rownames(dat),"f"], 
-                      p2 = res.scdd[rownames(dat), "Genes.nonzero.pvalue.adj"],
-                      p3 = res.scdd[rownames(dat), "Genes.zero.pvalue.adj"],
-                      p4 = res.scde[rownames(dat),"f"],
-                      row.names = rownames(dat)
-    )
-    
-    all  <- apply(X = df2, MARGIN = 1, FUN = fisher.meta)
-    res.comb <- data.frame(res.exact[rownames(dat),], res.scdd[rownames(dat),], res.scde[rownames(dat),],meta_padj = all)
-    res.comb <- res.comb[order(res.comb$meta_padj),]
-    RES2[[i]] <- res.comb
-    names(RES2)[i] <- g2
-
-}
+# combin <- data.frame(a = c("DG","DG","CA1"), b = c("CA1","VIP","VIP"))
+# RES2 <- list()
+# i <- 0
+# for (g2 in 1:nrow(combin)){
+#     i <- i  + 1
+#     samples <- rownames(metaProxC[metaProxC$predicted == as.character(combin[g2,"a"]) & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  |
+#                                     metaProxC$predicted == as.character(combin[g2,"b"]) & metaProxC$Mouse_condition == "EE" & metaProxC$FOS == "F" & metaProxC$cluster_outlier == "in" & metaProxC$outliers == "in" & metaProxC$Arc_2.5 != "greater"  ,])#
+#     if(length(grep("NA", samples) > 0)){
+#       samples <- samples[-grep("NA",samples)]
+#     }
+#     dat <- na.exclude(countProxC[, samples])
+#     dat <- dat[rowSums(dat) > 0,]
+#     met <- metaProxC[samples,]
+#     group = as.factor(met$predicted == as.character(combin[g2,"a"]))
+#     Pair = levels(group)
+#     ###############
+#     ## EDGER EXACT
+#     ###############
+#     res.exact <- exact(dat, group, Pair)
+#     ###############
+#     ## SCDD
+#     ###############
+#     res.scdd <- SCDD(dat, group, samples)
+#     ###############
+#     ## SCDE
+#     ###############
+#     res.scde <- SCDE(dat, group)
+#     ###############
+#     # Meta analysis
+#     ###############
+#     
+#     df2 <- data.frame(p1 = res.exact[rownames(dat),"f"], 
+#                       p2 = res.scdd[rownames(dat), "Genes.nonzero.pvalue.adj"],
+#                       p3 = res.scdd[rownames(dat), "Genes.zero.pvalue.adj"],
+#                       p4 = res.scde[rownames(dat),"f"],
+#                       row.names = rownames(dat)
+#     )
+#     
+#     all  <- apply(X = df2, MARGIN = 1, FUN = fisher.meta)
+#     res.comb <- data.frame(res.exact[rownames(dat),], res.scdd[rownames(dat),], res.scde[rownames(dat),],meta_padj = all)
+#     res.comb <- res.comb[order(res.comb$meta_padj),]
+#     RES2[[i]] <- res.comb
+#     names(RES2)[i] <- g2
+# 
+# }
 #########
 # Save results
-save(list = c("RES","RES2"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)
+#save(list = c("RES","RES2"),file =  "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda",compress = TRUE)
+#load("~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_R/meta_analysis.rda")

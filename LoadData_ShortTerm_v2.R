@@ -107,34 +107,34 @@ elbow <- function(x){
 ## Raw Data
 #################
 # ####alignment
-# QCreadcount <- read.table("~/Documents/SalkProjects/ME/WCellActivation_Manuscript/EE_QC_alignment_stats.txt",header=TRUE)
-# QCreadcount <- QCreadcount[QCreadcount$group == "mouse",]
-# rownames(QCreadcount) <- do.call("rbind",strsplit(as.character(QCreadcount$sample),split="-",fixed=TRUE))[,1]
-# keepQC <- rownames(QCreadcount[QCreadcount$aligned > 50000,])
-# 
-# ## Exclude a known experimental outlier, < 50000 aligned reads
-# Expoutlier <- c("nc_ux_ti_A12_141204","nm_ui_ti_G10_141204","nm_ux_ti_F7_141204")
-# #tmp <- read.table(as.matrix("~/Documents/SalkProjects/BenLacar/PC1_excludes.txt"))
-# #Expoutlier <- unique(c(Expoutlier,as.character(tmp$V1)))
-# ## Count
-# #countQC1 <- read.table(as.matrix("~/Documents/gene_count.txt"),header=TRUE,row.names=1,fill=TRUE)
-# countQC1 <- read.table(as.matrix("~/Desktop/RECOVERED_RSEM_geneSymbol_tpm_141204_allsamples.txt"),header=TRUE,row.names=1)
-# countQC1 <- countQC1[,keepQC]
-# countQC2 <- countQC1[,-(match(Expoutlier,colnames(countQC1)))]
-# countQC <- round(countQC2)
-# #countQC <- countQC[,na.exclude(match(keptnames,colnames(countQC)))]
-# ## TPM
-# #tpmQC1 <- read.table(as.matrix("~/Documents/SalkProjects/BenLacar/QC/QCtpm_genesymbol.txt"),header=TRUE,row.names=1)
-# tpmQC1 <- read.table(as.matrix("~/Documents/SalkProjects/BenLacar/RSEM_geneSymbol_tpm_141204_allsamples.txt"),header=TRUE,row.names=1)
-# tpmQC <- tpmQC1[,keepQC]
-# tpmQC <- tpmQC[,-(match(Expoutlier,colnames(tpmQC)))]
-# tpmQC <- log(tpmQC+1,2)
-# #tpmQC <- tpmQC[,na.exclude(match(keptnames,colnames(tpmQC)))]
-# ## labels
-# labelsQC1 <- as.data.frame(do.call(rbind,strsplit(x=colnames(tpmQC1),split='_',fixed=TRUE)))
-# rownames(labelsQC1) <- do.call("rbind",strsplit(x=colnames(tpmQC1),split=".",fixed=TRUE))[,1]
-# labelsQC <- labelsQC1[keepQC,]
-# labelsQC <- labelsQC[-c(match(Expoutlier,rownames(labelsQC))),]
+QCreadcount <- read.table("~/Documents/SalkProjects/ME/WCellActivation_Manuscript/EE_QC_alignment_stats.txt",header=TRUE)
+QCreadcount <- QCreadcount[QCreadcount$group == "mouse",]
+rownames(QCreadcount) <- do.call("rbind",strsplit(as.character(QCreadcount$sample),split="-",fixed=TRUE))[,1]
+keepQC <- rownames(QCreadcount[QCreadcount$aligned > 50000,])
+
+## Exclude a known experimental outlier, < 50000 aligned reads
+Expoutlier <- c("nc_ux_ti_A12_141204","nm_ui_ti_G10_141204","nm_ux_ti_F7_141204")
+#tmp <- read.table(as.matrix("~/Documents/SalkProjects/BenLacar/PC1_excludes.txt"))
+#Expoutlier <- unique(c(Expoutlier,as.character(tmp$V1)))
+## Count
+#countQC1 <- read.table(as.matrix("~/Documents/gene_count.txt"),header=TRUE,row.names=1,fill=TRUE)
+countQC1 <- read.table(as.matrix("~/Desktop/RECOVERED_RSEM_geneSymbol_tpm_141204_allsamples.txt"),header=TRUE,row.names=1)
+countQC1 <- countQC1[,keepQC]
+countQC2 <- countQC1[,-(match(Expoutlier,colnames(countQC1)))]
+countQC <- round(countQC2)
+#countQC <- countQC[,na.exclude(match(keptnames,colnames(countQC)))]
+## TPM
+#tpmQC1 <- read.table(as.matrix("~/Documents/SalkProjects/BenLacar/QC/QCtpm_genesymbol.txt"),header=TRUE,row.names=1)
+tpmQC1 <- read.table(as.matrix("~/Documents/SalkProjects/BenLacar/RSEM_geneSymbol_tpm_141204_allsamples.txt"),header=TRUE,row.names=1)
+tpmQC <- tpmQC1[,keepQC]
+tpmQC <- tpmQC[,-(match(Expoutlier,colnames(tpmQC)))]
+tpmQC <- log(tpmQC+1,2)
+#tpmQC <- tpmQC[,na.exclude(match(keptnames,colnames(tpmQC)))]
+## labels
+labelsQC1 <- as.data.frame(do.call(rbind,strsplit(x=colnames(tpmQC1),split='_',fixed=TRUE)))
+rownames(labelsQC1) <- do.call("rbind",strsplit(x=colnames(tpmQC1),split=".",fixed=TRUE))[,1]
+labelsQC <- labelsQC1[keepQC,]
+labelsQC <- labelsQC[-c(match(Expoutlier,rownames(labelsQC))),]
 
 #### ERCCs
 
@@ -290,21 +290,34 @@ tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/ra
 tpmProx161121 <- log(tpm.1+1,2)
 colnames(tpmProx161121) <- colnames(countProx161121)
 
+##########
+#161209
+#counts
+count.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_161209_gene_count.txt"),header=TRUE,row.names=1)
+b <- do.call("rbind",strsplit(colnames(count.1),"_",fixed=TRUE))
+colnames(count.1) <- paste(b[,1],b[,2],sep="_")
+countProx161209 <- round(count.1)
+
+#tpm
+tpm.1 <- read.table(as.matrix("~/Documents/SalkProjects/ME/ShortLongSingature/raw/Prox1_161209_gene_tpm.txt"),header=TRUE,row.names=1)
+tpmProx161209 <- log(tpm.1+1,2)
+colnames(tpmProx161209) <- colnames(countProx161209)
+
 
 ################################
 
 #combine
-runs <- 12
-a <- table(c(rownames(tpmProx),rownames(tpmQC),rownames(tpmProx150803),rownames(tpmProx150810),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324),rownames(tpmProx160523),rownames(tpmProx160617),rownames(tpmProx160707),rownames(tpmProx161121)))
-tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmQC[names(a[a==runs]),],tpmProx150803[names(a[a==runs]),],tpmProx150810[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160523[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),],tpmProx160617[names(a[a==runs]),],tpmProx160707[names(a[a==runs]),],tpmProx161121[names(a[a==runs]),])
+runs <- 13
+a <- table(c(rownames(tpmProx),rownames(tpmQC),rownames(tpmProx150803),rownames(tpmProx150810),rownames(tpmProx1512), rownames(tpmProx151214),rownames(tpmProx160107),rownames(tpmProx160324),rownames(tpmProx160523),rownames(tpmProx160617),rownames(tpmProx160707),rownames(tpmProx161121),rownames(tpmProx161209)))
+tpmProxC <- cbind(tpmProx[names(a[a==runs]),],tpmQC[names(a[a==runs]),],tpmProx150803[names(a[a==runs]),],tpmProx150810[names(a[a==runs]),],tpmProx1512[names(a[a==runs]),], tpmProx151214[names(a[a==runs]),],tpmProx160107[names(a[a==runs]),],tpmProx160523[names(a[a==runs]),],tpmProx160324[names(a[a==runs]),],tpmProx160617[names(a[a==runs]),],tpmProx160707[names(a[a==runs]),],tpmProx161121[names(a[a==runs]),],tpmProx161209[names(a[a==runs]),])
 colnames(tpmProxC) <- make.names(colnames(tpmProxC))
-a <- table(c(rownames(countProx),rownames(countQC),rownames(countProx150803),rownames(countProx150810),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324),rownames(countProx160523),rownames(countProx160617),rownames(countProx160707),rownames(countProx161121)))
-countProxC <- cbind(countProx[names(a[a==runs]),],countQC[names(a[a==runs]),],countProx150803[names(a[a==runs]),],countProx150810[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),], countProx160523[names(a[a==runs]),], countProx160617[names(a[a==runs]),], countProx160707[names(a[a==runs]),],countProx161121[names(a[a==runs]),])
+a <- table(c(rownames(countProx),rownames(countQC),rownames(countProx150803),rownames(countProx150810),rownames(countProx1512), rownames(countProx151214),rownames(countProx160107), rownames(countProx160324),rownames(countProx160523),rownames(countProx160617),rownames(countProx160707),rownames(countProx161121),rownames(countProx161209)))
+countProxC <- cbind(countProx[names(a[a==runs]),],countQC[names(a[a==runs]),],countProx150803[names(a[a==runs]),],countProx150810[names(a[a==runs]),],countProx1512[names(a[a==runs]),],countProx151214[names(a[a==runs]),],countProx160107[names(a[a==runs]),], countProx160324[names(a[a==runs]),], countProx160523[names(a[a==runs]),], countProx160617[names(a[a==runs]),], countProx160707[names(a[a==runs]),],countProx161121[names(a[a==runs]),],countProx161209[names(a[a==runs]),])
 colnames(countProxC) <- make.names(colnames(countProxC))
 
 
 #Hold off on this until metaProxC is updated on the original file
-metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile2.txt",header=TRUE)
+metaProxC <- read.table("~/Documents/SalkProjects/ME/ShortLongSingature/raw/snRNAseqSampleIDFile3.txt",header=TRUE)
 #metaProxC$Sample_ID <- make.names(metaProxC$Sample_ID)
 #rownames(metaProxC) <- metaProxC$Sample_ID
 metaProxC$outliers <- ifelse(test = metaProxC$alignable > 100000 & metaProxC$Smartseq2_RT_enzyme_used == "ProtoscriptII",yes = "in",no = "out")
@@ -319,15 +332,7 @@ samples <- samples[!is.na(samples)]
 metaProxC$outliers <- "in"
 metaProxC[samples,"outliers"] <- "out"
 
-samples <- rownames(metaProxC[ metaProxC$alignable <  100000 ,])
-g <- apply(tpmProxC,2,rawExp,1)
-samples <- unique(c(samples,names(g[g < 3500])))
-samples <- unique(c(samples,rownames(metaProxC[ metaProxC$Smartseq2_RT_enzyme_used != "ProtoscriptII" ,])))
-samples <- samples[!is.na(samples)]
-metaProxC$outliers2 <- "in"
-metaProxC[samples,"outliers2"] <- "out"
-
-table(metaProxC$outliers, metaProxC$outliers2)
+table(metaProxC$outliers, metaProxC$Mouse_condition)
 #########
 # Load SINE data
 #########

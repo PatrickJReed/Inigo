@@ -626,10 +626,9 @@ Volcano <- function(difexp){
 ### PLOT THESE GUYS
 ###############################################
 #PCA 2D
-samples <- rownames(metaProxC[metaProxC$Context1 == "none" & metaProxC$Brain_Region == "DG" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" |
-                                metaProxC$Context1 == "none" &  metaProxC$Brain_Region == "HDG" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" |
-                                metaProxC$Context1 == "none" &  metaProxC$Brain_Region == "CA1" & metaProxC$FOS != "L" & metaProxC$outliers == "in" & metaProxC$cluster_outlier == "in" ,])#
-samples <- samples[-grep("NA",samples)]
+samples <- rownames(metaProxC[metaProxC$Mouse_condition == "5hpAA" & metaProxC$Brain_Region == "DG" & metaProxC$FOS != "L" & metaProxC$outliers == "in" |
+                                metaProxC$Mouse_condition == "5hpAC" & metaProxC$Brain_Region == "DG" & metaProxC$FOS != "L" & metaProxC$outliers == "in" ,])
+#samples <- samples[-grep("NA",samples)]
 dat <- na.exclude(tpmProxC[, samples])
 met <- metaProxC[samples,]
 
@@ -648,7 +647,7 @@ met$loggcount <- log(met$genecount)
 met$cutoff.a <- met$alignable < cutoff
 met$cutoff.g <- met$genecount < cutoff2
 #tiff(filename = "~/Documents/SalkProjects/ME/ShortLongSingature/SLSig_tiff/PCA_HC_N.tiff",width = 6.5,height = 5,units = 'in',res = 300)
-PC2D(scores,Var,dat,met,colorby = "FOS", shapeby = "predicted",Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
+PC2D(scores,Var,dat,met,colorby = "FOS", shapeby = "Mouse_condition",Colors = c("red","blue","black"))# c("#00c7e4","#6ca425","#a800b3","#e19041"))
 #dev.off()
 #or with out a gene
 PC2D(dat,met)
